@@ -60,7 +60,7 @@ tamper actually mutated the proof before verifying.
 
 ## Honest constraints
 
-- **Proving key is 138 MB** per head. Fine for an operator, but it is not
+- **Proving key is 132 MiB** (138,479,371 bytes) per head. Fine for an operator, but it is not
   something a browser or a light client holds.
 - **Proving is ~2s per decision** on a laptop CPU, no GPU. At scale this is a
   real per-decision cost, though it parallelises trivially across decisions.

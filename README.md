@@ -4,10 +4,80 @@ An on-chain insurance mechanism that slashes AI model operators in proportion to
 **miscalibration**, not merely error, on a single deterministic decision class:
 automated loan-rejection reason codes.
 
-> **Status: research MVP / technical demo.** Parts of this are real cryptography
-> and real trained models. Parts are deliberately simulated. The
-> [What's real vs. simulated](#whats-real-vs-simulated-in-this-mvp) table is the
-> authoritative list — read it before drawing any conclusion from this repo.
+> **Status: research MVP / technical demo.** Real cryptography and real trained
+> models in places, deliberately simulated in others. Start with
+> [What this proves and doesn't prove](#what-this-proves-and-doesnt-prove).
+
+## The numbers
+
+Everything below was produced by the scripts in this repo on a laptop CPU. None
+is estimated, extrapolated, or copied from a paper. Detail in
+[`RESULTS.md`](RESULTS.md).
+
+| | Measured |
+|---|---|
+| zk proving time (calibration head) | **~2.0 s** per decision, no GPU |
+| On-chain proof verification | **684,696 gas** (≈ $62 at 30 gwei / $3k ETH) |
+| Verifier deployment | **2,942,192 gas**, one-off |
+| Proving key size | **132 MiB** per head (operator-side, not on-chain) |
+| Calibration: ECE on held-out test | **0.2164 → 0.1111** (48.7% reduction) |
+| Learned temperature | **T = 3.01** (T > 1 confirms the base model was overconfident) |
+| Tests | **48 Solidity + 29 Python, all passing** |
+
+End-to-end, three scenarios against a local chain, as a share of stake:
+
+| Scenario | Confidence | Outcome | Slash (% of stake) |
+|---|---|---|---|
+| Confident + correct | 0.9845 | upheld | **0.024%** |
+| Confident + wrong | 0.9367 | overturned | **87.75%** |
+| Uncertain + wrong | 0.5012 | overturned | **25.12%** |
+
+Confident-and-wrong costs **3,667x** confident-and-correct and **3.49x**
+uncertain-and-wrong.
+
+## What this proves and doesn't prove
+
+**The trust-model gap, stated first.** The zk proof covers the **calibration
+head only** — a 1-parameter temperature scaler, or a 321-parameter MLP, mapping
+one logit to one confidence. The base classifier that actually decides the loan
+is **not in-circuit**. The proof binds this statement and no larger one:
+
+> *given a logit committed on-chain, the head identified by this verifying key
+> maps it to the attested confidence.*
+
+The logit is an unverified input. **An operator who fabricates it produces a
+proof that verifies perfectly.** Nothing forces the number entering the circuit
+to have come from the claimed model, from the applicant's real features, or from
+any model at all. Verifying the honest link says nothing about the link carrying
+the weight — here, the base classifier. Any claim that "the AI decision is
+zero-knowledge proved" is false against this architecture.
+
+**What is genuinely demonstrated.** Miscalibration is measurable and correctable
+on real data — ECE 0.2164 → 0.1111, with a control run showing that fitting on
+the wrong split makes it *worse* than not calibrating at all. A proper scoring
+rule works in fixed-point Solidity, monotonicity and properness verified
+numerically rather than argued. Proving a calibration head is cheap, and the
+321-parameter MLP costs the same as the 1-parameter one because fixed lookup
+overhead dominates. The proof verifies on a real EVM, with tampered proofs,
+tampered outputs, and wrong verifying keys all rejected.
+
+**What the numbers say about viability.** 684,696 gas is ~33x a plain transfer,
+~$62 per decision on L1, and the Brier arithmetic is ~543 gas of it — the cost
+is almost entirely halo2 verification. This needs an L2 and proof aggregation
+before it is economic; neither is implemented here.
+
+**What is not built at all:** proving the base classifier, decentralized dispute
+resolution (a single admin key decides every outcome), an unbonding period (an
+operator can withdraw stake before a dispute opens), actuarial economics, and
+any legal wrapper. Full breakdown in
+[What's real vs. simulated](#whats-real-vs-simulated-in-this-mvp).
+
+**Two things a reviewer will notice, said before they have to ask.** The base
+model scores 71.5% on test against 100% on train — it is *deliberately* overfit,
+because demonstrating a calibration-insurance mechanism on an already-calibrated
+model would prove nothing, and its accuracy is not a selling point. And the
+three demo scenarios run sequentially against one shrinking stake, so the
+percentage column is the comparable one; the absolute ETH figures are not.
 
 ## The core idea
 
@@ -30,30 +100,6 @@ decision at 0.5 is mediocre rather than free. That claim is not asserted here �
 it is [verified as a unit test](contracts/test/BrierMath.t.sol) at two separate
 probabilities.
 
-## Headline measured results
-
-Every number below was produced by the scripts in this repo. None is estimated.
-Full detail in [`RESULTS.md`](RESULTS.md).
-
-| | Measured |
-|---|---|
-| Calibration: ECE on held-out test | **0.2164 → 0.1111** (48.7% reduction) |
-| Learned temperature | **T = 3.01** (T>1 confirms the base model was overconfident) |
-| zk proving time (calibration head) | **~2.0 s** per decision, laptop CPU, no GPU |
-| On-chain proof verification | **684,696 gas** (≈ $62 at 30 gwei / $3k ETH) |
-| Tests | **48 Solidity + 29 Python, all passing** |
-
-End-to-end demo, three scenarios against a local chain, as a share of stake:
-
-| Scenario | Confidence | Outcome | Slash (% of stake) |
-|---|---|---|---|
-| Confident + correct | 0.9845 | upheld | **0.024%** |
-| Confident + wrong | 0.9367 | overturned | **87.75%** |
-| Uncertain + wrong | 0.5012 | overturned | **25.12%** |
-
-Confident-and-wrong costs **3,667x** confident-and-correct and **3.49x**
-uncertain-and-wrong. That spread is the entire product.
-
 ## Decision loop
 
 1. Base classifier produces an approve/reject decision on a loan application.
@@ -63,22 +109,25 @@ uncertain-and-wrong. That spread is the entire product.
 5. A zk proof attests that **the calibration head only** ran correctly on that logit.
 6. On a dispute resolving against the decision, stake is slashed by the Brier formula.
 
-## What is and is not zk-proved
+## Closing the trust-model gap
 
-**Only the calibration head is proved in zero knowledge.** The base classifier is
-*not* proved in-circuit, and this repo never claims otherwise.
+The gap itself is stated in
+[What this proves and doesn't prove](#what-this-proves-and-doesnt-prove). What
+it would take to close:
 
-What the proof establishes: given a logit committed on-chain, the calibration
-head identified by this verifying key maps it to the attested confidence.
+- **Prove the base classifier in-circuit.** Honest but expensive for tree
+  ensembles today — a depth-8, 400-tree XGBoost is orders of magnitude beyond
+  the 2^15-row circuit used here.
+- **Or commit to the inputs.** Bind the feature vector and model weights to a
+  hash the applicant or a regulator can independently check, so a fabricated
+  logit is detectable even when it is not proved.
+- **Or attest the base model through trusted execution**, accepting a hardware
+  trust assumption instead of a cryptographic one.
 
-What the proof does **not** establish: that the logit came from the claimed base
-model, that the base model was trained as described, or that the applicant's
-features were reported truthfully. **An operator who fabricates the input logit
-still produces a perfectly valid proof.** Closing that gap requires proving the
-base classifier in-circuit, which this MVP does not attempt.
-
-This is a load-bearing limitation, not a footnote. Any claim that "the AI
-decision is zero-knowledge proved" would be false against this architecture.
+The third is the only one that is cheap today, and it is a strictly weaker
+guarantee. Whichever path is taken, the honest description of the current
+system remains *"the calibration step is proved"* — not *"the decision is
+proved"*.
 
 ## What's real vs. simulated in this MVP
 
