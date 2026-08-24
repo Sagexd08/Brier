@@ -19,6 +19,7 @@ contract AcceptAll is IVerifier {
 /// proposal's Figure C has become wrong and must be updated.
 contract ThreatModelTest is Test {
     uint256 constant WAD = 1e18;
+    uint256 constant UNBONDING = 7 days;
 
     Attestation attestation;
     StakePool pool;
@@ -32,7 +33,7 @@ contract ThreatModelTest is Test {
 
     function setUp() public {
         attestation = new Attestation(address(new AcceptAll()));
-        pool = new StakePool(address(attestation), admin, 10_000);
+        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING);
         vm.deal(operator, 1_000 ether);
         vm.deal(claimant, 1 ether);
     }
@@ -49,34 +50,83 @@ contract ThreatModelTest is Test {
     // TIER 2, assumption B: BROKEN in v0
     // -----------------------------------------------------------------
 
-    /// Figure C claims an operator can exit before a dispute lands, reducing
-    /// the slash to zero. This test executes that path end to end.
-    function test_tier2_operatorCanFrontRunDisputeByWithdrawing() public {
+    /// REGRESSION TEST for the v0 exploit, now CLOSED (Phase 3a).
+    ///
+    /// In v0 this exact sequence reduced a 98.01 ETH slash to 0: withdraw()
+    /// executed instantly, so an operator watching the mempool could exit
+    /// before openDispute() was mined. The unbonding period closes it. This
+    /// test now asserts the attack FAILS, and is the acceptance criterion for
+    /// Phase 3a -- if it ever passes again, tier 2 has regressed.
+    function test_tier2_frontRunDisputeByWithdrawing_isNowBlocked() public {
         vm.prank(operator);
         pool.stake{value: 100 ether}();
         bytes32 attId = _attest(0.99e18); // confident, and about to be wrong
 
-        // Operator sees the pending dispute and exits first. Nothing stops it.
+        // Operator sees the dispute coming and tries to exit. It can only
+        // REQUEST -- the stake stays bonded and fully slashable.
         vm.prank(operator);
-        pool.withdraw(100 ether);
-        assertEq(pool.stakeOf(operator), 0, "withdraw is unguarded");
+        pool.requestWithdrawal(100 ether);
+        assertEq(pool.stakeOf(operator), 100 ether, "stake must stay bonded during unbonding");
 
-        // The dispute proceeds and resolves against the operator...
+        // Immediate execution fails: the clock has not matured.
+        vm.prank(operator);
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                StakePool.WithdrawalNotReady.selector,
+                block.timestamp + UNBONDING,
+                block.timestamp
+            )
+        );
+        pool.executeWithdrawal();
+
+        // The dispute lands during unbonding.
         vm.prank(claimant);
         bytes32 dispId = pool.openDispute(attId);
+
+        // Even after the clock matures, the open dispute freezes execution.
+        vm.warp(block.timestamp + UNBONDING + 1);
+        vm.prank(operator);
+        vm.expectRevert(
+            abi.encodeWithSelector(StakePool.WithdrawalFrozenByOpenDispute.selector, uint256(1))
+        );
+        pool.executeWithdrawal();
+
+        // Resolution slashes the full amount: the exploit recovered nothing.
         vm.prank(admin);
         pool.resolveDispute(dispId, false);
-
-        // ...and recovers nothing. A 98.01% slash became 0.
         (,,, uint256 slashed) = pool.disputes(dispId);
-        assertEq(slashed, 0, "Figure C tier 2 assumption B is unenforced");
-        assertEq(claimant.balance, 1 ether, "claimant is made whole by nothing");
+        assertEq(slashed, 98.01 ether, "slash must land in full despite the exit attempt");
+        assertEq(claimant.balance, 1 ether + 98.01 ether, "claimant is paid");
     }
 
-    /// The same decision, if the operator does NOT exit, costs 98.01 ETH.
-    /// The delta between this and the test above is the value of the missing
-    /// unbonding period.
-    function test_tier2_sameDecisionCosts98EthIfOperatorDoesNotExit() public {
+    /// The freeze lifts once the dispute is resolved -- an operator is not
+    /// locked in forever, which would be its own (opposite) design fault.
+    function test_tier2_withdrawalUnfreezesAfterDisputeResolves() public {
+        vm.prank(operator);
+        pool.stake{value: 100 ether}();
+        bytes32 attId = _attest(0.60e18);
+
+        vm.prank(operator);
+        pool.requestWithdrawal(10 ether);
+
+        vm.prank(claimant);
+        bytes32 dispId = pool.openDispute(attId);
+        assertEq(pool.openDisputeCount(operator), 1);
+
+        vm.prank(admin);
+        pool.resolveDispute(dispId, true);
+        assertEq(pool.openDisputeCount(operator), 0, "freeze must lift on resolution");
+
+        vm.warp(block.timestamp + UNBONDING + 1);
+        uint256 before = operator.balance;
+        vm.prank(operator);
+        pool.executeWithdrawal();
+        assertEq(operator.balance, before + 10 ether, "withdrawal completes once clear");
+    }
+
+    /// Baseline: with no exit attempt at all, the slash is the same 98.01 ETH.
+    /// Phase 3a's guarantee is that the attempt above changes nothing.
+    function test_tier2_sameDecisionCosts98EthWithNoExitAttempt() public {
         vm.prank(operator);
         pool.stake{value: 100 ether}();
         bytes32 attId = _attest(0.99e18);
@@ -88,6 +138,72 @@ contract ThreatModelTest is Test {
 
         (,,, uint256 slashed) = pool.disputes(dispId);
         assertEq(slashed, 98.01 ether, "unexited stake is slashed in full");
+    }
+
+    // -----------------------------------------------------------------
+    // TIER 2, RESIDUAL GAPS after Phase 3a
+    //
+    // The unbonding period closes the mempool front-running exploit. It does
+    // NOT make stake unconditionally available at slash time. These two tests
+    // document precisely what survives, so "unbonding is enforced" cannot be
+    // read as "the economic tier is now guaranteed".
+    // -----------------------------------------------------------------
+
+    /// RESIDUAL GAP A: the freeze only bites if a dispute is actually opened
+    /// during the unbonding window. A decision nobody disputes in time is
+    /// unbacked once the operator exits.
+    ///
+    /// This is a bound on the DISPUTE WINDOW, not a bug in the timelock: it
+    /// says the unbonding period must exceed the time a claimant realistically
+    /// needs to notice a bad decision and act. For loan rejections, where the
+    /// counterfactual may take months to surface, 7 days is almost certainly
+    /// too short. Choosing that parameter is unresolved.
+    function test_tier2_residualGap_exitBeforeAnyDisputeIsRaised() public {
+        vm.prank(operator);
+        pool.stake{value: 100 ether}();
+        bytes32 attId = _attest(0.99e18);
+
+        vm.prank(operator);
+        pool.requestWithdrawal(100 ether);
+        skip(UNBONDING + 1); // nobody disputes within the window
+        vm.prank(operator);
+        pool.executeWithdrawal();
+        assertEq(pool.stakeOf(operator), 0);
+
+        // The dispute now lands against an operator with nothing at stake.
+        vm.prank(claimant);
+        bytes32 dispId = pool.openDispute(attId);
+        vm.prank(admin);
+        pool.resolveDispute(dispId, false);
+
+        (,,, uint256 slashed) = pool.disputes(dispId);
+        assertEq(slashed, 0, "slash is 0 when no dispute is raised in the window");
+    }
+
+    /// RESIDUAL GAP B: the freeze is released by dispute RESOLUTION, and
+    /// resolution is a tier-3 admin action. A dishonest admin can resolve
+    /// favourably to unfreeze an operator's exit.
+    ///
+    /// Tier 2 is therefore enforced *against the operator* but still
+    /// *downstream of tier 3*. Closing this requires Phase 3b and beyond, not
+    /// a longer timelock.
+    function test_tier2_residualGap_adminCanUnfreezeByResolvingFavourably() public {
+        vm.prank(operator);
+        pool.stake{value: 100 ether}();
+        bytes32 attId = _attest(0.99e18);
+
+        vm.prank(operator);
+        pool.requestWithdrawal(100 ether);
+        vm.prank(claimant);
+        bytes32 dispId = pool.openDispute(attId);
+        skip(UNBONDING + 1);
+
+        vm.prank(admin);
+        pool.resolveDispute(dispId, true); // admin declares it upheld
+        vm.prank(operator);
+        pool.executeWithdrawal();
+
+        assertEq(pool.stakeOf(operator), 0, "tier-3 admin still gates tier-2 enforcement");
     }
 
     // -----------------------------------------------------------------

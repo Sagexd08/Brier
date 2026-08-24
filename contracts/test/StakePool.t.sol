@@ -28,6 +28,7 @@ contract RejectingReceiver {
 
 contract StakePoolTest is Test {
     uint256 constant WAD = 1e18;
+    uint256 constant UNBONDING = 7 days;
 
     Attestation attestation;
     StakePool pool;
@@ -43,7 +44,7 @@ contract StakePoolTest is Test {
     function setUp() public {
         verifier = new MockVerifier();
         attestation = new Attestation(address(verifier));
-        pool = new StakePool(address(attestation), admin, 10_000);
+        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING);
 
         vm.deal(operator, 1_000 ether);
         vm.deal(claimant, 1 ether);
@@ -94,12 +95,20 @@ contract StakePoolTest is Test {
         pool.stake{value: 0}();
     }
 
-    function test_withdrawReturnsFunds() public {
+    function test_withdrawReturnsFundsAfterUnbonding() public {
         vm.startPrank(operator);
         pool.stake{value: 10 ether}();
         uint256 before = operator.balance;
-        pool.withdraw(4 ether);
+        pool.requestWithdrawal(4 ether);
         vm.stopPrank();
+
+        // Stake is untouched during unbonding: still fully slashable.
+        assertEq(pool.stakeOf(operator), 10 ether);
+
+        vm.warp(block.timestamp + UNBONDING);
+        vm.prank(operator);
+        pool.executeWithdrawal();
+
         assertEq(pool.stakeOf(operator), 6 ether);
         assertEq(operator.balance, before + 4 ether);
     }
@@ -110,7 +119,7 @@ contract StakePoolTest is Test {
         vm.expectRevert(
             abi.encodeWithSelector(StakePool.InsufficientStake.selector, 2 ether, 1 ether)
         );
-        pool.withdraw(2 ether);
+        pool.requestWithdrawal(2 ether);
         vm.stopPrank();
     }
 
@@ -210,7 +219,7 @@ contract StakePoolTest is Test {
     // ---------------------------------------------------------------
 
     function test_capIsEnforcedOnResolution() public {
-        StakePool capped = new StakePool(address(attestation), admin, 2_500); // 25%
+        StakePool capped = new StakePool(address(attestation), admin, 2_500, UNBONDING); // 25%
         vm.prank(operator);
         capped.stake{value: 100 ether}();
         bytes32 attId = _attest(0.99e18);

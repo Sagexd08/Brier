@@ -19,6 +19,9 @@ import {Attestation} from "./Attestation.sol";
 contract StakePool {
     using BrierMath for uint256;
 
+    /// @notice Floor on the unbonding period, enforced at construction.
+    uint256 public constant MIN_UNBONDING_PERIOD = 1 hours;
+
     enum DisputeStatus { None, Open, ResolvedUpheld, ResolvedOverturned }
 
     struct Dispute {
@@ -39,8 +42,37 @@ contract StakePool {
     /// @dev One dispute per attestation.
     mapping(bytes32 => bool) public disputed;
 
+    // ------------------------------------------------------------------
+    // Unbonding (Phase 3a)
+    // ------------------------------------------------------------------
+
+    /// @notice Delay between requesting a withdrawal and being able to execute it.
+    /// @dev Must exceed the window in which a claimant could realistically
+    ///      notice a bad decision and open a dispute. Set at construction.
+    uint256 public immutable unbondingPeriod;
+
+    struct WithdrawalRequest {
+        uint256 amount;
+        uint256 readyAt;
+    }
+
+    /// @notice Pending withdrawal per operator. At most one at a time.
+    mapping(address => WithdrawalRequest) public withdrawalRequest;
+
+    /// @notice Amount an operator has earmarked for withdrawal but not yet taken.
+    /// @dev Still slashable: it remains part of stakeOf until executed. Earmarking
+    ///      does not reduce the collateral backing outstanding decisions.
+    mapping(address => uint256) public pendingWithdrawal;
+
+    /// @notice Count of currently-open disputes naming this operator.
+    /// @dev A non-zero count freezes withdrawal execution. Maintained on
+    ///      openDispute (increment) and resolveDispute (decrement).
+    mapping(address => uint256) public openDisputeCount;
+
     event Staked(address indexed operator, uint256 amount, uint256 newTotal);
     event Withdrawn(address indexed operator, uint256 amount, uint256 newTotal);
+    event WithdrawalRequested(address indexed operator, uint256 amount, uint256 readyAt);
+    event WithdrawalCancelled(address indexed operator, uint256 amount);
     event DisputeOpened(bytes32 indexed disputeId, bytes32 indexed attestationId, address indexed claimant);
     event DisputeResolved(
         bytes32 indexed disputeId,
@@ -59,17 +91,34 @@ contract StakePool {
     error DisputeNotOpen(bytes32 disputeId);
     error CapOutOfRange(uint256 capBps);
     error PayoutFailed();
+    error NoPendingWithdrawal();
+    error WithdrawalNotReady(uint256 readyAt, uint256 nowTs);
+    error WithdrawalFrozenByOpenDispute(uint256 openDisputes);
+    error WithdrawalAlreadyPending(uint256 amount, uint256 readyAt);
+    error UnbondingPeriodTooShort(uint256 given);
 
     modifier onlyAdmin() {
         if (msg.sender != admin) revert NotAdmin();
         _;
     }
 
-    constructor(address attestation_, address admin_, uint256 maxSlashBps_) {
+    constructor(
+        address attestation_,
+        address admin_,
+        uint256 maxSlashBps_,
+        uint256 unbondingPeriod_
+    ) {
         if (maxSlashBps_ > 10_000) revert CapOutOfRange(maxSlashBps_);
+        // A zero-length unbonding period would reintroduce the v0 front-running
+        // exploit exactly, so it is rejected at construction rather than left
+        // as a footgun for a deployer.
+        if (unbondingPeriod_ < MIN_UNBONDING_PERIOD) {
+            revert UnbondingPeriodTooShort(unbondingPeriod_);
+        }
         attestation = Attestation(attestation_);
         admin = admin_;
         maxSlashBps = maxSlashBps_;
+        unbondingPeriod = unbondingPeriod_;
     }
 
     // ------------------------------------------------------------------
@@ -82,15 +131,65 @@ contract StakePool {
         emit Staked(msg.sender, msg.value, stakeOf[msg.sender]);
     }
 
-    /// @dev No unbonding period. A production system needs one, or an operator
-    ///      front-runs every dispute by withdrawing. Called out in the README.
-    function withdraw(uint256 amount) external {
+    /// @notice Step 1 of 2: request a withdrawal, starting the unbonding clock.
+    /// @dev The amount stays in `stakeOf` and remains fully slashable during
+    ///      unbonding. Requesting a withdrawal is not a way to move collateral
+    ///      out of reach of a dispute -- that was precisely the v0 exploit.
+    function requestWithdrawal(uint256 amount) external {
         uint256 bal = stakeOf[msg.sender];
-        if (amount > bal) revert InsufficientStake(amount, bal);
+        if (amount == 0 || amount > bal) revert InsufficientStake(amount, bal);
+
+        WithdrawalRequest memory existing = withdrawalRequest[msg.sender];
+        if (existing.amount != 0) {
+            revert WithdrawalAlreadyPending(existing.amount, existing.readyAt);
+        }
+
+        uint256 readyAt = block.timestamp + unbondingPeriod;
+        withdrawalRequest[msg.sender] = WithdrawalRequest({amount: amount, readyAt: readyAt});
+        pendingWithdrawal[msg.sender] = amount;
+        emit WithdrawalRequested(msg.sender, amount, readyAt);
+    }
+
+    /// @notice Step 2 of 2: execute a matured withdrawal.
+    ///
+    /// Blocked while ANY dispute naming this operator is open. This is the
+    /// check that closes the v0 front-running exploit: an operator who sees a
+    /// dispute coming cannot exit, because either
+    ///   (a) the unbonding clock has not matured, or
+    ///   (b) the dispute is open and freezes execution.
+    /// Both conditions are re-checked at execution time, not at request time.
+    function executeWithdrawal() external {
+        WithdrawalRequest memory req = withdrawalRequest[msg.sender];
+        if (req.amount == 0) revert NoPendingWithdrawal();
+        if (block.timestamp < req.readyAt) {
+            revert WithdrawalNotReady(req.readyAt, block.timestamp);
+        }
+        uint256 open = openDisputeCount[msg.sender];
+        if (open != 0) revert WithdrawalFrozenByOpenDispute(open);
+
+        uint256 bal = stakeOf[msg.sender];
+        // A slash during unbonding can have reduced the stake below the
+        // requested amount; pay out at most what is actually left.
+        uint256 amount = req.amount > bal ? bal : req.amount;
+
+        delete withdrawalRequest[msg.sender];
+        pendingWithdrawal[msg.sender] = 0;
         stakeOf[msg.sender] = bal - amount;
+
         emit Withdrawn(msg.sender, amount, stakeOf[msg.sender]);
-        (bool ok,) = msg.sender.call{value: amount}("");
-        if (!ok) revert PayoutFailed();
+        if (amount > 0) {
+            (bool ok,) = msg.sender.call{value: amount}("");
+            if (!ok) revert PayoutFailed();
+        }
+    }
+
+    /// @notice Abandon a pending withdrawal and keep the stake bonded.
+    function cancelWithdrawal() external {
+        WithdrawalRequest memory req = withdrawalRequest[msg.sender];
+        if (req.amount == 0) revert NoPendingWithdrawal();
+        delete withdrawalRequest[msg.sender];
+        pendingWithdrawal[msg.sender] = 0;
+        emit WithdrawalCancelled(msg.sender, req.amount);
     }
 
     // ------------------------------------------------------------------
@@ -100,7 +199,7 @@ contract StakePool {
     function openDispute(bytes32 attestationId) external returns (bytes32 disputeId) {
         if (disputed[attestationId]) revert AlreadyDisputed(attestationId);
         // Reverts if the attestation does not exist.
-        attestation.get(attestationId);
+        Attestation.Record memory rec = attestation.get(attestationId);
 
         disputed[attestationId] = true;
         disputeId = keccak256(abi.encode(attestationId, msg.sender, block.timestamp));
@@ -110,6 +209,8 @@ contract StakePool {
             status: DisputeStatus.Open,
             slashed: 0
         });
+        // Freeze this operator's withdrawals until the dispute resolves.
+        openDisputeCount[rec.operator] += 1;
         disputeIdFor[attestationId] = disputeId;
         emit DisputeOpened(disputeId, attestationId, msg.sender);
     }
@@ -136,6 +237,8 @@ contract StakePool {
         stakeOf[rec.operator] = operatorStake - slash;
         d.slashed = slash;
         d.status = decisionUpheld ? DisputeStatus.ResolvedUpheld : DisputeStatus.ResolvedOverturned;
+        // Dispute closed: release this operator's withdrawal freeze by one.
+        openDisputeCount[rec.operator] -= 1;
 
         emit DisputeResolved(disputeId, d.attestationId, decisionUpheld, rec.confidence, slash);
 

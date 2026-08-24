@@ -12,12 +12,13 @@ contract Deploy is Script {
         uint256 pk = vm.envUint("PRIVATE_KEY");
         address admin = vm.addr(pk);
         uint256 capBps = vm.envOr("MAX_SLASH_BPS", uint256(10_000));
+        uint256 unbonding = vm.envOr("UNBONDING_PERIOD", uint256(7 days));
 
         vm.startBroadcast(pk);
 
         Halo2Verifier verifier = new Halo2Verifier();
         Attestation attestation = new Attestation(address(verifier));
-        StakePool pool = new StakePool(address(attestation), admin, capBps);
+        StakePool pool = new StakePool(address(attestation), admin, capBps, unbonding);
 
         vm.stopBroadcast();
 
@@ -25,5 +26,6 @@ contract Deploy is Script {
         console.log("ATTESTATION", address(attestation));
         console.log("STAKEPOOL", address(pool));
         console.log("ADMIN", admin);
+        console.log("UNBONDING_SECONDS", unbonding);
     }
 }
