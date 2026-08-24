@@ -14,13 +14,13 @@ confidence in a decision it believes at 60%. We propose slashing staked
 collateral by the **Brier score** over (reported confidence, adjudicated
 outcome). Because that score is strictly proper, expected loss is minimised
 exactly when the operator reports its true subjective probability, making honest
-confidence reporting loss-minimising rather than good faith. We report a
-measured prototype: temperature scaling cuts Expected Calibration Error from
-0.2164 to 0.1111 on held-out UCI German Credit data; an EZKL/halo2 circuit
-proves the calibration head in 2.09 s on a laptop CPU; the proof verifies
-on-chain for 684,696 gas. This is a mechanism and a prototype, **not a
-deployable protocol**: only the calibration head is proved, its input logit is
-unverified, dispute resolution is one admin key, and no unbonding period exists.
+confidence reporting loss-minimising rather than good faith. We report a measured
+prototype: across 10 pinned seeds, temperature scaling cuts Expected Calibration
+Error from 0.1853 ± 0.0248 to 0.0870 ± 0.0218 on held-out UCI German Credit data,
+in every seed; an EZKL/halo2 circuit proves the calibration head in 2.09 s on a
+laptop CPU, verified on-chain for 684,696 gas. This is a mechanism and a
+prototype, **not a deployable protocol**: only the calibration head is proved,
+its input logit unverified, dispute resolution one admin key, no unbonding period.
 
 ---
 
@@ -326,7 +326,36 @@ All figures below are produced by scripts in the repository. Environment:
 Windows 11, Python 3.13.5, xgboost 3.1.2, torch 2.9.1+cpu, EZKL 23.0.5,
 Foundry 1.7.1, laptop CPU, no GPU. Seed 42.
 
-### 6.1 Calibration (held-out test split, n = 200)
+### 6.1R Calibration across 10 seeds (research pass)
+
+Single-seed results are reported in §6.1 for reference; these are the figures
+the calibration claims rest on. Seeds are pinned in `config.EVAL_SEEDS`; the
+full list is always run.
+
+| Head | ECE mean ± std | Brier mean ± std | Accuracy mean ± std |
+|---|---|---|---|
+| Uncalibrated | 0.1853 ± 0.0248 | 0.2060 ± 0.0191 | 0.7505 ± 0.0209 |
+| **Temperature (1 param)** | **0.0870 ± 0.0218** | **0.1758 ± 0.0113** | 0.7505 ± 0.0209 |
+| MLP (321 params) | 0.1055 ± 0.0234 | 0.1908 ± 0.0119 | 0.7330 ± 0.0199 |
+| *Control: fitted on TRAIN* | *0.2434 ± 0.0212* | — | — |
+
+Learned $T = 3.4657 \pm 0.4491$, and $T > 1$ in **every** seed. Calibration reduces
+ECE in **every** seed; the control is worse than not calibrating in **every**
+seed (paired Wilcoxon $p = 0.002$, the minimum attainable at $n = 10$).
+
+**Correction to a v0 claim.** v0 asserted "temperature scaling beats the MLP
+head" from one run per head. Across seeds it holds as a *majority* result —
+7/10 seeds, $W = 7.0$, $p = 0.03711$, median difference $-0.01816$ — not a uniform
+one. The claim is retained at that reduced strength and pinned by
+`tests/test_multiseed.py::test_temperature_beats_mlp_claim_matches_reported_strength`.
+
+**Cherry-picking audit.** Seed 42, published alone in v0, ranks 6th of 10 by ECE
+reduction (48.7% vs 52.8% mean) while carrying the *highest* uncalibrated ECE of
+any seed. The single-seed figures were therefore pessimistic in absolute terms
+and middling in relative terms. `SEED = 42` was committed once, before results
+existed, and never changed; the repository contains no notebooks.
+
+### 6.1 Calibration at seed 42 (single run, for reference)
 
 | Head | Params | ECE | MCE | Brier |
 |---|---|---|---|---|
@@ -338,12 +367,15 @@ Foundry 1.7.1, laptop CPU, no GPU. Seed 42.
 ECE reduction: 48.7%. Learned $T = 3.0121$ ($T > 1$ confirms the base model
 required softening). Base accuracy: train 1.0000, test 0.7150.
 
-**Negative result, retained.** The 321-parameter MLP head *underperforms* the
-1-parameter head on held-out ECE (0.1436 vs 0.1111) and is worse on every
-reported metric, despite reaching a lower calibration-set NLL. With 200
-calibration points the additional capacity does not generalise. The simplest
-head is both the better estimator and the cheaper circuit; the two considerations
-agree here, but that agreement is a measured outcome, not a design assumption.
+**Negative result, retained — and its strength corrected.** At seed 42 the
+321-parameter MLP head underperforms the 1-parameter head on held-out ECE
+(0.1436 vs 0.1111). Across the 10 pinned seeds (§6.1R) the effect is real but
+**not uniform**: temperature scaling has the lower ECE in **7 of 10** seeds
+(paired Wilcoxon $W = 7.0$, $p = 0.037$, median difference $-0.018$). With 200
+calibration points the additional capacity usually fails to generalise, but in
+3 of 10 seeds the MLP wins. The simplest head is both the better estimator on
+average and the cheaper circuit; that agreement is a measured outcome, not a
+design assumption, and it is a majority rather than a universal result.
 
 ### 6.2 Explainability
 

@@ -11,7 +11,7 @@ ezkl 23.0.5, Foundry 1.7.1. Seed = 42.
 
 ---
 
-## Phase 1 - calibration
+## Phase 1 - calibration (single seed 42, for reference)
 
 Dataset: UCI Statlog German Credit, 1000 real applications,
 19 features (protected attribute excluded).
@@ -58,6 +58,68 @@ An earlier version of this fit diverged to a `nan` loss while still emitting
 finite-looking probabilities. The optimiser now uses a strong-Wolfe line search,
 keeps the best finite iterate, and raises on divergence
 (`tests/test_phase1.py::test_fit_rejects_diverged_loss`).
+
+---
+
+## Phase 1R - calibration across 10 seeds (research pass)
+
+All calibration statistics over the **10 pinned seeds** in
+`config.EVAL_SEEDS` = [42, 1337, 7, 2024, 31415, 271828, 99, 12345, 555, 8675309]. Each seed perturbs both the data
+split and the head initialisation. The full list is always run; the script
+has no option to select or drop seeds.
+
+### Expected Calibration Error
+
+| Head | mean | std | min | max |
+|---|---|---|---|---|
+| Uncalibrated | 0.1853 | 0.0248 | 0.1293 | 0.2164 |
+| **Temperature scaling** (1 param) | 0.0870 | 0.0218 | 0.0661 | 0.1261 |
+| MLP head (321 params) | 0.1055 | 0.0234 | 0.0689 | 0.1436 |
+| *Control: fitted on TRAIN* | 0.2434 | 0.0212 | 0.2122 | 0.2773 |
+
+### Brier score
+
+| Head | mean | std | min | max |
+|---|---|---|---|---|
+| Uncalibrated | 0.2060 | 0.0191 | 0.1672 | 0.2353 |
+| Temperature scaling | 0.1758 | 0.0113 | 0.1532 | 0.1929 |
+| MLP head | 0.1908 | 0.0119 | 0.1730 | 0.2067 |
+
+### Accuracy (unchanged by calibration, as expected)
+
+| Head | mean | std | min | max |
+|---|---|---|---|---|
+| Uncalibrated | 0.7505 | 0.0209 | 0.7150 | 0.7750 |
+| Temperature scaling | 0.7505 | 0.0209 | 0.7150 | 0.7750 |
+| MLP head | 0.7330 | 0.0199 | 0.6950 | 0.7600 |
+
+Learned temperature: **3.4657 +/- 0.4491** (min 2.9425, max 4.3605). T > 1 in every seed.
+
+### Significance tests (paired Wilcoxon signed-rank across seeds)
+
+| Claim | W | p | median diff | verdict |
+|---|---|---|---|---|
+| Temperature beats MLP on ECE | 7.0 | 0.03711 | -0.01816 | **SUPPORTED** |
+| Calibration beats uncalibrated | 0.0 | 0.00195 | -0.10113 | **SUPPORTED** |
+| Fitting on TRAIN is worse than nothing | 0.0 | 0.00195 | +0.05917 | **CONFIRMED HARMFUL** |
+
+**Strength of the temperature-vs-MLP claim.** Temperature scaling has the
+lower ECE in **7/10** seeds, not all of them. The effect is
+significant at alpha=0.05 but is a majority, not a uniform, result. v0 asserted
+this from a single run per head; that was an overstatement of its strength.
+
+**Leakage control.** Fitting the head on TRAIN was worse than not calibrating
+in **10/10** seeds.
+
+### Cherry-picking audit
+
+v0 published seed 42 alone. Across the pinned set, seed 42's ECE reduction
+ranks **6th of 10** (48.7% vs a 52.8% mean), while its *uncalibrated* ECE is
+the **highest of all seeds**. The single-seed result was therefore pessimistic
+on the absolute numbers and middling on the relative improvement -- not
+selected to flatter. `SEED = 42` was committed once, before any results
+existed, and never changed (verified in git history); the repository contains
+no notebooks. Pinned by `tests/test_multiseed.py::test_seed_42_is_not_the_most_flattering_seed`.
 
 ---
 

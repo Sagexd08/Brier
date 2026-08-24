@@ -20,8 +20,8 @@ is estimated, extrapolated, or copied from a paper. Detail in
 | On-chain proof verification | **684,696 gas** (≈ $62 at 30 gwei / $3k ETH) |
 | Verifier deployment | **2,942,192 gas**, one-off |
 | Proving key size | **132 MiB** per head (operator-side, not on-chain) |
-| Calibration: ECE on held-out test | **0.2164 → 0.1111** (48.7% reduction) |
-| Learned temperature | **T = 3.01** (T > 1 confirms the base model was overconfident) |
+| Calibration: ECE on held-out test | **0.1853 ± 0.0248 → 0.0870 ± 0.0218** (mean ± std over 10 pinned seeds; 52.8% ± 10.3% reduction) |
+| Learned temperature | **T = 3.47 ± 0.45** (T > 1 in every seed, confirming the base model was overconfident) |
 | Tests | **48 Solidity + 29 Python, all passing** |
 
 End-to-end, three scenarios against a local chain, as a share of stake:
@@ -53,8 +53,9 @@ the weight — here, the base classifier. Any claim that "the AI decision is
 zero-knowledge proved" is false against this architecture.
 
 **What is genuinely demonstrated.** Miscalibration is measurable and correctable
-on real data — ECE 0.2164 → 0.1111, with a control run showing that fitting on
-the wrong split makes it *worse* than not calibrating at all. A proper scoring
+on real data — ECE 0.1853 → 0.0870 averaged over 10 pinned seeds, reduced in
+**every** seed, with a control run showing that fitting on the wrong split makes
+it *worse* than not calibrating at all (also in every seed). A proper scoring
 rule works in fixed-point Solidity, monotonicity and properness verified
 numerically rather than argued. Proving a calibration head is cheap, and the
 321-parameter MLP costs the same as the 1-parameter one because fixed lookup
