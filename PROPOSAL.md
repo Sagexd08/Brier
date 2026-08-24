@@ -17,10 +17,10 @@ exactly when the operator reports its true subjective probability, making honest
 confidence reporting loss-minimising rather than good faith. We report a measured
 prototype: across 10 pinned seeds, temperature scaling cuts Expected Calibration
 Error from 0.1853 ± 0.0248 to 0.0870 ± 0.0218 on held-out UCI German Credit data,
-in every seed; an EZKL/halo2 circuit proves the calibration head in 2.09 s on a
-laptop CPU, verified on-chain for 684,696 gas. This is a mechanism and a
-prototype, **not a deployable protocol**: only the calibration head is proved,
-its input logit unverified, dispute resolution one admin key, no unbonding period.
+in every seed; an EZKL/halo2 circuit proves the calibration head in 2.09 s,
+verified on-chain for 684,696 gas. This is a mechanism and a prototype, **not a
+deployable protocol**: only the calibration head is proved, its input logit
+unverified, dispute resolution one admin key, no unbonding period.
 
 ---
 
@@ -397,11 +397,20 @@ across 3 reruns; 5/5 directional sanity checks pass
 | Calldata per proof | 3,300 B | 3,300 B |
 | Tamper-soundness | 4/4 rejected | 4/4 rejected |
 
-**Result.** Proving cost is invariant to the 321× parameter increase, because at
-$2^{15}$ rows the circuit is dominated by fixed lookup-table and column overhead
-rather than by multiply-accumulate count. For calibration heads at this scale,
-parameter count is not the binding constraint. No fallback to a smaller head was
-required.
+**Result, extended from 2 points to 10 (§6.3R).** Proving cost is invariant to a
+**16,897× parameter increase**. A 10-point sweep from 1 to 16,897 parameters
+holds `logrows` = 15 at every point; rows used scale linearly with parameters
+(slope 0.98 rows/param, $r = 0.992$) while proving time does not follow
+(mean 2.13 s ± 0.09, regression slope +0.009 s/decade, Spearman
+$ho = -0.188$, $p = 0.603$). Fixed lookup and column overhead dominate
+multiply-accumulate count. No fallback to a smaller head was required.
+
+**Scope limit.** This holds *within* logrows = 15. The largest head fills 16,511
+of 32,768 rows (50.4%), so the sweep does not cross the capacity boundary; where
+cost steps at logrows 16+ is **unmeasured**. The claim is "flat until the head
+stops fitting the circuit," not "flat without limit."
+
+![Figure E — proving cost vs head size](figures/figure-e-circuit-sweep.png)
 
 Soundness is tested rather than assumed: an honest proof verifies, while a
 tampered public output, a flipped byte at the proof head, a flipped byte

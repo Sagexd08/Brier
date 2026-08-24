@@ -156,6 +156,53 @@ the measured attribution agrees.
 
 ---
 
+## Phase 2R - circuit size sweep (research pass)
+
+v0 compared exactly two heads (1 and 321 params) and concluded proving cost is
+overhead-dominated. Two points cannot separate "flat in parameter count" from
+"grows, but both points happened to fit the same circuit". This sweep spans
+**1 to 16,897 parameters (16897x)** to separate them.
+
+| Head | Params | logrows | Rows used | Prove (s) | Proof (B) | Test ECE |
+|---|---|---|---|---|---|---|
+| temp_p1 | 1 | 15 | 39 | 2.10 | 17,561 | 0.1111 |
+| mlp_h1 | 6 | 15 | 130 | 2.10 | 17,495 | 0.1016 |
+| mlp_h2 | 13 | 15 | 194 | 2.15 | 17,537 | 0.1019 |
+| mlp_h4 | 33 | 15 | 329 | 2.10 | 17,523 | 0.1120 |
+| mlp_h8 | 97 | 15 | 611 | 2.09 | 17,513 | 0.1661 |
+| mlp_h16 | 321 | 15 | 1,223 | 2.30 | 17,549 | 0.1436 |
+| mlp_h32 | 1,153 | 15 | 2,639 | 2.07 | 17,491 | 0.1101 |
+| mlp_h64 | 4,353 | 15 | 6,239 | 2.04 | 17,549 | 0.1749 |
+| mlp_h96 | 9,601 | 15 | 10,863 | 2.09 | 17,512 | 0.2075 |
+| mlp_h128 | 16,897 | 15 | 16,511 | 2.26 | 17,527 | 0.1928 |
+
+Proving time is best-of-3 per point.
+
+### Finding: overhead-dominated CONFIRMED, within one circuit size
+
+- **`logrows` = 15 for every point.** The fixed cost is genuinely fixed, not a
+  coincidence of the two v0 points.
+- **Rows used scale linearly with parameters** (39 -> 16,511; slope 0.98
+  rows/param, Pearson r = 0.992), so the circuit really is doing more work.
+- **Proving time does not follow.** Mean 2.13 s +/- 0.09,
+  spread 12.4% of mean, regression slope
+  **+0.009 s per decade** of parameters, Spearman rho = -0.188 (p = 0.603, no
+  correlation).
+
+A 16,897-parameter head proves as fast as a 1-parameter one.
+
+### Scope limit, stated precisely
+
+This confirms the hypothesis **within logrows = 15**, not universally. The
+largest head fills 16,511 of 32,768 rows (50.4%), so the sweep does not cross
+the capacity boundary. The honest claim is: *proving cost is flat in parameter
+count until the head no longer fits the circuit; where it steps at logrows 16+
+is unmeasured.* Extending past the boundary was descoped in this pass.
+
+![Figure E](figures/figure-e-circuit-sweep.png)
+
+---
+
 ## Phase 3 - zk proof of the calibration head
 
 Proving system: **EZKL 23.0.5** (halo2, KZG).

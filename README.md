@@ -16,13 +16,13 @@ is estimated, extrapolated, or copied from a paper. Detail in
 
 | | Measured |
 |---|---|
-| zk proving time (calibration head) | **~2.0 s** per decision, no GPU |
+| zk proving time (calibration head) | **2.13 s ± 0.09**, flat from 1 to 16,897 params, no GPU |
 | On-chain proof verification | **684,696 gas** (≈ $62 at 30 gwei / $3k ETH) |
 | Verifier deployment | **2,942,192 gas**, one-off |
 | Proving key size | **132 MiB** per head (operator-side, not on-chain) |
 | Calibration: ECE on held-out test | **0.1853 ± 0.0248 → 0.0870 ± 0.0218** (mean ± std over 10 pinned seeds; 52.8% ± 10.3% reduction) |
 | Learned temperature | **T = 3.47 ± 0.45** (T > 1 in every seed, confirming the base model was overconfident) |
-| Tests | **48 Solidity + 29 Python, all passing** |
+| Tests | **53 Solidity + 43 Python, all passing** |
 
 End-to-end, three scenarios against a local chain, as a share of stake:
 
@@ -58,8 +58,10 @@ on real data — ECE 0.1853 → 0.0870 averaged over 10 pinned seeds, reduced in
 it *worse* than not calibrating at all (also in every seed). A proper scoring
 rule works in fixed-point Solidity, monotonicity and properness verified
 numerically rather than argued. Proving a calibration head is cheap, and the
-321-parameter MLP costs the same as the 1-parameter one because fixed lookup
-overhead dominates. The proof verifies on a real EVM, with tampered proofs,
+16,897-parameter head costs the same as the 1-parameter one (measured across a
+10-point sweep spanning 4 orders of magnitude, all at logrows=15) because fixed
+lookup overhead dominates — though only up to the circuit's capacity, which the
+sweep does not cross. The proof verifies on a real EVM, with tampered proofs,
 tampered outputs, and wrong verifying keys all rejected.
 
 **What the numbers say about viability.** 684,696 gas is ~33x a plain transfer,
@@ -134,6 +136,13 @@ The three assurance tiers. Only tier 1 is cryptography; tier 2 is currently
 demonstrates it.
 
 ![Trust boundaries and threat model](figures/figure-c-threat-model.png)
+
+### Proving cost vs head size
+
+Proving time is flat across 4 orders of magnitude of parameters, while circuit
+rows used scale linearly with them.
+
+![Proving cost vs calibration-head size](figures/figure-e-circuit-sweep.png)
 
 ### Calibration reliability
 
