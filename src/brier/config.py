@@ -13,6 +13,13 @@ CONTRACTS = ROOT / "contracts"
 
 SEED = 42
 
+# PINNED evaluation seed list for the multi-seed research evaluation.
+# This list is fixed and always run in full: scripts/12_multiseed_eval.py has no
+# option to select or drop seeds, so a "best seed" cannot be reported. Changing
+# this list changes every headline statistic and must be a deliberate,
+# reviewable commit.
+EVAL_SEEDS = (42, 1337, 7, 2024, 31415, 271828, 99, 12345, 555, 8675309)
+
 # Three-way split. The calibration set is disjoint from BOTH train and test.
 # Calibrating on training data is the classic correctness bug in this pipeline:
 # the base model's train-set logits are overconfident in a way that does not

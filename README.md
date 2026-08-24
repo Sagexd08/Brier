@@ -109,6 +109,38 @@ probabilities.
 5. A zk proof attests that **the calibration head only** ran correctly on that logit.
 6. On a dispute resolving against the decision, stake is slashed by the Brier formula.
 
+## Diagrams
+
+Generated from the repo's own artifacts; sources in [`figures/`](figures/) and
+regenerable via `scripts/91_figure_d_reliability.py` and `scripts/92_render_svg.py`.
+
+### Component architecture
+
+Solid = implemented and measured here. Dashed amber = specified, not built. Red
+= the single component inside the zk circuit.
+
+![Component architecture](figures/figure-a-architecture.png)
+
+### Protocol sequence
+
+![Protocol sequence](figures/figure-b-sequence.png)
+
+### Trust boundaries
+
+The three assurance tiers. Only tier 1 is cryptography; tier 2 is currently
+**unenforced**; tier 3 is a single key. Each weakness names the test in
+[`contracts/test/ThreatModel.t.sol`](contracts/test/ThreatModel.t.sol) that
+demonstrates it.
+
+![Trust boundaries and threat model](figures/figure-c-threat-model.png)
+
+### Calibration reliability
+
+Bin values read directly from `artifacts/calibration/phase1_report.json` — no
+curve is fitted or smoothed.
+
+![Calibration reliability](figures/figure-d-calibration.png)
+
 ## Closing the trust-model gap
 
 The gap itself is stated in
