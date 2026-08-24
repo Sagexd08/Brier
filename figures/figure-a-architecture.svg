@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 620" width="1180" height="620" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4a4a"/>
+    </marker>
+    <marker id="arDash" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9a7b2f"/>
+    </marker>
+  </defs>
+
+  <rect width="1180" height="620" fill="#ffffff"/>
+  <text x="24" y="34" font-size="17" font-weight="bold" fill="#1a1a1a">Figure A — Component architecture</text>
+  <text x="24" y="55" font-size="12" fill="#5a5a5a">Brier v0. Solid outline = implemented and measured in this repo. Dashed amber = specified but NOT built.</text>
+
+  <!-- legend -->
+  <rect x="800" y="22" width="16" height="12" fill="#eef4f9" stroke="#2f6f9f" stroke-width="1.6" rx="2"/>
+  <text x="822" y="32" font-size="11" fill="#333">v0 implemented</text>
+  <rect x="800" y="42" width="16" height="12" fill="#fdf7e8" stroke="#9a7b2f" stroke-width="1.6" stroke-dasharray="4 3" rx="2"/>
+  <text x="822" y="52" font-size="11" fill="#333">not built (target)</text>
+  <rect x="960" y="22" width="16" height="12" fill="#f4ecec" stroke="#c44536" stroke-width="1.6" rx="2"/>
+  <text x="982" y="32" font-size="11" fill="#333">in zk circuit</text>
+  <rect x="960" y="42" width="16" height="12" fill="#f0eef4" stroke="#6b5b95" stroke-width="1.6" rx="2"/>
+  <text x="982" y="52" font-size="11" fill="#333">on-chain</text>
+
+  <!-- ============ OFF-CHAIN LANE ============ -->
+  <rect x="24" y="80" width="700" height="288" fill="#fafafa" stroke="#dcdcdc" stroke-width="1" rx="7"/>
+  <text x="38" y="100" font-size="12" font-weight="bold" fill="#777" letter-spacing="1">OFF-CHAIN (model operator)</text>
+
+  <!-- base classifier -->
+  <rect x="44" y="116" width="196" height="86" fill="#eef4f9" stroke="#2f6f9f" stroke-width="1.8" rx="5"/>
+  <text x="56" y="137" font-size="13" font-weight="bold" fill="#1a1a1a">Base classifier</text>
+  <text x="56" y="155" font-size="11" fill="#444">XGBoost, depth 8, 400 trees</text>
+  <text x="56" y="171" font-size="11" fill="#444">19 features, UCI German Credit</text>
+  <text x="56" y="188" font-size="11" fill="#c44536" font-weight="bold">NOT zk-proved</text>
+
+  <!-- calibration head -->
+  <rect x="286" y="116" width="196" height="86" fill="#f4ecec" stroke="#c44536" stroke-width="2.2" rx="5"/>
+  <text x="298" y="137" font-size="13" font-weight="bold" fill="#1a1a1a">Calibration head</text>
+  <text x="298" y="155" font-size="11" fill="#444">temp. scaling (1 param), T=3.01</text>
+  <text x="298" y="171" font-size="11" fill="#444">or MLP 1-16-16-1 (321 params)</text>
+  <text x="298" y="188" font-size="11" fill="#c44536" font-weight="bold">ONLY component in-circuit</text>
+
+  <!-- SHAP -->
+  <rect x="528" y="116" width="176" height="86" fill="#eef4f9" stroke="#2f6f9f" stroke-width="1.8" rx="5"/>
+  <text x="540" y="137" font-size="13" font-weight="bold" fill="#1a1a1a">SHAP explainer</text>
+  <text x="540" y="155" font-size="11" fill="#444">TreeExplainer, top-5</text>
+  <text x="540" y="171" font-size="11" fill="#444">additivity err 1.3e-05</text>
+  <text x="540" y="188" font-size="11" fill="#9a7b2f" font-weight="bold">hashed, not proved</text>
+
+  <!-- prover -->
+  <rect x="286" y="248" width="196" height="98" fill="#f4ecec" stroke="#c44536" stroke-width="2.2" rx="5"/>
+  <text x="298" y="269" font-size="13" font-weight="bold" fill="#1a1a1a">EZKL prover (halo2)</text>
+  <text x="298" y="287" font-size="11" fill="#444">2^15 = 32,768 rows</text>
+  <text x="298" y="303" font-size="11" fill="#444">prove 2.09 s / 2.08 s</text>
+  <text x="298" y="319" font-size="11" fill="#444">proof 17.4 KB, pk 132 MiB</text>
+  <text x="298" y="336" font-size="11" fill="#444">calldata 3,300 B</text>
+
+  <!-- arrows off-chain -->
+  <line x1="240" y1="159" x2="282" y2="159" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
+  <text x="243" y="152" font-size="10" fill="#c44536" font-weight="bold">logit</text>
+  <path d="M 142 202 L 142 224 L 616 224 L 616 202" fill="none" stroke="#4a4a4a" stroke-width="1.3" marker-end="url(#ar)" stroke-dasharray="3 2"/>
+  <text x="379" y="220" font-size="10" fill="#666" text-anchor="middle">features + tree paths (uncommitted)</text>
+  <line x1="384" y1="230" x2="384" y2="244" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
+  <text x="392" y="243" font-size="10" fill="#666">head weights + logit</text>
+
+  <!-- ============ ON-CHAIN LANE ============ -->
+  <rect x="756" y="80" width="400" height="510" fill="#fafafa" stroke="#dcdcdc" stroke-width="1" rx="7"/>
+  <text x="770" y="100" font-size="12" font-weight="bold" fill="#777" letter-spacing="1">ON-CHAIN (local Anvil devnet)</text>
+
+  <!-- verifier -->
+  <rect x="776" y="116" width="360" height="72" fill="#f0eef4" stroke="#6b5b95" stroke-width="1.8" rx="5"/>
+  <text x="788" y="137" font-size="13" font-weight="bold" fill="#1a1a1a">Halo2Verifier.sol  (EZKL-generated)</text>
+  <text x="788" y="155" font-size="11" fill="#444">73,307 B source · deploy 2,942,192 gas</text>
+  <text x="788" y="172" font-size="11" fill="#444">verifyProof: 684,696 gas</text>
+
+  <!-- attestation -->
+  <rect x="776" y="204" width="360" height="94" fill="#f0eef4" stroke="#6b5b95" stroke-width="1.8" rx="5"/>
+  <text x="788" y="225" font-size="13" font-weight="bold" fill="#1a1a1a">Attestation.sol</text>
+  <text x="788" y="243" font-size="11" fill="#444">decisionHash · shapHash · confidence (WAD)</text>
+  <text x="788" y="259" font-size="11" fill="#444">margin · modelVersion · proofVerified</text>
+  <text x="788" y="276" font-size="11" fill="#444">attest + verify: 887,376 gas</text>
+  <text x="788" y="292" font-size="11" fill="#c44536">reverts if proof rejected</text>
+
+  <!-- stakepool -->
+  <rect x="776" y="314" width="360" height="106" fill="#f0eef4" stroke="#6b5b95" stroke-width="1.8" rx="5"/>
+  <text x="788" y="335" font-size="13" font-weight="bold" fill="#1a1a1a">StakePool.sol  +  BrierMath.sol</text>
+  <text x="788" y="353" font-size="11" fill="#444">slash = stake · (conf − outcome)² , capped</text>
+  <text x="788" y="369" font-size="11" fill="#444">slashAmount: 543 gas (pure)</text>
+  <text x="788" y="385" font-size="11" fill="#444">resolveDispute + payout: 97,390 gas</text>
+  <text x="788" y="402" font-size="11" fill="#c44536" font-weight="bold">no unbonding period → withdraw is unguarded</text>
+
+  <!-- dispute resolver: SPLIT box, v0 vs target -->
+  <rect x="776" y="436" width="360" height="66" fill="#f4ecec" stroke="#c44536" stroke-width="2.2" rx="5"/>
+  <text x="788" y="457" font-size="13" font-weight="bold" fill="#1a1a1a">Dispute resolver — v0: single admin key</text>
+  <text x="788" y="475" font-size="11" fill="#444">onlyAdmin resolveDispute(id, upheld)</text>
+  <text x="788" y="491" font-size="11" fill="#c44536" font-weight="bold">FULLY TRUSTED · no jury, oracle, or appeal</text>
+
+  <rect x="776" y="514" width="360" height="60" fill="#fdf7e8" stroke="#9a7b2f" stroke-width="1.8" stroke-dasharray="5 3" rx="5"/>
+  <text x="788" y="535" font-size="13" font-weight="bold" fill="#5f4c1c">Target: decentralised adjudication</text>
+  <text x="788" y="553" font-size="11" fill="#6b5a2c">Kleros-style jury / evidentiary standard / appeals</text>
+  <text x="788" y="568" font-size="11" fill="#9a7b2f" font-weight="bold">NOT BUILT</text>
+
+  <!-- cross-lane arrows -->
+  <path d="M 482 292 L 620 292 L 620 152 L 772 152" fill="none" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
+  <text x="500" y="285" font-size="10" fill="#666">proof + public instances</text>
+
+  <path d="M 704 159 L 728 159 L 728 240 L 772 240" fill="none" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
+  <text x="616" y="256" font-size="10" fill="#666">SHAP hash</text>
+
+  <line x1="956" y1="188" x2="956" y2="200" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
+  <line x1="956" y1="298" x2="956" y2="310" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
+  <line x1="956" y1="502" x2="956" y2="510" stroke="#9a7b2f" stroke-width="1.5" marker-end="url(#arDash)" stroke-dasharray="4 3"/>
+  <path d="M 776 470 L 744 470 L 744 380 L 772 380" fill="none" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
+  <text x="612" y="400" font-size="10" fill="#666">outcome → slash</text>
+
+  <!-- claimant -->
+  <rect x="44" y="396" width="196" height="66" fill="#eef4f9" stroke="#2f6f9f" stroke-width="1.8" rx="5"/>
+  <text x="56" y="417" font-size="13" font-weight="bold" fill="#1a1a1a">Claimant</text>
+  <text x="56" y="435" font-size="11" fill="#444">opens dispute: 134,608 gas</text>
+  <text x="56" y="451" font-size="11" fill="#444">receives the slashed amount</text>
+
+  <path d="M 240 429 L 640 429 L 640 469 L 772 469" fill="none" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
+  <text x="330" y="422" font-size="10" fill="#666">openDispute(attestationId)</text>
+
+  <!-- provenance gap callout -->
+  <rect x="44" y="486" width="680" height="98" fill="#fff6f5" stroke="#c44536" stroke-width="1.8" rx="6"/>
+  <text x="58" y="508" font-size="12.5" font-weight="bold" fill="#c44536">Unclosed gap: input-logit provenance</text>
+  <text x="58" y="528" font-size="11.5" fill="#3a3a3a">The circuit takes the base model's logit as an unverified public input. Nothing binds that number</text>
+  <text x="58" y="545" font-size="11.5" fill="#3a3a3a">to the classifier above, to the applicant's real features, or to any model at all. An operator that</text>
+  <text x="58" y="562" font-size="11.5" fill="#3a3a3a">fabricates the logit obtains a proof that verifies. See Figure C, tier 1 boundary, and §8.</text>
+  <text x="58" y="578" font-size="11" fill="#8a8a8a">Dashed grey arrow above (features → SHAP) is likewise uncommitted.</text>
+</svg>

@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 800" width="1180" height="800" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="cAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4a4a"/>
+    </marker>
+    <pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="7" stroke="#c44536" stroke-width="2.4" opacity="0.16"/>
+    </pattern>
+  </defs>
+
+  <rect width="1180" height="800" fill="#ffffff"/>
+  <text x="24" y="34" font-size="17" font-weight="bold" fill="#1a1a1a">Figure C — Trust boundaries and threat model (Brier v0)</text>
+  <text x="24" y="55" font-size="12" fill="#5a5a5a">Three tiers of assurance. Only tier 1 is enforced by cryptography. Tier 2 is currently <tspan font-weight="bold" fill="#c44536">unenforced</tspan>. Tier 3 is a single key.</text>
+
+  <!-- ================= TIER 1 ================= -->
+  <rect x="24" y="76" width="1132" height="200" fill="#eaf4ec" stroke="#2e7d4f" stroke-width="2.4" rx="8"/>
+  <rect x="24" y="76" width="8" height="200" fill="#2e7d4f" rx="4"/>
+  <text x="48" y="101" font-size="14" font-weight="bold" fill="#1d5c39">TIER 1 — CRYPTOGRAPHICALLY GUARANTEED</text>
+  <text x="48" y="120" font-size="11.5" fill="#2f5c44">Holds against a fully malicious operator. No trust required. Verified on-chain; tampering rejected (4/4 soundness checks).</text>
+
+  <rect x="48" y="132" width="330" height="118" fill="#ffffff" stroke="#2e7d4f" stroke-width="1.6" rx="5"/>
+  <text x="62" y="153" font-size="12.5" font-weight="bold" fill="#1a1a1a">Calibration-head execution</text>
+  <text x="62" y="172" font-size="11" fill="#444">halo2/KZG proof, 2^15 rows</text>
+  <text x="62" y="188" font-size="11" fill="#444">verifyProof = 684,696 gas</text>
+  <text x="62" y="204" font-size="11" fill="#444">prove 2.09 s · proof 17.4 KB</text>
+  <text x="62" y="223" font-size="11" fill="#1d5c39" font-weight="bold">Guarantees: given logit L,</text>
+  <text x="62" y="239" font-size="11" fill="#1d5c39" font-weight="bold">head(vk) maps L → attested c</text>
+
+  <rect x="398" y="132" width="330" height="118" fill="#ffffff" stroke="#2e7d4f" stroke-width="1.6" rx="5"/>
+  <text x="412" y="153" font-size="12.5" font-weight="bold" fill="#1a1a1a">Slash arithmetic</text>
+  <text x="412" y="172" font-size="11" fill="#444">BrierMath, WAD fixed point</text>
+  <text x="412" y="188" font-size="11" fill="#444">no unchecked blocks; 543 gas</text>
+  <text x="412" y="204" font-size="11" fill="#444">monotonicity + properness</text>
+  <text x="412" y="223" font-size="11" fill="#1d5c39" font-weight="bold">Guarantees: slash is exactly</text>
+  <text x="412" y="239" font-size="11" fill="#1d5c39" font-weight="bold">stake·(c−o)², capped, no overflow</text>
+
+  <rect x="748" y="132" width="384" height="130" fill="#fff4f3" stroke="#c44536" stroke-width="2" rx="5"/>
+  <text x="762" y="153" font-size="12.5" font-weight="bold" fill="#c44536">NOT covered by tier 1</text>
+  <text x="762" y="173" font-size="11" fill="#3a3a3a">• the base classifier (not in circuit)</text>
+  <text x="762" y="190" font-size="11" fill="#3a3a3a">• provenance of the input logit L</text>
+  <text x="762" y="207" font-size="11" fill="#3a3a3a">• truthfulness of the applicant features</text>
+  <text x="762" y="224" font-size="11" fill="#3a3a3a">• the SHAP vector (hash-committed only)</text>
+  <text x="762" y="241" font-size="11" fill="#c44536" font-weight="bold">A fabricated L yields a valid proof.</text>
+  <text x="762" y="256" font-size="9.5" fill="#8a8a8a">ThreatModel.t.sol::test_tier1_marginIsUnverified…</text>
+
+  <!-- ================= TIER 2 ================= -->
+  <rect x="24" y="292" width="1132" height="200" fill="#fdf7e8" stroke="#9a7b2f" stroke-width="2.4" rx="8"/>
+  <rect x="24" y="292" width="8" height="200" fill="#9a7b2f" rx="4"/>
+  <text x="48" y="309" font-size="14" font-weight="bold" fill="#7d6224">TIER 2 — ECONOMICALLY ASSUMED</text>
+  <text x="48" y="328" font-size="11.5" fill="#6b5a2c">Holds only if the operator is rational AND the assumption is actually enforced in code. One of these is not.</text>
+
+  <rect x="48" y="340" width="536" height="122" fill="#ffffff" stroke="#9a7b2f" stroke-width="1.6" rx="5"/>
+  <text x="62" y="361" font-size="12.5" font-weight="bold" fill="#1a1a1a">Assumption A — honest confidence reporting</text>
+  <text x="62" y="380" font-size="11" fill="#444">Brier is strictly proper, so expected loss is minimised at</text>
+  <text x="62" y="396" font-size="11" fill="#444">the operator's true belief. Verified numerically at p=0.3, 0.7.</text>
+  <text x="62" y="415" font-size="11" fill="#2e7d4f" font-weight="bold">STATUS: enforced by the payoff structure —</text>
+  <text x="62" y="431" font-size="11" fill="#444">but only for decisions that are actually disputed, and only</text>
+  <text x="62" y="447" font-size="11" fill="#444">if dispute selection is independent of the reported c.</text>
+
+  <rect x="604" y="340" width="528" height="132" fill="url(#hatch)" stroke="#c44536" stroke-width="2.6" rx="5"/>
+  <rect x="604" y="340" width="528" height="132" fill="none" stroke="#c44536" stroke-width="2.6" rx="5"/>
+  <text x="618" y="361" font-size="12.5" font-weight="bold" fill="#1a1a1a">Assumption B — stake is available when slashed</text>
+  <text x="618" y="380" font-size="11" fill="#444">Requires the operator cannot exit before a dispute lands.</text>
+  <text x="618" y="399" font-size="12" fill="#c44536" font-weight="bold">STATUS IN v0: BROKEN — NOT ENFORCED.</text>
+  <text x="618" y="417" font-size="11" fill="#3a3a3a">withdraw() has no unbonding period, no lock, no delay.</text>
+  <text x="618" y="433" font-size="11" fill="#3a3a3a">An operator watching the mempool can withdraw the full</text>
+  <text x="618" y="447" font-size="11" fill="#3a3a3a">stake before openDispute() is mined. Slash then hits 0.</text>
+  <text x="618" y="461" font-size="9.5" fill="#8a8a8a">demonstrated: ThreatModel.t.sol::test_tier2_operatorCanFrontRunDispute… (98.01 ETH → 0)</text>
+
+  <!-- ================= TIER 3 ================= -->
+  <rect x="24" y="504" width="1132" height="172" fill="#fbecec" stroke="#c44536" stroke-width="2.8" rx="8"/>
+  <rect x="24" y="504" width="8" height="172" fill="#c44536" rx="4"/>
+  <text x="48" y="521" font-size="14" font-weight="bold" fill="#a5301f">TIER 3 — FULLY TRUSTED (no cryptographic or economic guarantee whatsoever)</text>
+  <text x="48" y="540" font-size="11.5" fill="#7d3025">A single key decides who loses money. Everything in tier 1 and tier 2 is downstream of this decision.</text>
+
+  <rect x="48" y="552" width="536" height="106" fill="#ffffff" stroke="#c44536" stroke-width="1.8" rx="5"/>
+  <text x="62" y="573" font-size="12.5" font-weight="bold" fill="#1a1a1a">Dispute outcome</text>
+  <text x="62" y="592" font-size="11" fill="#444">StakePool.resolveDispute(id, upheld) — onlyAdmin</text>
+  <text x="62" y="609" font-size="11" fill="#c44536" font-weight="bold">No jury. No oracle. No evidentiary standard. No appeal.</text>
+  <text x="62" y="626" font-size="11" fill="#444">A dishonest admin can slash an honest operator to zero, or</text>
+  <text x="62" y="638" font-size="11" fill="#444">shield a miscalibrated one indefinitely.</text>
+  <text x="62" y="652" font-size="9.5" fill="#8a8a8a">demonstrated: ThreatModel.t.sol::test_tier3_adminCanSlashAnHonestOperator</text>
+
+  <rect x="604" y="552" width="528" height="106" fill="#ffffff" stroke="#c44536" stroke-width="1.8" rx="5"/>
+  <text x="618" y="573" font-size="12.5" font-weight="bold" fill="#1a1a1a">Ground truth for a loan rejection</text>
+  <text x="618" y="592" font-size="11" fill="#444">The counterfactual is unobservable: a rejected applicant</text>
+  <text x="618" y="608" font-size="11" fill="#444">never demonstrates repayment. "The decision was wrong"</text>
+  <text x="618" y="624" font-size="11" fill="#444">has no on-chain referent.</text>
+  <text x="618" y="640" font-size="11" fill="#c44536" font-weight="bold">Unsolved — not merely unimplemented.</text>
+
+  <!-- attack path -->
+  <rect x="24" y="692" width="1132" height="92" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.4" stroke-dasharray="5 3" rx="7"/>
+  <text x="42" y="716" font-size="12.5" font-weight="bold" fill="#1a1a1a">Cheapest attack against v0 (does not require breaking any cryptography)</text>
+  <text x="42" y="737" font-size="11.5" fill="#3a3a3a">1. Report an honest-looking confidence and attest with a valid proof over a <tspan font-weight="bold" fill="#c44536">fabricated logit</tspan> (tier 1 does not bind L).</text>
+  <text x="42" y="754" font-size="11.5" fill="#3a3a3a">2. Watch the mempool; on seeing openDispute(), front-run it with <tspan font-weight="bold" fill="#c44536">withdraw()</tspan> — tier 2 assumption B is unenforced.</text>
+  <text x="42" y="771" font-size="11.5" fill="#3a3a3a">3. Failing that, rely on the <tspan font-weight="bold" fill="#c44536">admin key</tspan> (tier 3) to resolve the dispute favourably. Total cryptographic work required: none.</text>
+</svg>

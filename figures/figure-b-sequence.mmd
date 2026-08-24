@@ -1,0 +1,33 @@
+sequenceDiagram
+    autonumber
+    actor OP as Model Operator
+    participant PR as EZKL Prover<br/>(off-chain, halo2)
+    participant AT as Attestation.sol
+    participant VF as Halo2Verifier.sol
+    participant SP as StakePool.sol
+    actor CL as Claimant
+    actor AD as Dispute Resolver<br/>(v0: single admin key)
+
+    OP->>SP: stake() — 45,443 gas
+    Note over OP: base classifier emits logit L<br/>(NOT proved, NOT committed)
+
+    OP->>OP: calibration head: c = sigmoid(L / T), T = 3.01
+    OP->>OP: SHAP top-5 → canonical vector → keccak256
+    OP->>PR: prove head(L) = c
+    PR-->>OP: proof (17,447 B) + public instances [L, c]
+    Note over PR: 2.09 s, 2^15 rows, laptop CPU
+
+    OP->>AT: attest(decisionHash, shapHash, c, L, version, proof, instances)
+    AT->>VF: verifyProof(proof, instances) — 684,696 gas
+    VF-->>AT: true
+    Note over AT,VF: reverts if the proof is rejected<br/>total attest cost 887,376 gas
+    AT-->>OP: attestationId
+
+    CL->>SP: openDispute(attestationId) — 134,608 gas
+    Note over SP,AD: v0 GAP: nothing prevents<br/>OP calling withdraw() here (29,616 gas)<br/>reducing the slash to zero
+
+    AD->>SP: resolveDispute(disputeId, upheld) — onlyAdmin
+    Note over AD: FULLY TRUSTED — no jury,<br/>no oracle, no evidentiary standard
+    SP->>SP: slash = min(S·(c−o)², S·cap) — 543 gas
+    SP->>CL: transfer(slash)
+    Note over SP,CL: resolveDispute + payout: 97,390 gas
