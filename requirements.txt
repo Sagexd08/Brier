@@ -1,0 +1,11 @@
+# Pinned to the versions actually used for the benchmark numbers in RESULTS.md.
+numpy==2.2.2
+pandas==2.3.3
+scikit-learn==1.7.2
+xgboost==3.1.2
+shap==0.50.0
+torch==2.9.1
+onnx==1.20.0
+onnxruntime==1.22.1
+ezkl==23.0.5
+matplotlib>=3.8

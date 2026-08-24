@@ -1,0 +1,68 @@
+[
+  {
+    "head": "temperature_head",
+    "stages": {
+      "gen_settings_s": 0.048779800010379404,
+      "calibrate_settings_s": 2.5966993999900296,
+      "compile_s": 0.002834100043401122,
+      "get_srs_s": 0.07993430003989488,
+      "setup_s": 1.830148899985943,
+      "witness_s": 0.004786100005730987,
+      "prove_s": 1.9845275999978185,
+      "verify_s": 0.06693040003301576,
+      "create_evm_verifier_s": 0.8522722999914549,
+      "encode_calldata_s": 0.02615459996741265
+    },
+    "status": "ok",
+    "logrows": 15,
+    "circuit_rows": 32768,
+    "srs_bytes": 4194564,
+    "proving_time_s": 1.9845275999978185,
+    "proof_bytes": 17520,
+    "verify_ok": true,
+    "pk_bytes": 138479371,
+    "vk_bytes": 66823,
+    "soundness": {
+      "honest_proof_verifies": true,
+      "tampered_output_rejected": true,
+      "tampered_proof_head_rejected": true,
+      "tampered_proof_body_rejected": true
+    },
+    "evm_verifier_bytes": 73307,
+    "evm_verifier": "C:\\Desktop\\Brier\\artifacts\\zk\\temperature_head\\Verifier.sol",
+    "calldata_bytes": 3300
+  },
+  {
+    "head": "mlp_head",
+    "stages": {
+      "gen_settings_s": 0.023833900049794465,
+      "calibrate_settings_s": 17.736543699982576,
+      "compile_s": 0.003656800021417439,
+      "get_srs_s": 0.007605299993883818,
+      "setup_s": 1.8556877000373788,
+      "witness_s": 0.01729460002388805,
+      "prove_s": 2.1084518999559805,
+      "verify_s": 0.057587799965403974,
+      "create_evm_verifier_s": 0.5046991999843158,
+      "encode_calldata_s": 0.0266451999777928
+    },
+    "status": "ok",
+    "logrows": 15,
+    "circuit_rows": 32768,
+    "srs_bytes": 4194564,
+    "proving_time_s": 2.1084518999559805,
+    "proof_bytes": 17459,
+    "verify_ok": true,
+    "pk_bytes": 138479371,
+    "vk_bytes": 66823,
+    "soundness": {
+      "honest_proof_verifies": true,
+      "tampered_output_rejected": true,
+      "tampered_proof_head_rejected": true,
+      "tampered_proof_body_rejected": true
+    },
+    "evm_verifier_bytes": 73307,
+    "evm_verifier": "C:\\Desktop\\Brier\\artifacts\\zk\\mlp_head\\Verifier.sol",
+    "calldata_bytes": 3300
+  }
+]

@@ -1,0 +1,29 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Raw data is downloaded by the pipeline (UCI; redistribution not assumed)
+data/raw/*
+!data/raw/.gitkeep
+
+# Large regenerable ZK artefacts. Regenerate with scripts/31_zk_prove.py.
+# The proving keys are ~138 MB EACH and the SRS is 4 MB; none belong in git.
+**/*.srs
+**/*.pk
+**/pk.key
+**/*.compiled
+artifacts/zk/srs/
+artifacts/zk/demo/
+
+# Vendored binaries (download via scripts/00_setup_tools.sh)
+tools/*.exe
+tools/*.tar.gz
+
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/gasreport.txt
+contracts/lib/

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "(a) confident + CORRECT",
+    "row": 115,
+    "margin": -12.510209083557129,
+    "decision": "APPROVE",
+    "ground_truth": "GOOD (approve correct)",
+    "confidence": 0.9845308065414429,
+    "outcome": "upheld",
+    "slash_wei": 23929594625826800,
+    "slash_pct": 0.0239295946258268,
+    "stake_before_wei": 100000000000000000000,
+    "stake_after_wei": 99976070405374173200,
+    "prove_s": 2.1250634000170976,
+    "attestation_id": "0xe370fc60687bddec91677c001b6a85b263069ff6974dcac747a8fa834221641d",
+    "dispute_id": "0xff0322547b89e5cc240a21572025f72647e95fd67c145e85796b222fedb2d273"
+  },
+  {
+    "name": "(b) confident + WRONG",
+    "row": 124,
+    "margin": -8.117432594299316,
+    "decision": "APPROVE",
+    "ground_truth": "BAD (reject correct)",
+    "confidence": 0.9367272853851318,
+    "outcome": "overturned",
+    "slash_wei": 87724803504086688175,
+    "slash_pct": 87.74580071849981,
+    "stake_before_wei": 99976070405374173200,
+    "stake_after_wei": 12251266901287485025,
+    "prove_s": 1.917186299979221,
+    "attestation_id": "0x7d9ca012f5f297f75203f8887974578147355b32aaedb84280b392a9cd7bcb16",
+    "dispute_id": "0x3aca1e869ace840012cee11bee64f0254bfe56d282d800df3187c162304616b8"
+  },
+  {
+    "name": "(c) uncertain + WRONG",
+    "row": 179,
+    "margin": 0.01411890797317028,
+    "decision": "REJECT",
+    "ground_truth": "GOOD (approve correct)",
+    "confidence": 0.5011718273162842,
+    "outcome": "overturned",
+    "slash_wei": 3077189917721495563,
+    "slash_pct": 25.117320049554333,
+    "stake_before_wei": 12251266901287485025,
+    "stake_after_wei": 9174076983565989462,
+    "prove_s": 2.029769800021313,
+    "attestation_id": "0x53ae0c760df7ab94dd9218ae64ff58dda27b0b576b39574774a2ae3d2937aca9",
+    "dispute_id": "0xb98fb2c4545aab03dfd9cb1ea129c291dcbb10e6f15313126be4f2e9ce2788f9"
+  }
+]

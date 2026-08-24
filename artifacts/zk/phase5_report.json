@@ -1,0 +1,61 @@
+{
+  "scenarios": [
+    {
+      "name": "(a) confident + CORRECT",
+      "row": 115,
+      "margin": -12.510209083557129,
+      "decision": "APPROVE",
+      "ground_truth": "GOOD (approve correct)",
+      "confidence": 0.9845308065414429,
+      "outcome": "upheld",
+      "slash_wei": 23929594625826800,
+      "slash_pct": 0.0239295946258268,
+      "stake_before_wei": 100000000000000000000,
+      "stake_after_wei": 99976070405374173200,
+      "prove_s": 2.235504599986598,
+      "attestation_id": "0xe370fc60687bddec91677c001b6a85b263069ff6974dcac747a8fa834221641d",
+      "dispute_id": "0x4a3e43b810d6bb371035a3802fc73eda07a77d142c29d7eed8e150b81010ecfa"
+    },
+    {
+      "name": "(b) confident + WRONG",
+      "row": 124,
+      "margin": -8.117432594299316,
+      "decision": "APPROVE",
+      "ground_truth": "BAD (reject correct)",
+      "confidence": 0.9367272853851318,
+      "outcome": "overturned",
+      "slash_wei": 87724803504086688175,
+      "slash_pct": 87.74580071849981,
+      "stake_before_wei": 99976070405374173200,
+      "stake_after_wei": 12251266901287485025,
+      "prove_s": 2.2450118999695405,
+      "attestation_id": "0x7d9ca012f5f297f75203f8887974578147355b32aaedb84280b392a9cd7bcb16",
+      "dispute_id": "0x03137d0d1d801f8acf4ff030f826a80b9c64e588936cf6a11f16601a3efd0743"
+    },
+    {
+      "name": "(c) uncertain + WRONG",
+      "row": 179,
+      "margin": 0.01411890797317028,
+      "decision": "REJECT",
+      "ground_truth": "GOOD (approve correct)",
+      "confidence": 0.5011718273162842,
+      "outcome": "overturned",
+      "slash_wei": 3077189917721495563,
+      "slash_pct": 25.117320049554333,
+      "stake_before_wei": 12251266901287485025,
+      "stake_after_wei": 9174076983565989462,
+      "prove_s": 2.06399680004688,
+      "attestation_id": "0x53ae0c760df7ab94dd9218ae64ff58dda27b0b576b39574774a2ae3d2937aca9",
+      "dispute_id": "0x876f276d0356f4880338d0ea33d7504f883b2310c29c529867ecaac3d81b10e9"
+    }
+  ],
+  "ordering_holds": true,
+  "notes": [
+    "Slash percentages are of the stake remaining when each scenario ran.",
+    "The three scenarios execute sequentially against one shrinking stake,",
+    "so the '% of stake' column is the comparable one, not absolute ETH.",
+    "",
+    "Dispute outcomes are declared by an admin key on a local Anvil chain.",
+    "There is no jury, no oracle, and no evidentiary standard."
+  ]
+}

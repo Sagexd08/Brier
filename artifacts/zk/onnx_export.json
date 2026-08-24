@@ -1,0 +1,14 @@
+[
+  {
+    "name": "temperature_head",
+    "path": "C:\\Desktop\\Brier\\artifacts\\zk\\temperature_head.onnx",
+    "max_export_error": 0.0,
+    "n_parameters": 1
+  },
+  {
+    "name": "mlp_head",
+    "path": "C:\\Desktop\\Brier\\artifacts\\zk\\mlp_head.onnx",
+    "max_export_error": 5.7220458984375e-06,
+    "n_parameters": 321
+  }
+]

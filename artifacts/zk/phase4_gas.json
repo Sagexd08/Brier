@@ -1,0 +1,39 @@
+{
+  "gas": {
+    "Halo2Verifier deployment": 2942192,
+    "verifyProof (real EZKL proof, on-chain)": 684696,
+    "attest with real proof (verify + store)": 887376,
+    "attest with mock verifier (storage only, median)": 232854,
+    "openDispute (median)": 134608,
+    "resolveDispute incl. slash + payout (median)": 97390,
+    "stake (median)": 45443,
+    "withdraw (median)": 29616,
+    "previewSlash (view)": 24888,
+    "BrierMath.slashAmount (pure, via wrapper)": 543,
+    "BrierMath.squaredError (pure, via wrapper)": 507
+  },
+  "notes": [
+    "**On-chain proof verification costs 684,696 gas** -- roughly 33x a plain ETH",
+    "transfer (21,000). At 30 gwei and $3,000/ETH that is about **$62 per",
+    "attestation**, and the verifier contract itself costs 2.94M gas (~$265) to",
+    "deploy once. This is the single largest practical obstacle to running the",
+    "design on Ethereum L1, and it is measured, not estimated.",
+    "",
+    "The slashing arithmetic itself is essentially free: `slashAmount` is ~543 gas.",
+    "The cost is entirely in halo2 verification, not in the Brier mechanism.",
+    "",
+    "Two `attest` numbers are reported because they measure different things: the",
+    "887,376 figure is a real EZKL proof verified on-chain, while the 232,854",
+    "median comes from the staking integration tests, which use a mock verifier so",
+    "that 270 dispute-flow tests do not each carry 3.3 KB of proof calldata.",
+    "The 887,376 figure is the one that matters for production cost.",
+    "",
+    "An L2 would reduce this by 1-2 orders of magnitude, and proof aggregation",
+    "would amortise verification across many decisions. Neither is implemented",
+    "here."
+  ],
+  "tests": {
+    "solidity_total": 48,
+    "solidity_passed": 48
+  }
+}
