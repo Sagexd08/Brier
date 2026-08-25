@@ -1,0 +1,266 @@
+{
+  "model_version": "brier-mvp-v1",
+  "seed": 42,
+  "n_train": 600,
+  "n_calib": 200,
+  "n_test": 200,
+  "n_features": 19,
+  "features": [
+    "checking_status",
+    "duration_months",
+    "credit_history",
+    "purpose",
+    "credit_amount",
+    "savings_status",
+    "employment_since",
+    "installment_rate_pct_income",
+    "other_debtors",
+    "residence_since",
+    "property",
+    "age_years",
+    "other_installment_plans",
+    "housing",
+    "n_existing_credits",
+    "job",
+    "n_liable_maintenance",
+    "telephone",
+    "foreign_worker"
+  ],
+  "base_accuracy_train": 1.0,
+  "base_accuracy_test": 0.715,
+  "temperature": 3.01210355758667,
+  "mlp_parameters": 321,
+  "ece": {
+    "uncalibrated": 0.2163709134834002,
+    "temperature": 0.11109407854732127,
+    "mlp": 0.14359447535361822,
+    "control_fitted_on_train": 0.2772827669890532
+  },
+  "control_temperature_fitted_on_train": 0.134417325258255,
+  "mce": {
+    "uncalibrated": 0.6064174174380005,
+    "temperature": 0.2753857211633163,
+    "mlp": 0.7765877097845078
+  },
+  "brier": {
+    "uncalibrated": 0.23531199969494834,
+    "temperature": 0.1897458209374666,
+    "mlp": 0.2029904669395207
+  },
+  "reliability_uncalibrated": [
+    {
+      "bin_lo": 0.0,
+      "bin_hi": 0.1,
+      "count": 119,
+      "mean_conf": 0.013963968185871898,
+      "empirical_freq": 0.21008403361344538
+    },
+    {
+      "bin_lo": 0.1,
+      "bin_hi": 0.2,
+      "count": 12,
+      "mean_conf": 0.15363788923253394,
+      "empirical_freq": 0.25
+    },
+    {
+      "bin_lo": 0.2,
+      "bin_hi": 0.30000000000000004,
+      "count": 8,
+      "mean_conf": 0.24703545607041238,
+      "empirical_freq": 0.25
+    },
+    {
+      "bin_lo": 0.30000000000000004,
+      "bin_hi": 0.4,
+      "count": 6,
+      "mean_conf": 0.32811637177805403,
+      "empirical_freq": 0.16666666666666666
+    },
+    {
+      "bin_lo": 0.4,
+      "bin_hi": 0.5,
+      "count": 4,
+      "mean_conf": 0.4326506415399278,
+      "empirical_freq": 0.5
+    },
+    {
+      "bin_lo": 0.5,
+      "bin_hi": 0.6000000000000001,
+      "count": 4,
+      "mean_conf": 0.5429973266995575,
+      "empirical_freq": 0.0
+    },
+    {
+      "bin_lo": 0.6000000000000001,
+      "bin_hi": 0.7000000000000001,
+      "count": 5,
+      "mean_conf": 0.664408013773341,
+      "empirical_freq": 0.4
+    },
+    {
+      "bin_lo": 0.7000000000000001,
+      "bin_hi": 0.8,
+      "count": 3,
+      "mean_conf": 0.7665162176845656,
+      "empirical_freq": 0.6666666666666666
+    },
+    {
+      "bin_lo": 0.8,
+      "bin_hi": 0.9,
+      "count": 8,
+      "mean_conf": 0.8564174174380005,
+      "empirical_freq": 0.25
+    },
+    {
+      "bin_lo": 0.9,
+      "bin_hi": 1.0,
+      "count": 31,
+      "mean_conf": 0.9636393612071374,
+      "empirical_freq": 0.6774193548387096
+    }
+  ],
+  "reliability_temperature": [
+    {
+      "bin_lo": 0.0,
+      "bin_hi": 0.1,
+      "count": 43,
+      "mean_conf": 0.06296210707880037,
+      "empirical_freq": 0.046511627906976744
+    },
+    {
+      "bin_lo": 0.1,
+      "bin_hi": 0.2,
+      "count": 44,
+      "mean_conf": 0.15025427802042526,
+      "empirical_freq": 0.2727272727272727
+    },
+    {
+      "bin_lo": 0.2,
+      "bin_hi": 0.30000000000000004,
+      "count": 26,
+      "mean_conf": 0.24099873694089743,
+      "empirical_freq": 0.34615384615384615
+    },
+    {
+      "bin_lo": 0.30000000000000004,
+      "bin_hi": 0.4,
+      "count": 21,
+      "mean_conf": 0.3518718239806947,
+      "empirical_freq": 0.2857142857142857
+    },
+    {
+      "bin_lo": 0.4,
+      "bin_hi": 0.5,
+      "count": 15,
+      "mean_conf": 0.4428890029589335,
+      "empirical_freq": 0.26666666666666666
+    },
+    {
+      "bin_lo": 0.5,
+      "bin_hi": 0.6000000000000001,
+      "count": 11,
+      "mean_conf": 0.548112993890589,
+      "empirical_freq": 0.2727272727272727
+    },
+    {
+      "bin_lo": 0.6000000000000001,
+      "bin_hi": 0.7000000000000001,
+      "count": 17,
+      "mean_conf": 0.6630498486406663,
+      "empirical_freq": 0.5294117647058824
+    },
+    {
+      "bin_lo": 0.7000000000000001,
+      "bin_hi": 0.8,
+      "count": 10,
+      "mean_conf": 0.7515154302120208,
+      "empirical_freq": 0.5
+    },
+    {
+      "bin_lo": 0.8,
+      "bin_hi": 0.9,
+      "count": 11,
+      "mean_conf": 0.8516667972911488,
+      "empirical_freq": 0.7272727272727273
+    },
+    {
+      "bin_lo": 0.9,
+      "bin_hi": 1.0,
+      "count": 2,
+      "mean_conf": 0.9143111407756805,
+      "empirical_freq": 1.0
+    }
+  ],
+  "reliability_mlp": [
+    {
+      "bin_lo": 0.0,
+      "bin_hi": 0.1,
+      "count": 39,
+      "mean_conf": 0.0069304215482169145,
+      "empirical_freq": 0.05128205128205128
+    },
+    {
+      "bin_lo": 0.1,
+      "bin_hi": 0.2,
+      "count": 70,
+      "mean_conf": 0.14177886747888158,
+      "empirical_freq": 0.2857142857142857
+    },
+    {
+      "bin_lo": 0.2,
+      "bin_hi": 0.30000000000000004,
+      "count": 1,
+      "mean_conf": 0.22341229021549225,
+      "empirical_freq": 1.0
+    },
+    {
+      "bin_lo": 0.30000000000000004,
+      "bin_hi": 0.4,
+      "count": 11,
+      "mean_conf": 0.38379930637099524,
+      "empirical_freq": 0.2727272727272727
+    },
+    {
+      "bin_lo": 0.4,
+      "bin_hi": 0.5,
+      "count": 25,
+      "mean_conf": 0.4445700228214264,
+      "empirical_freq": 0.2
+    },
+    {
+      "bin_lo": 0.5,
+      "bin_hi": 0.6000000000000001,
+      "count": 21,
+      "mean_conf": 0.558405998207274,
+      "empirical_freq": 0.38095238095238093
+    },
+    {
+      "bin_lo": 0.6000000000000001,
+      "bin_hi": 0.7000000000000001,
+      "count": 13,
+      "mean_conf": 0.6273097029099097,
+      "empirical_freq": 0.6923076923076923
+    },
+    {
+      "bin_lo": 0.7000000000000001,
+      "bin_hi": 0.8,
+      "count": 10,
+      "mean_conf": 0.7455477714538574,
+      "empirical_freq": 0.6
+    },
+    {
+      "bin_lo": 0.8,
+      "bin_hi": 0.9,
+      "count": 7,
+      "mean_conf": 0.8415796756744385,
+      "empirical_freq": 0.7142857142857143
+    },
+    {
+      "bin_lo": 0.9,
+      "bin_hi": 1.0,
+      "count": 3,
+      "mean_conf": 0.9610121051470438,
+      "empirical_freq": 0.3333333333333333
+    }
+  ]
+}

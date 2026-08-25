@@ -1,0 +1,72 @@
+{
+  "seed": 42,
+  "n_explained": 200,
+  "additivity_max_abs_error": 1.2613832950592041e-05,
+  "rerun_identical": true,
+  "n_rerun_checks": 3,
+  "global_top5": [
+    {
+      "feature": "checking_status",
+      "mean_abs_shap": 1.4482016599341296,
+      "description": "Checking account status (0=<0DM, 1=0-200DM, 2=>=200DM, 3=no checking account)"
+    },
+    {
+      "feature": "credit_amount",
+      "mean_abs_shap": 1.0613962144963442,
+      "description": "Credit amount requested in DM (higher = riskier)"
+    },
+    {
+      "feature": "employment_since",
+      "mean_abs_shap": 0.8042523347353563,
+      "description": "Years in present employment (0=unemployed, 4=7+ yrs)"
+    },
+    {
+      "feature": "duration_months",
+      "mean_abs_shap": 0.7986724149249494,
+      "description": "Loan duration in months (higher = riskier)"
+    },
+    {
+      "feature": "savings_status",
+      "mean_abs_shap": 0.7671116094733589,
+      "description": "Savings account/bonds (0=<100DM ... 3=>=1000DM, 4=unknown/no savings account)"
+    }
+  ],
+  "sanity_checks": [
+    {
+      "feature": "installment_rate_pct_income",
+      "claim": "Higher installment burden as a share of income (DTI proxy) should push toward REJECT",
+      "verdict": "PASS",
+      "correlation": 0.620650903641629,
+      "evidence": "corr(value, SHAP-toward-reject) = +0.621"
+    },
+    {
+      "feature": "duration_months",
+      "claim": "Longer loan duration should push toward REJECT",
+      "verdict": "PASS",
+      "correlation": 0.5051969454590222,
+      "evidence": "corr(value, SHAP-toward-reject) = +0.505"
+    },
+    {
+      "feature": "credit_history",
+      "claim": "Better credit history (higher code = all paid duly) should push toward APPROVE",
+      "verdict": "PASS",
+      "correlation": -0.7561723273354665,
+      "evidence": "corr(value, SHAP-toward-reject) = -0.756"
+    },
+    {
+      "feature": "checking_status",
+      "claim": "Healthier checking account status should push toward APPROVE",
+      "verdict": "PASS",
+      "correlation": -0.9431285332166484,
+      "evidence": "corr(value, SHAP-toward-reject) = -0.943"
+    },
+    {
+      "feature": "savings_status",
+      "claim": "More savings should push toward APPROVE",
+      "verdict": "PASS",
+      "correlation": -0.8338386899927055,
+      "evidence": "corr(value, SHAP-toward-reject) = -0.834"
+    }
+  ],
+  "n_sanity_fail": 0
+}

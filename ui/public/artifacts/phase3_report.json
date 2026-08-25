@@ -1,0 +1,75 @@
+{
+  "ezkl_version": "23.0.5",
+  "metrics": {
+    "Calibration head proved": "temperature (1 param) AND MLP (321 params)",
+    "Circuit size (both heads)": "2^15 = 32,768 rows",
+    "Proving time - temperature": "2.09 s",
+    "Proving time - MLP (321 params)": "2.08 s",
+    "Verification time (native)": "0.094 s / 0.058 s",
+    "Trusted setup / keygen": "1.86 s / 2.03 s",
+    "Proof size": "17,447 B / 17,566 B",
+    "Proving key size": "138,479,371 B / 138,479,371 B",
+    "Verifying key size": "66,823 B / 66,823 B",
+    "EVM verifier source": "73,307 B Solidity",
+    "EVM calldata per proof": "3,300 B / 3,300 B",
+    "Soundness (tamper rejected)": "4/4 checks pass for both heads"
+  },
+  "notes": [
+    "**No fallback was required.** The build prompt anticipated downgrading to",
+    "temperature scaling if an MLP circuit proved infeasible. It did not: the",
+    "321-parameter MLP head proves in essentially the same time as the",
+    "1-parameter head, because both circuits are dominated by fixed lookup-table",
+    "overhead at logrows=15, not by parameter count. Both are shipped.",
+    "",
+    "Proving is a **one-off ~2s cost per decision on a laptop CPU**, with no GPU.",
+    "",
+    "Two functions in the ezkl 23.0.5 Windows *wheel* (`get_srs`,",
+    "`create_evm_verifier`) panic inside pyo3 with \"The Python interpreter is not",
+    "initialized\" from a tokio worker thread. Worked around by fetching the public",
+    "SRS over HTTP and shelling out to the ezkl **CLI at the identical version",
+    "23.0.5** for verifier generation. This is a packaging bug, not a",
+    "cryptographic one: the same code paths run, only the invocation differs.",
+    "",
+    "Numerical note: quantisation at input_scale=13/param_scale=13 gives a max",
+    "absolute error of ~4.2e-04 between the float head and the in-circuit fixed",
+    "point head. The proof attests the **quantised** computation, not the float one."
+  ],
+  "temperature_head": {
+    "logrows": 15,
+    "circuit_rows": 32768,
+    "prove_s": 2.09,
+    "verify_s": 0.094,
+    "setup_s": 1.86,
+    "proof_bytes": 17447,
+    "pk_bytes": 138479371,
+    "vk_bytes": 66823,
+    "evm_verifier_bytes": 73307,
+    "calldata_bytes": 3300,
+    "verify_ok": true,
+    "soundness": {
+      "honest_proof_verifies": true,
+      "tampered_output_rejected": true,
+      "tampered_proof_head_rejected": true,
+      "tampered_proof_body_rejected": true
+    }
+  },
+  "mlp_head": {
+    "logrows": 15,
+    "circuit_rows": 32768,
+    "prove_s": 2.08,
+    "verify_s": 0.058,
+    "setup_s": 2.03,
+    "proof_bytes": 17566,
+    "pk_bytes": 138479371,
+    "vk_bytes": 66823,
+    "evm_verifier_bytes": 73307,
+    "calldata_bytes": 3300,
+    "verify_ok": true,
+    "soundness": {
+      "honest_proof_verifies": true,
+      "tampered_output_rejected": true,
+      "tampered_proof_head_rejected": true,
+      "tampered_proof_body_rejected": true
+    }
+  }
+}

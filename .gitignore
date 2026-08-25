@@ -46,3 +46,17 @@ solana/test-ledger/
 *.pem
 # NOTE: do NOT un-ignore pk.key -- EZKL proving keys are 132 MiB each.
 solana/**/keypair*.json
+
+# Node / Next.js. node_modules was committed by mistake in b01e9a7 --
+# it carries a 176 MB platform binary (@next/swc-win32-x64-msvc) that
+# exceeds GitHub's 100 MB file limit. Everything here is reproducible
+# from package-lock.json via `npm ci`.
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+**/out/
+next-env.d.ts
+npm-debug.log*
+yarn-error.log*
