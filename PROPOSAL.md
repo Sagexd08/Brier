@@ -19,10 +19,13 @@ prototype: across 10 pinned seeds, temperature scaling cuts Expected Calibration
 Error from 0.1853 ± 0.0248 to 0.0870 ± 0.0218 on held-out UCI German Credit data,
 in every seed; an EZKL/halo2 circuit proves the calibration head in 2.09 s,
 verified on-chain for 684,696 gas. This is a mechanism and a prototype, **not a
-deployable protocol**: only the calibration head is proved, its input logit
-unverified, dispute resolution one admin key, no unbonding period. The proposal
-states what each of those gaps would take to close, and what evidence would
-settle whether the mechanism survives contact with them.
+deployable protocol**: only the calibration head is proved and its input logit
+is unverified, and dispute resolution rests on an admin-appointed N-of-M
+committee whose collusion has exactly the power a single key had. An unbonding
+period now closes the front-running exit that broke v0's economic tier, leaving
+two residual gaps that a longer timelock cannot fix. The proposal states what
+each remaining gap would take to close, and what evidence would settle whether
+the mechanism survives contact with them.
 
 ---
 
@@ -323,16 +326,22 @@ checked. Three tiers:
 - **Tier 1 (cryptographically guaranteed, green).** Calibration-head execution
   and the slash arithmetic. Holds against a fully malicious operator.
 - **Tier 2 (economically assumed, amber).** Assumption A (honest confidence
-  reporting) is enforced by the payoff structure, conditionally. **Assumption B
-  (stake is available when slashed) is BROKEN in v0** — hatched red in the
-  figure — because `withdraw()` has no unbonding period.
-- **Tier 3 (fully trusted, red).** Dispute outcome and ground truth. A single
-  key decides who loses money.
+  reporting) is enforced by the payoff structure, conditionally. Assumption B
+  (stake is available when slashed) was **broken in v0** and is now enforced:
+  withdrawal is a two-step request/execute with an unbonding delay, and any open
+  dispute freezes execution (§7.3). Two residual gaps remain, and neither is a
+  timelock bug.
+- **Tier 3 (bounded trust, red).** Dispute outcome and ground truth. An
+  admin-appointed N-of-M committee decides who loses money; N colluding members
+  can decide it arbitrarily. The tier keeps its colour — it is a smaller red
+  region, not a different one.
 
-Each weakness in the figure names the test that demonstrates it. The v0 attack
-path requires no cryptographic work: fabricate the logit (tier 1 does not bind
-it), or front-run the dispute with `withdraw()` (tier 2), or rely on the admin
-key (tier 3).
+Each weakness in the figure names the test that demonstrates it. The cheapest
+attack path still requires no cryptographic work: fabricate the logit, since
+tier 1 does not bind it (`test_tier1_marginIsUnverifiedOperatorSuppliedInput`),
+or corrupt N committee members, which
+`test_tier3_nOfMCollusionHasSameEffectAsV0Admin` shows buys exactly the power
+v0's single key had.
 
 ### 4.4 Calibration reliability
 
@@ -542,18 +551,36 @@ and 3.49× uncertain-and-wrong. Percentages are of the stake remaining when each
 scenario ran — the three execute sequentially against one shrinking stake, so the
 percentage column is the comparable one and absolute ETH values across rows are not.
 
-**These figures assume the operator does not act on the v0 exit path.** Because
-`withdraw()` has no unbonding period, an operator that front-runs `openDispute()`
-reduces every slash in this table to zero; `ThreatModel.t.sol::test_tier2_operatorCanFrontRunDisputeByWithdrawing`
-executes exactly that, turning a 98.01 ETH slash into 0. The table reports what
-the mechanism computes, not what it can currently enforce (§7.3, Figure 3 tier 2).
+**These figures are now enforceable against the operator, which was not true in
+v0.** The earlier exit path — front-running `openDispute()` with an instant
+`withdraw()` — reduced every slash in this table to zero. Withdrawal is now a
+two-step request/execute separated by an unbonding delay, and an open dispute
+freezes execution, so
+`ThreatModel.t.sol::test_tier2_frontRunDisputeByWithdrawing_isNowBlocked`
+asserts the attack fails and is the standing regression test for it. What the
+table still does not survive is a dishonest committee: resolution is a tier-3
+action, so the figures describe what the mechanism computes and enforces against
+the *operator*, not what it enforces against its own resolvers (§7.2, §7.3).
 
 ### 6.5 Test suite
 
-53 Solidity tests (Foundry) and 29 Python tests, all passing. This includes 5
-tests in `ThreatModel.t.sol` that **demonstrate the weaknesses** in Figure 3
-rather than assert the system is secure; a failure there means the threat model
-has drifted from the code.
+69 Solidity tests (Foundry) and 48 Python tests, all passing.
+
+| Suite | Tests | What it holds down |
+|---|---|---|
+| `BrierMath.t.sol` | 20 | Fixed-point properness, monotonicity, fuzzing |
+| `StakePool.t.sol` | 24 | Staking, disputes, slash cap, payout failure |
+| `ThreatModel.t.sol` | 11 | The documented weaknesses, as executable evidence |
+| `Unbonding.t.sol` | 10 | The withdrawal-freeze invariant, fuzzed over timing |
+| `Verifier.t.sol` | 4 | Real-proof verification and tamper rejection |
+
+Two of these carry unusual weight. `ThreatModel.t.sol` does **not** assert the
+system is secure — it asserts that each documented weakness is real and
+reachable, so a failure there means the threat model has drifted from the code
+and the proposal is wrong. And `tests/test_claim_vocabulary.py` greps this
+document for language that would attribute properties the system lacks
+(§7.2); the forbidden list lives in the test rather than in prose, so a later
+edit cannot quietly upgrade a claim.
 
 ---
 
@@ -576,28 +603,74 @@ A secondary point: the proof attests the **quantised** computation. At
 input/param scale 13, the in-circuit fixed-point head differs from the float
 head by up to $4.2 \times 10^{-4}$. The on-chain confidence is the quantised one.
 
-### 7.2 Dispute resolution is a single administrative key
+### 7.2 Dispute resolution is bounded trust, not an absence of trust
 
-`resolveDispute` is `onlyAdmin`. There is no jury, no oracle, no evidentiary
-standard, and no appeal. A dishonest administrator can slash a well-calibrated
-operator to zero (`test_tier3_adminCanSlashAnHonestOperator`) or shield a
-miscalibrated one (`test_tier3_adminCanShieldAMiscalibratedOperator`). Everything
-in tiers 1 and 2 is downstream of this key.
+`resolveDispute` now requires N of M signatures from a fixed resolver committee,
+replacing v0's single admin key. A single resolver cannot act alone
+(`test_tier3_singleResolverCannotResolveAlone`). That is the entire improvement,
+and it should be read narrowly: **the number of keys an adversary must corrupt
+goes from 1 to N, and nothing else about the trust model changes.**
+
+Specifically, and each of these is asserted by a passing test:
+
+- N colluding members have exactly the power the single admin had — they can
+  slash a well-calibrated operator to zero
+  (`test_tier3_committeeCanSlashAnHonestOperator`) or shield a miscalibrated one
+  (`test_tier3_committeeCanShieldAMiscalibratedOperator`), which
+  `test_tier3_nOfMCollusionHasSameEffectAsV0Admin` states as the headline case.
+- The admin appoints and can replace the committee
+  (`test_tier3_adminCanReplaceTheCommittee`), so the bound applies to the
+  *resolution* step, not to committee *selection*.
+- Resolvers have nothing at stake. A resolver who votes dishonestly loses
+  nothing, so there is no economic mechanism holding the tier honest — which is
+  why it is not tier 2.
+- There is still no evidentiary standard. Resolvers vote on a bare boolean, and
+  nothing in the contract defines what evidence to consult or penalises
+  consulting none.
+
+`docs/PHASE3B_TRUST_MODEL.md` fixes this vocabulary, and it was written before
+the code it describes so the claim could not drift upward once the tests went
+green.
+
+Beneath the implementation gap sits a harder problem, and moving from one voter
+to N voters does not touch it: for a loan *rejection* the counterfactual is
+unobservable, because a rejected applicant never demonstrates repayment. "The
+decision was wrong" has no on-chain referent. This is unsolved, not merely
+unimplemented.
 
 Beneath the implementation gap sits a harder problem: for a loan *rejection*
 the counterfactual is unobservable, because a rejected applicant never
 demonstrates repayment. "The decision was wrong" has no on-chain referent. This
 is unsolved, not merely unimplemented.
 
-### 7.3 No unbonding period — tier 2 is broken
+### 7.3 The unbonding period closes the exit path, and two gaps remain
 
-`withdraw()` checks only the caller's balance. There is no lock, delay, or
-pending-dispute check. An operator watching the mempool can withdraw the entire
-stake before `openDispute()` is mined. `test_tier2_operatorCanFrontRunDisputeByWithdrawing`
-executes this path: a decision that would otherwise incur a 98.01 ETH slash
-incurs **0**, and the claimant receives nothing. The economic tier of Figure 3 is
-therefore not merely weak but unenforced, and the headline slashing results in
-§6.4 hold only against an operator that does not take this action.
+Withdrawal is a two-step `requestWithdrawal` / `executeWithdrawal` separated by
+an unbonding delay, with a floor of one hour enforced at construction and seven
+days used in tests. Any open dispute against an operator freezes execution.
+`Unbonding.t.sol` fuzzes the invariant over randomised interleavings of request,
+dispute and execution rather than testing one sequence, and
+`test_tier2_frontRunDisputeByWithdrawing_isNowBlocked` is the standing
+regression for the specific v0 exploit — if it ever passes again, tier 2 has
+regressed.
+
+Two residual gaps survive, and neither is fixed by a longer timelock:
+
+**Gap A — exit before any dispute is raised.** An operator that requests
+withdrawal and is not disputed within the unbonding window exits cleanly, and a
+later dispute lands against an operator with nothing at stake
+(`test_tier2_residualGap_exitBeforeAnyDisputeIsRaised`). This is a bound on the
+*dispute window*, not a timelock bug: the unbonding period must exceed the time
+a claimant realistically needs to notice a bad decision and act. For loan
+rejections, where the counterfactual may take months to surface, seven days is
+almost certainly too short, and choosing that parameter honestly is unresolved.
+
+**Gap B — tier 2 is enforced downstream of tier 3.** The freeze is released by
+dispute *resolution*, which is a committee action. A dishonest committee can
+resolve favourably to unfreeze an operator's exit
+(`test_tier2_residualGap_adminCanUnfreezeByResolvingFavourably`). Tier 2 is
+therefore enforced against the operator but remains subordinate to tier 3, and
+closing it requires progress on §7.2 rather than on the timelock.
 
 ### 7.4 Fairness
 
@@ -626,19 +699,22 @@ the work that would remove them, ordered by what blocks what. Each item states
 the deliverable and the evidence that would count as having done it — the point
 being that these are falsifiable targets, not intentions.
 
-### 8.1 Closing the enforcement gap (prerequisite)
+### 8.1 Enforcement: shipped, with the parameter question still open
 
-**W1 — Unbonding period.** Add a withdrawal delay strictly exceeding the dispute
-window, so a pending dispute cannot be outrun. *Deliverable:* a lock in
-`StakePool` plus the parameter analysis that sets its length. *Evidence:*
-`test_tier2_operatorCanFrontRunDisputeByWithdrawing` inverts — the same
-transaction sequence that currently reduces a 98.01 ETH slash to zero must
-revert. *Cost to measure:* the capital-efficiency penalty the delay imposes on
-an honest operator, which is the real design tension and is not yet quantified.
+**W1 — Unbonding period. Done (Phase 3a).** Withdrawal is a two-step
+request/execute separated by an unbonding delay, and an open dispute freezes
+execution. The acceptance criterion was that
+`test_tier2_operatorCanFrontRunDisputeByWithdrawing` invert; it now reads
+`..._isNowBlocked` and asserts the attack fails, with `Unbonding.t.sol` fuzzing
+the invariant across randomised interleavings rather than one sequence (§7.3).
 
-W1 is a prerequisite for everything else: until it lands, the slashing figures in
-§6.4 describe a computation rather than an enforceable penalty, and no
-incentive-compatibility claim about the deployed system can be made.
+**W1a — Choosing the unbonding period honestly. Open.** Residual gap A shows the
+timelock only helps if it exceeds the time a claimant needs to notice a bad
+decision and act. For loan rejections the counterfactual may take months, so
+seven days is almost certainly too short. *Deliverable:* an analysis relating
+dispute-window length to observed claim latency, and the capital-efficiency cost
+the delay imposes on an honest operator — the real design tension, still
+unquantified.
 
 ### 8.2 Making the attested confidence mean something
 
@@ -656,10 +732,18 @@ that gives up the most. *Evidence:* the first path is answered by measuring wher
 proving cost steps past logrows 15 for a real ensemble — the boundary §6.3
 explicitly did not cross. That measurement is the immediate next experiment.
 
-**W3 — Decentralised adjudication.** Replace the admin key with a Kleros-style
-juror pool [7]: an evidentiary standard, appeals, and economic security exceeding
-the value at risk. *Evidence:* `test_tier3_adminCanSlashAnHonestOperator` and
-`test_tier3_adminCanShieldAMiscalibratedOperator` must both become unreachable.
+**W3 — Adjudication beyond bounded trust. Partly shipped (Phase 3b), and the
+remainder is the hard part.** The single admin key is gone: resolution now needs
+N of M committee signatures, so an adversary must corrupt N keys rather than one
+(§7.2). That is the whole of the improvement, and
+`test_tier3_nOfMCollusionHasSameEffectAsV0Admin` exists to stop it being read as
+more. What remains is everything that would make the tier *accountable* rather
+than merely wider: a Kleros-style juror pool drawn from a staked set [7], an
+evidentiary standard, appeals, and resolvers with something at risk. *Evidence:*
+`test_tier3_committeeCanSlashAnHonestOperator` and
+`test_tier3_committeeCanShieldAMiscalibratedOperator` must both become
+unreachable, and `test_tier2_residualGap_adminCanUnfreezeByResolvingFavourably`
+with them, since gap B is downstream of this tier.
 
 W3 has a hard research problem underneath it, and it should not be presented as
 an integration task. For a loan *rejection* the counterfactual is unobservable —
@@ -726,18 +810,28 @@ unmeasured, and measuring it is the next experiment.
 calibration head is *not* sufficient to make an attestation trustworthy. The
 proof binds the map from logit to confidence and nothing else: an operator that
 fabricates the logit obtains a proof that verifies, and the chain accepts it.
-Beyond that, dispute resolution is a single administrative key, and the absence
-of an unbonding period lets an operator front-run a dispute and reduce a 98%
-slash to zero. Each of these is demonstrated by a passing test, not conceded in
-prose.
+Beyond that, dispute resolution is an admin-appointed N-of-M committee whose
+collusion carries exactly the authority a single key did, and while the unbonding
+period now stops an operator outrunning a dispute, an operator that is simply
+never disputed inside the window still exits with the stake intact. Each of these
+is demonstrated by a passing test rather than conceded in prose.
+
+The trajectory is worth stating precisely, because it is the argument for the
+approach. Two of v0's three named gaps have closed since the first draft, and
+neither closure required weakening a claim: the exploit tests were *inverted*,
+and the vocabulary guard in `tests/test_claim_vocabulary.py` prevents the
+resulting language from drifting upward. What did not move is tier 1 — the input
+logit is unverified today for exactly the reason it was then — and the ground
+truth problem beneath tier 3, which more signatures cannot touch.
 
 The two claims should therefore be separated cleanly. The **mechanism-design
 claim** — that confidence-weighted slashing on a strictly proper scoring rule
 makes honest confidence reporting loss-minimising, and that it is cheap to
 implement and verify — is supported by the evidence presented here. The
 **systems claim** — that this constitutes a trust-minimised accountability
-protocol — is not supported, and §8 is a plan for closing that distance rather
-than an assertion that it is nearly closed. The most useful result of the
+protocol — is not supported. §8 is a plan for closing that distance rather than
+an assertion that it is nearly closed, and it now distinguishes what has shipped
+from what remains. The most useful result of the
 prototype may be the negative one: it establishes precisely which parts of
 "verifiable AI accountability" the cryptography actually buys, and which parts
 remain a matter of whom you trust.

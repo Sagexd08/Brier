@@ -366,10 +366,10 @@ def build() -> None:
   <div class="caveat">
     <b>This is a mechanism and a measured prototype, not a deployable protocol.</b>
     Only the calibration head is zero-knowledge proved &mdash; its input logit is
-    unverified, dispute resolution rests on a single administrative key, there is
-    no unbonding period, and the figures reported here come from a local chain.
-    Section&nbsp;7 states each limitation in full; Section&nbsp;8 sets out what
-    closing them would take.
+    unverified, dispute resolution rests on an admin-appointed N-of-M committee
+    whose collusion carries the authority a single key would, and the figures
+    reported here come from a local chain. Section&nbsp;7 states each limitation
+    in full; Section&nbsp;8 separates what has shipped from what remains.
   </div>
 </div>
 %s

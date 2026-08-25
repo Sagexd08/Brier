@@ -546,11 +546,6 @@ body.menu-open .menu-backdrop {
 @keyframes in-scale { from { opacity: 0; transform: scale(0.84); } to { opacity: 1; transform: scale(1); } }
 @keyframes in-soft  { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes in-mask  { from { opacity: 0; transform: translateY(40%); } to { opacity: 1; transform: translateY(0); } }
-@keyframes in-pop {
-  0%   { opacity: 0; transform: scale(0.9); }
-  70%  { opacity: 1; transform: scale(1.03); }
-  100% { opacity: 1; transform: scale(1); }
-}
 @keyframes in-btn  { from { opacity: 0; transform: translateY(18px) scale(0.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes in-side { from { opacity: 0; transform: translateX(22px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes in-stat { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -917,6 +912,424 @@ body.menu-open .menu-backdrop {
   .flow-wires { display: none; }
   .node { width: 100%; white-space: normal; }
 }
+
+/* ------------------------------------------------------------------
+   Sections below the fold.
+
+   Everything here shares the .how section's vocabulary: #0a0a0a ground,
+   mono uppercase eyebrow labels, the Instrument Serif italic for the
+   one emphasised phrase per heading, and #6ee7c9 as the only saturated
+   colour. The teal means "measured"; where a number is not measured it
+   does not get the accent.
+   ------------------------------------------------------------------ */
+
+.sec {
+  position: relative;
+  z-index: 1;
+  background: #0a0a0a;
+  padding: clamp(66px, 9vh, 104px) var(--header-x);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.sec--dark { background: #060606; }
+
+.sec-inner {
+  position: relative;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.sec-head {
+  max-width: 720px;
+  margin-bottom: 42px;
+}
+.sec-head h2 {
+  margin-top: 14px;
+  font-size: clamp(25px, 3vw, 37px);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.16;
+  color: #fff;
+}
+.sec-head h2 em {
+  font-family: "Instrument Serif", "Times New Roman", Times, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.08em;
+  letter-spacing: -0.03em;
+  color: #9a9a9a;
+}
+.sec-head p {
+  margin-top: 15px;
+  color: #9a9a9a;
+  font-size: 15.5px;
+  line-height: 1.62;
+  letter-spacing: -0.015em;
+}
+.sec-head p .hl { color: #6ee7c9; }
+
+/* ---- the gap: three cards, one per existing mechanism ---- */
+.gap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  gap: 16px;
+}
+.gap-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 22px 22px 24px;
+  background: rgba(255, 255, 255, 0.016);
+}
+.gap-card h3 {
+  font-size: 14.5px;
+  font-weight: 550;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 9px;
+}
+.gap-card p {
+  font-size: 13.6px;
+  line-height: 1.58;
+  color: #8e8e8e;
+  letter-spacing: -0.01em;
+}
+.gap-card .verdict {
+  display: block;
+  margin-top: 13px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: 11.5px;
+  letter-spacing: 0.01em;
+  color: #c0655a;
+}
+
+/* ---- the rule ---- */
+.rule-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 62px);
+  align-items: start;
+}
+.formula {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
+  padding: 30px 26px 26px;
+  background: linear-gradient(160deg, rgba(110, 231, 201, 0.045), rgba(255, 255, 255, 0.01) 62%);
+}
+.formula-line {
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: clamp(17px, 2.1vw, 23px);
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-align: center;
+  padding: 6px 0 4px;
+}
+.formula-line .accent { color: #6ee7c9; }
+.formula-note {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: 9px;
+}
+.formula-note span {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #8e8e8e;
+  letter-spacing: -0.005em;
+}
+.formula-note b {
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-weight: 400;
+  color: #d8d8d8;
+  margin-right: 7px;
+}
+.rule-copy p {
+  color: #9a9a9a;
+  font-size: 14.6px;
+  line-height: 1.65;
+  letter-spacing: -0.012em;
+  margin-bottom: 14px;
+}
+.rule-copy p .hl { color: #6ee7c9; }
+.rule-copy strong { color: #e6e6e6; font-weight: 550; }
+
+/* ---- measured scenarios ---- */
+.scen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 40px;
+}
+.scen-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 20px 20px 22px;
+  background: rgba(255, 255, 255, 0.016);
+}
+.scen-card .cond {
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.075em;
+  color: rgba(255, 255, 255, 0.5);
+}
+.scen-card .amount {
+  display: block;
+  margin: 15px 0 4px;
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: clamp(27px, 3.4vw, 37px);
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: #fff;
+}
+.scen-card .of { font-size: 12.5px; color: #7c7c7c; letter-spacing: -0.01em; }
+.scen-card .said {
+  display: block;
+  margin-top: 15px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  line-height: 1.5;
+  color: #8e8e8e;
+}
+.scen-card--hi { border-color: rgba(196, 69, 54, 0.42); background: rgba(196, 69, 54, 0.05); }
+.scen-card--hi .amount { color: #e0796b; }
+.scen-card--lo .amount { color: #6ee7c9; }
+.scen-foot {
+  margin-top: 18px;
+  font-size: 13.4px;
+  line-height: 1.6;
+  color: #8e8e8e;
+  letter-spacing: -0.01em;
+}
+.scen-foot .hl { color: #6ee7c9; }
+
+/* ---- measured numbers ---- */
+/* Six metrics, fixed at three columns so they fill two even rows.
+   auto-fit resolves to five at this width and orphans the sixth. */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 11px;
+  overflow: hidden;
+}
+.metric {
+  background: #0a0a0a;
+  padding: 24px 22px 26px;
+}
+.metric .k {
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.48);
+}
+.metric .v {
+  display: block;
+  margin: 14px 0 7px;
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: clamp(23px, 2.7vw, 30px);
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  color: #fff;
+}
+.metric .v .arrow { color: #6ee7c9; }
+.metric .n {
+  font-size: 12.7px;
+  line-height: 1.5;
+  color: #7c7c7c;
+  letter-spacing: -0.005em;
+}
+.metrics-foot {
+  margin-top: 20px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #767676;
+  letter-spacing: -0.005em;
+}
+
+/* ---- trust tiers ---- */
+.tiers { display: grid; gap: 12px; }
+.tier {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: clamp(16px, 3vw, 36px);
+  align-items: start;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left-width: 2px;
+  border-radius: 10px;
+  padding: 21px 24px 23px;
+  background: rgba(255, 255, 255, 0.016);
+}
+.tier .label {
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.075em;
+  line-height: 1.5;
+  padding-top: 2px;
+}
+.tier h3 {
+  font-size: 14.6px;
+  font-weight: 550;
+  letter-spacing: -0.022em;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.tier p {
+  font-size: 13.6px;
+  line-height: 1.6;
+  color: #8e8e8e;
+  letter-spacing: -0.01em;
+}
+.tier p + p { margin-top: 9px; }
+.tier code {
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: 12.2px;
+  color: #b4b4b4;
+}
+.tier--crypto { border-left-color: #6ee7c9; }
+.tier--crypto .label { color: #6ee7c9; }
+.tier--econ { border-left-color: #d9a441; }
+.tier--econ .label { color: #d9a441; }
+.tier--trust { border-left-color: #c44536; }
+.tier--trust .label { color: #c44536; }
+.tier .broken,
+.tier .closed {
+  display: inline-block;
+  margin: 10px 0 4px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  font-size: 11.4px;
+  letter-spacing: -0.005em;
+}
+.tier .broken {
+  background: rgba(196, 69, 54, 0.13);
+  border: 1px solid rgba(196, 69, 54, 0.32);
+  color: #e0796b;
+}
+.tier .closed {
+  background: rgba(110, 231, 201, 0.1);
+  border: 1px solid rgba(110, 231, 201, 0.28);
+  color: #6ee7c9;
+}
+
+/* ---- closing ---- */
+.close-inner {
+  max-width: 780px;
+  margin: 0 auto;
+  text-align: center;
+}
+.close-inner h2 {
+  font-size: clamp(27px, 3.4vw, 42px);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  color: #fff;
+}
+.close-inner h2 em {
+  font-family: "Instrument Serif", "Times New Roman", Times, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.08em;
+  color: #9a9a9a;
+}
+.close-inner p {
+  margin: 17px auto 0;
+  max-width: 590px;
+  color: #9a9a9a;
+  font-size: 15.2px;
+  line-height: 1.62;
+  letter-spacing: -0.015em;
+}
+.close-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+/* ---- footer ---- */
+.site-foot {
+  position: relative;
+  z-index: 1;
+  background: #060606;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 40px var(--header-x) 44px;
+}
+.foot-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.foot-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.foot-mark svg { width: 19px; height: 19px; display: block; }
+.foot-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  font-size: 13.4px;
+  color: #8e8e8e;
+  letter-spacing: -0.01em;
+}
+.foot-links a { transition: color 0.2s ease; }
+.foot-links a:hover { color: #fff; }
+.foot-note {
+  max-width: 1180px;
+  margin: 26px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 12.4px;
+  line-height: 1.6;
+  color: #6a6a6a;
+  letter-spacing: -0.005em;
+}
+
+@media (max-width: 900px) {
+  .rule-split { grid-template-columns: 1fr; }
+  .tier { grid-template-columns: 1fr; gap: 10px; }
+  .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .metrics { grid-template-columns: minmax(0, 1fr); }
+  .sec { padding-left: 22px; padding-right: 22px; }
+  .site-foot { padding-left: 22px; padding-right: 22px; }
+  .foot-inner { flex-direction: column; align-items: flex-start; }
+}
+
+/* Sections animate in on scroll rather than on load. */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--rd, 0s);
+}
+.reveal.is-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
 </style>
 </head>
 
@@ -960,13 +1373,18 @@ body.menu-open .menu-backdrop {
           </a>
         </li>
         <li class="pill-col">
-          <a class="pill-link" style="--item-rot:8deg" href="#calibration">
-            <span class="pill-label">Calibration</span>
+          <a class="pill-link" style="--item-rot:8deg" href="#rule">
+            <span class="pill-label">The rule</span>
           </a>
         </li>
         <li class="pill-col">
-          <a class="pill-link" style="--item-rot:8deg" href="#zkml">
-            <span class="pill-label">zkML</span>
+          <a class="pill-link" style="--item-rot:8deg" href="#results">
+            <span class="pill-label">Results</span>
+          </a>
+        </li>
+        <li class="pill-col">
+          <a class="pill-link" style="--item-rot:-8deg" href="#trust">
+            <span class="pill-label">Trust</span>
           </a>
         </li>
         <li class="pill-col">
@@ -1000,7 +1418,7 @@ body.menu-open .menu-backdrop {
 
       <div class="hero-actions">
         <a class="btn btn-solid appear appear--btn"  style="--d:0.96s" href="https://github.com/Sagexd08/Brier">Explore Brier</a>
-        <a class="btn btn-ghost appear appear--side" style="--d:1.10s" href="#calibration">See How It Works</a>
+        <a class="btn btn-ghost appear appear--side" style="--d:1.10s" href="#gap">See how it works</a>
       </div>
 
     </div>
@@ -1106,11 +1524,333 @@ body.menu-open .menu-backdrop {
         The calibration head is zk-proved. The base classifier is not — the attestation
         binds the operator to a confidence, it does not establish how that confidence was reached.
       </span>
-      <a class="btn btn-ghost" id="research" href="https://github.com/Sagexd08/Brier" target="_blank" rel="noopener">Read the research</a>
+      <a class="btn btn-ghost" id="research" href="brier-proposal.pdf" target="_blank" rel="noopener">Read the research</a>
     </div>
 
   </div>
 </section>
+
+<!-- ==================================================================
+     The gap. Three mechanisms that already slash or adjudicate, and
+     the one thing none of them does. Numbers are from the proposal's
+     related-work section, each traceable to a cited source.
+     ================================================================== -->
+<section class="sec" id="gap">
+  <div class="sec-inner">
+
+    <div class="sec-head reveal">
+      <span class="how-label">The gap</span>
+      <h2>Being wrong costs the same <em>either way</em>.</h2>
+      <p>
+        Staking protocols already punish operators, and decentralised courts already
+        adjudicate claims. Neither one asks how sure the operator claimed to be — so
+        <span class="hl">a confident lie and an honest doubt settle at the same price</span>.
+      </p>
+    </div>
+
+    <div class="gap-grid">
+      <div class="gap-card reveal" style="--rd:0.04s">
+        <h3>Oracle slashing</h3>
+        <p>
+          Chainlink slashes node operators a fixed 700 LINK per valid alerting event
+          on the ETH/USD feed. The penalty is a constant — identical whether the
+          operator was marginally or egregiously wrong.
+        </p>
+        <span class="verdict">Oracles report no confidence at all</span>
+      </div>
+      <div class="gap-card reveal" style="--rd:0.12s">
+        <h3>Decentralised insurance</h3>
+        <p>
+          Nexus Mutual resolves claims by stake-weighted member voting, with assessors
+          staking NXM and rewarded for voting with the outcome.
+        </p>
+        <span class="verdict">Scores validity, never confidence</span>
+      </div>
+      <div class="gap-card reveal" style="--rd:0.20s">
+        <h3>On-chain scoring rules</h3>
+        <p>
+          These do exist. Foresight Arena scores AI forecasting agents on Polymarket
+          questions using the Brier score, recorded on Polygon.
+        </p>
+        <span class="verdict">Rewards forecasts — no stake at risk</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ==================================================================
+     The rule itself, and why misreporting is expensive. The completed
+     square is the whole argument, so it gets shown rather than claimed.
+     ================================================================== -->
+<section class="sec sec--dark" id="rule">
+  <div class="sec-inner">
+
+    <div class="sec-head reveal">
+      <span class="how-label">The rule</span>
+      <h2>Slash by the <em>Brier score</em>.</h2>
+      <p>
+        Penalise a disputed decision by the squared distance between the confidence the
+        operator reported and the outcome that was adjudicated. The score is strictly
+        proper, which has one consequence that matters.
+      </p>
+    </div>
+
+    <div class="rule-split">
+
+      <div class="formula reveal" style="--rd:0.06s">
+        <div class="formula-line">
+          slash = <span class="accent">S</span> · (<span class="accent">c</span> &minus; <span class="accent">o</span>)²
+        </div>
+        <div class="formula-note">
+          <span><b>S</b> collateral the operator has staked</span>
+          <span><b>c</b> confidence it reported, in [0,&nbsp;1]</span>
+          <span><b>o</b> adjudicated outcome, 0 or 1</span>
+        </div>
+      </div>
+
+      <div class="rule-copy reveal" style="--rd:0.14s">
+        <p>
+          Suppose the operator privately believes it is right with probability
+          <strong>p</strong>. Its expected slash for reporting <strong>c</strong> works
+          out to <span class="hl">S((c &minus; p)² + p(1 &minus; p))</span>.
+        </p>
+        <p>
+          That expression is a parabola with a single minimum, and the minimum sits
+          exactly at <strong>c = p</strong>. Every misreport costs S(c &minus; p)² in
+          expectation, in either direction. Overclaiming isn't merely unrewarded — it's
+          priced, and priced quadratically.
+        </p>
+        <p>
+          The leftover term p(1 &minus; p) doesn't depend on what the operator says. It
+          is the irreducible price of writing an opinion on a hard case, largest at
+          p = 0.5 where the model knows least. <strong>The cost of being uncertain and
+          the cost of lying about it are separated, and only the second is avoidable.</strong>
+        </p>
+      </div>
+
+    </div>
+
+    <div class="scen">
+      <div class="scen-card scen-card--lo reveal" style="--rd:0.06s">
+        <span class="cond">Confident · correct</span>
+        <span class="amount">0.02%</span>
+        <span class="of">of stake slashed</span>
+        <span class="said">Reported 0.9845, dispute upheld. Near-certainty that held up costs almost nothing.</span>
+      </div>
+      <div class="scen-card reveal" style="--rd:0.13s">
+        <span class="cond">Uncertain · wrong</span>
+        <span class="amount">25.12%</span>
+        <span class="of">of stake slashed</span>
+        <span class="said">Reported 0.5012, overturned. Admitting a coin flip caps the damage.</span>
+      </div>
+      <div class="scen-card scen-card--hi reveal" style="--rd:0.20s">
+        <span class="cond">Confident · wrong</span>
+        <span class="amount">87.75%</span>
+        <span class="of">of stake slashed</span>
+        <span class="said">Reported 0.9367, overturned. Asserted certainty that failed takes most of the stake.</span>
+      </div>
+    </div>
+
+    <p class="scen-foot reveal" style="--rd:0.24s">
+      Measured end-to-end on a local chain, one real zk proof generated per decision.
+      Confident-and-wrong costs <span class="hl">3,667&times;</span> confident-and-correct,
+      and <span class="hl">3.49&times;</span> uncertain-and-wrong. Percentages are of the
+      stake remaining as each scenario ran.
+    </p>
+
+  </div>
+</section>
+
+<!-- ==================================================================
+     Measured results. Every figure here is regenerated by a script in
+     the repository; none is transcribed by hand.
+     ================================================================== -->
+<section class="sec" id="results">
+  <div class="sec-inner">
+
+    <div class="sec-head reveal">
+      <span class="how-label">Measured, not projected</span>
+      <h2>What the prototype <em>actually does</em>.</h2>
+      <p>
+        UCI German Credit, 1,000 real applications. Ten pinned seeds, always run in full
+        so no favourable subset can be reported selectively.
+      </p>
+    </div>
+
+    <div class="metrics">
+      <div class="metric reveal" style="--rd:0.03s">
+        <span class="k">Calibration error</span>
+        <span class="v">0.185 <span class="arrow">&rarr;</span> 0.087</span>
+        <span class="n">Expected Calibration Error, mean over 10 seeds. Reduced in every seed.</span>
+      </div>
+      <div class="metric reveal" style="--rd:0.08s">
+        <span class="k">Proving time</span>
+        <span class="v">2.09 s</span>
+        <span class="n">EZKL / halo2 over the calibration head, laptop CPU, no GPU.</span>
+      </div>
+      <div class="metric reveal" style="--rd:0.13s">
+        <span class="k">On-chain verification</span>
+        <span class="v">684,696</span>
+        <span class="n">Gas to verify a real proof — roughly 33&times; a plain transfer.</span>
+      </div>
+      <div class="metric reveal" style="--rd:0.18s">
+        <span class="k">Brier arithmetic</span>
+        <span class="v">543</span>
+        <span class="n">Gas for the slash itself. About 0.08% of the per-decision cost.</span>
+      </div>
+      <div class="metric reveal" style="--rd:0.23s">
+        <span class="k">Proof size</span>
+        <span class="v">17,447 B</span>
+        <span class="n">3,300 bytes of calldata per attestation.</span>
+      </div>
+      <div class="metric reveal" style="--rd:0.28s">
+        <span class="k">Test suite</span>
+        <span class="v">69 + 48</span>
+        <span class="n">Solidity and Python tests, all passing. Eleven demonstrate the weaknesses below.</span>
+      </div>
+    </div>
+
+    <p class="metrics-foot reveal" style="--rd:0.30s">
+      Essentially all cost is halo2 verification, not the mechanism. Proving cost is also
+      flat across a 16,897&times; parameter increase — capacity, not parameter count, is
+      the binding constraint, which is why the design proves a small calibration head
+      rather than a whole classifier.
+    </p>
+
+  </div>
+</section>
+
+<!-- ==================================================================
+     The honest part. On-chain does not mean proved, and the page says
+     so in the same voice the proposal does.
+     ================================================================== -->
+<section class="sec sec--dark" id="trust">
+  <div class="sec-inner">
+
+    <div class="sec-head reveal">
+      <span class="how-label">Trust boundary</span>
+      <h2>What is proved, and what <em>merely runs on-chain</em>.</h2>
+      <p>
+        This is a mechanism and a measured prototype — not a deployable protocol. Every
+        weakness below is demonstrated by a test that passes, so the threat model cannot
+        drift away from the code without the suite failing.
+      </p>
+    </div>
+
+    <div class="tiers">
+
+      <div class="tier tier--crypto reveal" style="--rd:0.04s">
+        <span class="label">Tier 1<br />Cryptographic</span>
+        <div>
+          <h3>Calibration-head execution and the slash arithmetic</h3>
+          <p>
+            Holds against a fully malicious operator. Given a logit committed on-chain,
+            the proof establishes that the head identified by this verifying key maps it
+            to the attested confidence. Tampered proofs, flipped bytes and wrong verifying
+            keys are each rejected.
+          </p>
+        </div>
+      </div>
+
+      <div class="tier tier--econ reveal" style="--rd:0.10s">
+        <span class="label">Tier 2<br />Economic</span>
+        <div>
+          <h3>Honest reporting is assumed to follow from the payoff</h3>
+          <p>
+            Conditionally. The properness argument holds only if outcomes are adjudicated
+            truthfully and disputes are opened independently of the reported confidence —
+            neither is guaranteed here.
+          </p>
+          <span class="closed">Closed — withdrawal is request/execute behind an unbonding delay</span>
+          <p>
+            In v0 an operator watching the mempool could withdraw its whole stake before a
+            dispute was mined, turning a 98.01 ETH slash into zero. An open dispute now
+            freezes execution, and the exploit test asserts the attack fails.
+          </p>
+          <p>
+            Two gaps survive that a longer timelock cannot fix: an operator never disputed
+            inside the window still exits intact, and the freeze is released by dispute
+            resolution — which is a tier 3 action.
+          </p>
+        </div>
+      </div>
+
+      <div class="tier tier--trust reveal" style="--rd:0.16s">
+        <span class="label">Tier 3<br />Bounded trust</span>
+        <div>
+          <h3>Dispute outcome and ground truth</h3>
+          <p>
+            An admin-appointed N-of-M committee decides who loses money. One resolver
+            cannot act alone — that is the whole of the improvement over a single key.
+            N colluding members carry exactly the authority that key had, the admin can
+            replace the committee, and resolvers stake nothing.
+          </p>
+          <p>
+            Underneath sits a harder problem: for a loan rejection the counterfactual is
+            unobservable, because a rejected applicant never demonstrates repayment.
+            &ldquo;The decision was wrong&rdquo; has no on-chain referent yet.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="metrics-foot reveal" style="--rd:0.20s">
+      The input logit is an unverified public input: <strong style="color:#c9c9c9">an
+      operator that fabricates it obtains a proof that verifies</strong>. The proof binds
+      the calibration step, not the pipeline — so describing this system as
+      &ldquo;zero-knowledge proving the AI decision&rdquo; would be false.
+    </p>
+
+  </div>
+</section>
+
+<!-- ================================================================== -->
+<section class="sec" id="read">
+  <div class="sec-inner close-inner">
+    <h2 class="reveal">The mechanism holds. <em>The system doesn't yet.</em></h2>
+    <p class="reveal" style="--rd:0.06s">
+      The proposal states both claims separately, reports the negative results at the
+      strength the data supports, and sets out what closing the distance would take.
+    </p>
+    <div class="close-actions reveal" style="--rd:0.12s">
+      <a class="btn btn-solid" href="brier-proposal.pdf" target="_blank" rel="noopener">Read the proposal</a>
+      <a class="btn btn-ghost" href="https://github.com/Sagexd08/Brier">View the repository</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-foot">
+  <div class="foot-inner">
+    <span class="foot-mark">
+      <svg viewBox="0 0 24 24" fill="white" aria-hidden="true">
+        <g transform="rotate(-30 12 12)">
+          <circle cx="7.3" cy="3.2" r="1.45"/>
+          <rect x="5.5" y="4.7" width="3.6" height="14.6" rx="1.8"/>
+          <rect x="14.9" y="4.7" width="3.6" height="14.6" rx="1.8"/>
+          <circle cx="16.7" cy="20.8" r="1.45"/>
+        </g>
+      </svg>
+      Brier
+    </span>
+    <nav class="foot-links" aria-label="Footer">
+      <a href="#gap">The gap</a>
+      <a href="#rule">The rule</a>
+      <a href="#results">Results</a>
+      <a href="#trust">Trust boundary</a>
+      <a href="brier-proposal.pdf" target="_blank" rel="noopener">Proposal</a>
+      <a href="https://github.com/Sagexd08/Brier">GitHub</a>
+    </nav>
+  </div>
+  <p class="foot-note">
+    Research prototype. Only the calibration head is zero-knowledge proved, its input
+    logit is unverified, and dispute resolution rests on an admin-appointed N-of-M
+    committee whose collusion carries the authority a single key would. Figures are
+    measured on a local chain against UCI German Credit data and are not a claim about
+    production behaviour.
+  </p>
+</footer>
 
 <script>
 (function () {
@@ -1123,7 +1863,7 @@ body.menu-open .menu-backdrop {
   appears.forEach(function (el) {
     el.addEventListener("animationend", function () {
       el.classList.add("is-in");
-    } { once: true });
+    }, { once: true });
   });
 
   /* 2. Fallback: if nothing is actually animating after two frames,
@@ -1261,6 +2001,29 @@ body.menu-open .menu-backdrop {
     dot.setAttribute("r", 3);
     dot.setAttribute("class", "branch-dot");
     wires.appendChild(dot);
+  }
+
+  /* ----------------------------------------------------------------
+     Scroll reveal for the sections below the fold. IntersectionObserver
+     where available; otherwise everything is simply shown, so the page
+     never depends on JS to be readable.
+     ---------------------------------------------------------------- */
+  var reveals = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
+  if (reveals.length) {
+    if (typeof IntersectionObserver === "function" &&
+        !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -12% 0px", threshold: 0.08 });
+      reveals.forEach(function (el) { io.observe(el); });
+    } else {
+      reveals.forEach(function (el) { el.classList.add("is-visible"); });
+    }
   }
 
   drawFlow();
