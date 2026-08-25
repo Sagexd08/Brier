@@ -1,0 +1,109 @@
+{
+  "seed": 42,
+  "model_version": "gnn-v1",
+  "threshold_wad": 800000000000000000,
+  "n_flagged": 16,
+  "true_positives_vs_injected_labels": 16,
+  "false_positives_vs_injected_labels": 0,
+  "precision_on_synthetic_labels": 1.0,
+  "flags": [
+    {
+      "claimant_index": 23,
+      "score": 1.0,
+      "score_wad": 999999984306749440,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 117,
+      "score": 1.0,
+      "score_wad": 999999984306749440,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 175,
+      "score": 1.0,
+      "score_wad": 999999984306749440,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 137,
+      "score": 1.0,
+      "score_wad": 999999984306749440,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 81,
+      "score": 0.9999998807907104,
+      "score_wad": 999999846867795968,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 36,
+      "score": 0.9999997615814209,
+      "score_wad": 999999778148319232,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 16,
+      "score": 0.9999681711196899,
+      "score_wad": 999968167189020672,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 132,
+      "score": 0.9999425411224365,
+      "score_wad": 999942534824198144,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 154,
+      "score": 0.9999401569366455,
+      "score_wad": 999940129642512384,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 94,
+      "score": 0.9999096393585205,
+      "score_wad": 999909618194841600,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 125,
+      "score": 0.9998915195465088,
+      "score_wad": 999891476252983296,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 90,
+      "score": 0.9998703002929688,
+      "score_wad": 999870310654148608,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 151,
+      "score": 0.999583899974823,
+      "score_wad": 999583887875112960,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 92,
+      "score": 0.9992048144340515,
+      "score_wad": 999204831241437184,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 77,
+      "score": 0.9967800974845886,
+      "score_wad": 996780064504807424,
+      "is_injected_ring_member": true
+    },
+    {
+      "claimant_index": 78,
+      "score": 0.9947131276130676,
+      "score_wad": 994713120083542016,
+      "is_injected_ring_member": true
+    }
+  ],
+  "validation_status": "synthetic_only",
+  "warning": "These flags come from a detector validated only against injected rings. The false-positive count above is measured against synthetic labels and says nothing about real traffic, where the rate is unknown. Enforcement blocks disputes and withholds payouts."
+}

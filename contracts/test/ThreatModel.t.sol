@@ -50,7 +50,7 @@ contract ThreatModelTest is Test {
 
     function setUp() public {
         attestation = new Attestation(address(new AcceptAll()));
-        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING, _committee(), 2, address(0));
+        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING, _committee(), 2, address(0), address(0));
         vm.deal(operator, 1_000 ether);
         vm.deal(claimant, 1 ether);
     }

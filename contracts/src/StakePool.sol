@@ -3,6 +3,7 @@ pragma solidity 0.8.24;
 
 import {BrierMath} from "./BrierMath.sol";
 import {ReputationRegister} from "./ReputationRegister.sol";
+import {CollusionOracle} from "./CollusionOracle.sol";
 import {Attestation} from "./Attestation.sol";
 
 /// @title StakePool
@@ -77,6 +78,18 @@ contract StakePool {
     ///      on cannot be quietly promoted into a guarantee.
     ReputationRegister public immutable reputation;
 
+    /// @notice Optional collusion oracle. address(0) disables enforcement.
+    /// @dev WARNING, stated in the type's own documentation and repeated here
+    ///      because this is where it bites: the detector behind this oracle is
+    ///      validated only against synthetic rings. Attaching it gives an
+    ///      unvalidated model authority to withhold a claimant's payout and to
+    ///      block that claimant from filing disputes. It cannot slash anyone,
+    ///      and withheld funds are quarantined and reversible -- but a false
+    ///      positive still silences a legitimate claimant for the duration.
+    ///      Deployments that have not measured the detector's false-positive
+    ///      rate on their own traffic should pass address(0).
+    CollusionOracle public immutable collusionOracle;
+
     /// @notice Delay between requesting a withdrawal and being able to execute it.
     /// @dev Must exceed the window in which a claimant could realistically
     ///      notice a bad decision and open a dispute. Set at construction.
@@ -113,6 +126,7 @@ contract StakePool {
         uint256 slashed
     );
     event PaidOut(bytes32 indexed disputeId, address indexed claimant, uint256 amount);
+    event PayoutQuarantined(bytes32 indexed disputeId, address indexed claimant, uint256 amount);
     event ResolverVoted(bytes32 indexed disputeId, address indexed resolver, bool upheld,
                         uint256 votesUpheld, uint256 votesOverturned);
     event CommitteeChanged(address[] resolvers, uint256 threshold);
@@ -134,6 +148,7 @@ contract StakePool {
     error AlreadyVoted(bytes32 disputeId, address resolver);
     error InvalidCommittee(uint256 m, uint256 n);
     error DuplicateResolver(address resolver);
+    error ClaimantFlaggedForCollusion(address claimant);
 
     modifier onlyAdmin() {
         if (msg.sender != admin) revert NotAdmin();
@@ -147,7 +162,8 @@ contract StakePool {
         uint256 unbondingPeriod_,
         address[] memory resolvers_,
         uint256 threshold_,
-        address reputation_
+        address reputation_,
+        address collusionOracle_
     ) {
         if (maxSlashBps_ > 10_000) revert CapOutOfRange(maxSlashBps_);
         // A zero-length unbonding period would reintroduce the v0 front-running
@@ -161,6 +177,7 @@ contract StakePool {
         maxSlashBps = maxSlashBps_;
         unbondingPeriod = unbondingPeriod_;
         reputation = ReputationRegister(reputation_);
+        collusionOracle = CollusionOracle(payable(collusionOracle_));
         _setCommittee(resolvers_, threshold_);
     }
 
@@ -281,6 +298,14 @@ contract StakePool {
 
     function openDispute(bytes32 attestationId) external returns (bytes32 disputeId) {
         if (disputed[attestationId]) revert AlreadyDisputed(attestationId);
+        // An enforced collusion flag blocks new disputes from this address.
+        // This is the detector acting on money, and it is the reason the
+        // oracle carries an appeal window: the flag is contestable before it
+        // reaches this line. See CollusionOracle's header.
+        if (address(collusionOracle) != address(0) &&
+            collusionOracle.isEnforced(msg.sender)) {
+            revert ClaimantFlaggedForCollusion(msg.sender);
+        }
         // Reverts if the attestation does not exist.
         Attestation.Record memory rec = attestation.get(attestationId);
 
@@ -358,9 +383,22 @@ contract StakePool {
         }
 
         if (slash > 0) {
-            (bool ok,) = d.claimant.call{value: slash}("");
-            if (!ok) revert PayoutFailed();
-            emit PaidOut(disputeId, d.claimant, slash);
+            // The slash is computed and taken from the operator either way --
+            // a suspected colluding claimant does not make the operator's
+            // decision retroactively correct. What changes is where the money
+            // goes: to quarantine rather than to the claimant, recoverable in
+            // full if the flag is cleared.
+            bool flagged = address(collusionOracle) != address(0) &&
+                collusionOracle.isEnforced(d.claimant);
+
+            if (flagged) {
+                collusionOracle.quarantine{value: slash}(d.claimant);
+                emit PayoutQuarantined(disputeId, d.claimant, slash);
+            } else {
+                (bool ok,) = d.claimant.call{value: slash}("");
+                if (!ok) revert PayoutFailed();
+                emit PaidOut(disputeId, d.claimant, slash);
+            }
         }
     }
 

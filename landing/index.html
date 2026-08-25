@@ -1199,6 +1199,12 @@ body.menu-open .menu-backdrop {
 .tier--econ .label { color: #d9a441; }
 .tier--trust { border-left-color: #c44536; }
 .tier--trust .label { color: #c44536; }
+.tier--detector {
+  border-left-color: #8f2418;
+  border-color: rgba(143, 36, 24, 0.4);
+  background: rgba(143, 36, 24, 0.06);
+}
+.tier--detector .label { color: #e0796b; }
 .tier .broken,
 .tier .closed {
   display: inline-block;
@@ -1706,8 +1712,8 @@ body.menu-open .menu-backdrop {
       </div>
       <div class="metric reveal" style="--rd:0.28s">
         <span class="k">Test suite</span>
-        <span class="v">69 + 48</span>
-        <span class="n">Solidity and Python tests, all passing. Eleven demonstrate the weaknesses below.</span>
+        <span class="v">128 + 81</span>
+        <span class="n">Solidity and Python tests, all passing. Fourteen demonstrate the weaknesses below.</span>
       </div>
     </div>
 
@@ -1794,9 +1800,34 @@ body.menu-open .menu-backdrop {
         </div>
       </div>
 
+      <div class="tier tier--detector reveal" style="--rd:0.22s">
+        <span class="label">Below tier 3<br />Unvalidated</span>
+        <div>
+          <h3>A collusion detector with authority over money</h3>
+          <p>
+            A graph model flags suspected claimant collusion rings. It has only ever been
+            validated against rings we injected ourselves — its false-positive rate on real
+            dispute traffic has never been measured, because no labelled real collusion
+            exists.
+          </p>
+          <span class="broken">Wired to enforcement anyway — one reporter key, no N-of-M</span>
+          <p>
+            An enforced flag blocks a claimant from disputing and withholds their payout.
+            It cannot slash: the operator&rsquo;s penalty is unchanged and still needs the
+            committee. An appeal window precedes any effect, and quarantined funds are
+            refunded in full if the flag is cleared.
+          </p>
+          <p>
+            None of that makes the model correct. A false positive silences a legitimate
+            claimant and thereby protects the bad decision they were trying to challenge —
+            which is a passing test, not a hypothetical.
+          </p>
+        </div>
+      </div>
+
     </div>
 
-    <p class="metrics-foot reveal" style="--rd:0.20s">
+    <p class="metrics-foot reveal" style="--rd:0.26s">
       The input logit is an unverified public input: <strong style="color:#c9c9c9">an
       operator that fabricates it obtains a proof that verifies</strong>. The proof binds
       the calibration step, not the pipeline — so describing this system as
@@ -1846,7 +1877,9 @@ body.menu-open .menu-backdrop {
   <p class="foot-note">
     Research prototype. Only the calibration head is zero-knowledge proved, its input
     logit is unverified, and dispute resolution rests on an admin-appointed N-of-M
-    committee whose collusion carries the authority a single key would. Figures are
+    committee whose collusion carries the authority a single key would. A collusion
+    detector validated only on synthetic data can block a claimant and withhold their
+    payout. Figures are
     measured on a local chain against UCI German Credit data and are not a claim about
     production behaviour.
   </p>

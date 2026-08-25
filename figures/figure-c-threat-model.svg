@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 1010" width="1180" height="1010" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 1060" width="1180" height="1060" font-family="Helvetica, Arial, sans-serif">
   <defs>
     <marker id="cAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4a4a"/>
@@ -11,7 +11,7 @@
     </pattern>
   </defs>
 
-  <rect width="1180" height="1010" fill="#ffffff"/>
+  <rect width="1180" height="1060" fill="#ffffff"/>
   <text x="24" y="34" font-size="17" font-weight="bold" fill="#1a1a1a">Figure C — Trust boundaries and threat model</text>
   <text x="24" y="55" font-size="12" fill="#5a5a5a">Only tier 1 is enforced by cryptography. Tier 2 is now <tspan font-weight="bold" fill="#2e7d4f">enforced</tspan> against the operator but sits downstream of tier 3. Tier 3 is <tspan font-weight="bold" fill="#c44536">bounded trust</tspan>, not an absence of trust.</text>
 
@@ -123,14 +123,19 @@
   <text x="798" y="824" font-size="11" fill="#444">committee can manufacture any score.</text>
   <text x="798" y="838" font-size="9.5" fill="#8a8a8a">test_tierBoundary_colludingCommitteeCanManufacture…</text>
 
-  <!-- ================= OUT OF TIERS: monitoring ================= -->
-  <rect x="24" y="872" width="1132" height="56" fill="#f6f6f6" stroke="#8a8a8a" stroke-width="1.6" rx="7" stroke-dasharray="5 3"/>
-  <text x="42" y="894" font-size="12.5" font-weight="bold" fill="#3a3a3a">OUTSIDE THE TIERS — GNN collusion detection (Phase E): monitoring only, no enforcement role</text>
-  <text x="42" y="915" font-size="11" fill="#3a3a3a">Validated against synthetically injected rings only. No labelled real collusion exists, so the false-positive rate on genuine traffic is <tspan font-weight="bold" fill="#c44536">unknown</tspan>. Not wired to any slashing trigger.</text>
+  <!-- ================= BELOW TIER 3: the unvalidated detector ================= -->
+  <rect x="24" y="872" width="1132" height="104" fill="#f7e4e2" stroke="#8f2418" stroke-width="3" rx="8"/>
+  <rect x="24" y="872" width="8" height="104" fill="#8f2418" rx="4"/>
+  <text x="48" y="894" font-size="13.5" font-weight="bold" fill="#8f2418">BELOW TIER 3 — GNN collusion detection wired to enforcement (Phase E + CollusionOracle)</text>
+  <text x="48" y="913" font-size="11" fill="#3a3a3a">One reporter key relays an <tspan font-weight="bold" fill="#c44536">unvalidated model</tspan> whose false-positive rate on real traffic has never been measured. Thinner than tier 3: the committee needs N signatures, this needs one.</text>
+  <text x="48" y="931" font-size="11" fill="#3a3a3a">An enforced flag <tspan font-weight="bold">blocks the claimant from disputing</tspan> and <tspan font-weight="bold">quarantines their payout</tspan>. It CANNOT slash: the operator penalty is unchanged and still requires the committee.</text>
+  <text x="48" y="949" font-size="11" fill="#2e7d4f">Containment: appeal window before any effect (zero-length rejected at construction) · quarantine refunded in full on clearing · forfeiture is a separate admin-only act.</text>
+  <text x="48" y="967" font-size="11" fill="#c44536" font-weight="bold">A false positive silences a legitimate claimant, and thereby protects a bad decision.</text>
+  <text x="660" y="967" font-size="9.5" fill="#8a8a8a">test_dangerous_falsePositiveSilencesAnHonestClaimant · recommended posture: attach address(0)</text>
 
   <!-- attack path -->
-  <rect x="24" y="940" width="1132" height="58" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.4" stroke-dasharray="5 3" rx="7"/>
-  <text x="42" y="961" font-size="12.5" font-weight="bold" fill="#1a1a1a">Cheapest attack today (still requires breaking no cryptography)</text>
-  <text x="42" y="980" font-size="11.5" fill="#3a3a3a">1. Attest with a valid proof over a <tspan font-weight="bold" fill="#c44536">fabricated logit</tspan> — tier 1 does not bind L.  2. Failing that, corrupt <tspan font-weight="bold" fill="#c44536">N committee members</tspan> (tier 3) and resolve favourably,</text>
-  <text x="42" y="994" font-size="11.5" fill="#3a3a3a">which also unfreezes the exit via residual gap B. The v0 mempool front-run is closed. Total cryptographic work required: still none.</text>
+  <rect x="24" y="990" width="1132" height="58" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.4" stroke-dasharray="5 3" rx="7"/>
+  <text x="42" y="1011" font-size="12.5" font-weight="bold" fill="#1a1a1a">Cheapest attack today (still requires breaking no cryptography)</text>
+  <text x="42" y="1030" font-size="11.5" fill="#3a3a3a">1. Attest with a valid proof over a <tspan font-weight="bold" fill="#c44536">fabricated logit</tspan> — tier 1 does not bind L.  2. Failing that, corrupt <tspan font-weight="bold" fill="#c44536">N committee members</tspan> (tier 3) and resolve favourably,</text>
+  <text x="42" y="1044" font-size="11.5" fill="#3a3a3a">which also unfreezes the exit via residual gap B.  3. Or compromise the single <tspan font-weight="bold" fill="#c44536">reporter key</tspan> and flag the claimants. Cryptographic work: still none.</text>
 </svg>

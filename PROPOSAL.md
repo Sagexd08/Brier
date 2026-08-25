@@ -744,12 +744,16 @@ At intensity 1.00 a ring is trivially separable, so reporting only that number
 would be close to dishonest; the sweep runs to 0.50, where the ring is half
 camouflaged in ordinary traffic.
 
-**This is the weakest evidence in the document and should be read that way.**
-Labels exist only because the rings were injected. There is no labelled real
-collusion — the protocol has never run — so no real-world detection performance
-is claimed or claimable, and the false-positive rate on genuine dispute traffic
-is unknown. Nothing here is wired to a slashing trigger and nothing here should
-be: "the detector flagged you" is not an evidentiary standard.
+**This is the weakest evidence in the document, and it now carries the
+strongest consequences.** Labels exist only because the rings were injected.
+There is no labelled real collusion — the protocol has never run — so no
+real-world detection performance is claimed or claimable, and the false-positive
+rate on genuine dispute traffic is unknown.
+
+The detector nonetheless has an on-chain enforcement path (`CollusionOracle`).
+An enforced flag blocks a claimant from filing disputes and withholds their
+payout. This is a deliberate decision to give an unvalidated model authority
+over money, and §7.5 states what it costs.
 
 ### 6.10 Two on-chain surfaces, and where they actually sit
 
@@ -922,14 +926,46 @@ hit 90% coverage overall while covering a protected subgroup at 60%. A stronger
 uncertainty claim about the population average is still a claim about the
 population average.
 
-### 7.5 The collusion detector has never seen real collusion
+### 7.5 An unvalidated detector has been given authority over money
+
+This is the sharpest limitation in the system, and unlike the others it is a
+choice rather than an inheritance.
 
 §6.9 reports detection performance on rings that were injected, so the labels
 exist by construction. There is no labelled real collusion, the protocol having
 never run, and the false-positive rate on genuine dispute traffic is therefore
-unknown. The detector is a monitoring and triage aid; it is not wired to any
-enforcement action, and it must not be until that number exists. Flagging an
-operator is not evidence against it.
+unknown. An earlier draft of this document said the detector was not wired to
+any enforcement action and must not be until that number exists. It is now
+wired, and the number still does not exist.
+
+What an enforced flag does: blocks the claimant from opening disputes, and
+diverts any payout they win into quarantine. What it does not do: slash. The
+operator's penalty is computed and taken identically whether or not the claimant
+is flagged, because a suspected colluder does not make a bad decision
+retroactively correct — and because letting a flag reduce a slash would hand
+operators a motive to get their own claimants flagged.
+
+Four properties bound the damage, each asserted by a test:
+
+1. A flag never causes a slash.
+2. An appeal window precedes any effect; a zero-length window is rejected at
+   construction, so a false positive cannot bite in the block it was raised.
+3. Quarantined funds are reversible in full when a flag is cleared.
+4. Permanent confiscation is a separate, admin-only act, so the only path from a
+   model output to an irreversible loss runs through a person.
+
+None of that makes the detector correct. `CollusionOracle.t.sol` carries three
+`test_dangerous_*` cases which exist to keep this legible: a false positive
+silences an honest claimant and thereby *protects* a genuinely bad decision; the
+reporter key can flag anyone, with nothing on-chain distinguishing a model
+output from a lie; and flag-plus-forfeit confiscates a legitimate award with
+recourse only to the admin that took it.
+
+**In trust terms this sits below tier 3.** The committee at least requires N
+signatures. This is one key relaying an unvalidated model. Deployments that have
+not measured the detector's false-positive rate on their own traffic should
+attach no oracle at all, which
+`test_poolWithoutOracleIgnoresFlagsEntirely` shows costs nothing else.
 
 ### 7.6 Scope of the empirical claims
 
@@ -1026,12 +1062,15 @@ family, and one decision class (§7.6). *Evidence:* replication on a second cred
 dataset and a second model family, plus a calibration-drift study over time,
 which is currently not evaluated at all.
 
-**W6 — Collusion detection, validated against reality.** The graph analysis now
-exists and recovers injected rings (§6.9), so the direction is no longer
-untried — but the thing that would make it usable is missing. Required before it
-could inform any action: a labelled corpus of real disputes, a measured
-false-positive rate on honest traffic, and an appeal path for a flagged
-operator. Until then it stays a monitoring aid.
+**W6 — Validate the detector that is already enforcing.** The graph analysis
+recovers injected rings (§6.9) and now has an enforcement path (§7.5), which
+inverts the usual ordering: the capability shipped before the evidence that
+would justify it. The appeal path exists; the measurement does not. Required, in
+order of urgency: a labelled corpus of real disputes; a measured false-positive
+rate on honest traffic, which is the number that decides whether the oracle
+should be attached at all; and an appeal reviewer that is not the same admin who
+can forfeit. Until the second of those exists, the honest deployment posture is
+to pass `address(0)` and leave the detector reporting into a dashboard.
 
 **W7 — Why did the ensemble not help?** §6.5 found that ensembling improves
 uncalibrated ECE and that calibration then absorbs the gain entirely, and §6.6

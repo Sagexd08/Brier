@@ -45,7 +45,7 @@ contract ReputationIntegrationTest is Test {
         // only recorder, and the pool holds the register.
         address predicted = vm.computeCreateAddress(address(this), vm.getNonce(address(this)) + 1);
         rep = new ReputationRegister(predicted, 0.2e18);
-        pool = new StakePool(address(attestation), admin, 10_000, 7 days, c, 2, address(rep));
+        pool = new StakePool(address(attestation), admin, 10_000, 7 days, c, 2, address(rep), address(0));
         assertEq(rep.recorder(), address(pool), "recorder must be the pool");
 
         vm.deal(operator, 1_000 ether);
@@ -150,7 +150,7 @@ contract ReputationIntegrationTest is Test {
     function test_poolWithoutRegisterSlashesIdentically() public {
         address[] memory c = new address[](3);
         c[0] = r1; c[1] = r2; c[2] = r3;
-        StakePool bare = new StakePool(address(attestation), admin, 10_000, 7 days, c, 2, address(0));
+        StakePool bare = new StakePool(address(attestation), admin, 10_000, 7 days, c, 2, address(0), address(0));
 
         vm.prank(operator);
         bare.stake{value: 100 ether}();

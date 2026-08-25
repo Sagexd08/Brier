@@ -20,7 +20,7 @@ same one rather than merely a similar one.
 | B | Split conformal prediction | **2** | **Adopted** — passes the circuit gate; coverage tracks target |
 | C | Deep ensembles for epistemic uncertainty | 1 | **Negative** — the signal actively hurts calibration |
 | D | Counterfactual explanations | 1 | **Adopted** — 100% found, actionable, deterministic |
-| E | GNN collusion detection | 1 | **Synthetic only** — monitoring aid, not enforcement |
+| E | GNN collusion detection | **3, and thinner** | **Wired to enforcement while still unvalidated** |
 | F | On-chain operator reputation | 3 (inherited) | **Adopted** — auditable aggregation over tier-3 inputs |
 | G | Model-version registry | 1.5 (content integrity) | **Adopted** — closes a naming gap, not a trust gap |
 
@@ -194,14 +194,67 @@ ring is half camouflaged in ordinary traffic. The degree baseline —
 concentration on the top operator — is the control that says whether graph
 structure contributes anything beyond a threshold.
 
-**Verdict: synthetic validation only. Monitoring aid, never an enforcement trigger.**
+**Verdict: wired to an enforcement path, on synthetic validation only.**
 
-**This is the phase with the weakest evidence and it should be read that way.**
-Labels exist because the rings were injected. There are no labelled real
-collusion examples — the protocol has never run — so no real-world detection
-performance is claimed or claimable, and the false-positive rate on genuine
-dispute traffic is unknown. Nothing here is wired to a slashing trigger and
-nothing here should be: "the GNN flagged you" is not an evidentiary standard.
+**This is the phase with the weakest evidence and the strongest consequences,
+and that combination is deliberate on the deployer's part rather than an
+oversight.** Labels exist because the rings were injected. There are no
+labelled real collusion examples — the protocol has never run — so no
+real-world detection performance is claimed or claimable, and the
+false-positive rate on genuine dispute traffic is **unknown**.
+
+Despite that, the detector now has an on-chain enforcement path via
+`CollusionOracle`. An enforced flag **blocks a claimant from filing disputes**
+and **withholds their payout**. The earlier version of this report said no such
+wiring existed; it now does, and the honest thing is to say so plainly rather
+than to leave the old sentence standing.
+
+### What the enforcement path can and cannot do
+
+| | |
+|---|---|
+| Can block a claimant from opening disputes | Yes, once the appeal window elapses |
+| Can withhold a claimant's awarded payout | Yes, into reversible quarantine |
+| Can slash an operator directly | **No.** The slash is unchanged and still needs the committee |
+| Can cause permanent loss automatically | **No.** Forfeiture is a separate admin-only act |
+| Can be reversed | Yes. Clearing a flag refunds the quarantine in full |
+
+Four containment properties carry the whole design, and each is asserted by a
+test rather than described:
+
+1. **A flag never slashes.** The operator's penalty is computed and taken
+   identically whether or not the claimant is flagged — a suspected colluder
+   does not make a bad decision retroactively good, and must not become a route
+   for an operator to escape a slash.
+2. **An appeal window precedes any effect.** A zero-length window is rejected at
+   construction, so a false positive can never bite in the block it was raised.
+3. **Withheld funds are quarantined, not burned and not paid to the operator.**
+   Paying the operator would give it a motive to get its own claimants flagged,
+   which is a worse incentive than the one this removes.
+4. **Confiscation requires a human.** `forfeit` is admin-only and separate from
+   flagging, so the only path from a model output to permanent loss runs
+   through a person taking a deliberate action.
+
+### The danger, stated as executable tests
+
+`CollusionOracle.t.sol` carries three `test_dangerous_*` cases whose purpose is
+to keep this risk from being forgotten:
+
+- `test_dangerous_falsePositiveSilencesAnHonestClaimant` — a wrongly flagged
+  claimant cannot challenge a genuinely bad decision, and the operator keeps its
+  stake. An unvalidated model output protects a bad decision.
+- `test_dangerous_reporterCanFlagArbitrarily` — nothing on-chain distinguishes a
+  detector output from a lie. One key, no proof, no N-of-M.
+- `test_dangerous_flagPlusForfeitConfiscatesAnHonestAward` — flag, wait, resolve,
+  forfeit: a legitimate award is gone, and the only recourse was an appeal to the
+  same admin that took it.
+
+**Recommended deployment posture:** pass `address(0)` for the oracle until the
+detector's false-positive rate has been measured on the deployment's own
+traffic. `test_poolWithoutOracleIgnoresFlagsEntirely` shows that detaching it
+costs nothing else. The reporter script defaults to `--dry-run`, refuses to
+submit without `--i-understand-this-is-unvalidated`, and caps flags per run —
+but those are speed bumps in a script, not properties of the system.
 
 ## Phase F — on-chain operator reputation (trust tier: inherited)
 
@@ -268,8 +321,13 @@ registry (both close real gaps, both correctly placed outside tier 1).
 ensemble epistemic uncertainty (actively harmful, and expensive). Both remain
 in the repository as evidence; neither is in the default pipeline.
 
-**Remains unvalidated:** the GNN collusion detector, which has never seen real
-collusion and must not be given an enforcement role until it has.
+**Remains unvalidated, and is now enforcing anyway:** the GNN collusion
+detector has never seen real collusion, and has been given an enforcement path
+regardless. The path is bounded — no direct slashing, an appeal window, and
+reversible quarantine — but a false positive still silences a legitimate
+claimant for the duration, and the rate at which that happens is unknown.
+This is the largest unquantified risk in the system, and it is a deliberate
+choice rather than an oversight.
 
 **Unchanged by any of this:** the tier-1 boundary. The input logit is still an
 unverified operator-supplied value, and nothing in Phases A–G touches that.
