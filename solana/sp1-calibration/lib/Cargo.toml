@@ -1,0 +1,7 @@
+[package]
+name = "brier-calibration-core"
+version = "0.1.0"
+edition = "2021"
+description = "Fixed-point calibration head shared by the SP1 guest and host tests."
+
+[dependencies]
