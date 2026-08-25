@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import {BrierMath} from "./BrierMath.sol";
+import {ReputationRegister} from "./ReputationRegister.sol";
 import {Attestation} from "./Attestation.sol";
 
 /// @title StakePool
@@ -66,6 +67,15 @@ contract StakePool {
     // ------------------------------------------------------------------
     // Unbonding (Phase 3a)
     // ------------------------------------------------------------------
+
+    /// @notice Optional reputation sink, updated at each resolution.
+    /// @dev Optional by design. address(0) disables recording entirely, so
+    ///      reputation can never become load-bearing for the slash: the
+    ///      penalty is computed from (confidence, outcome) exactly as before
+    ///      whether or not anyone is listening. This also keeps the surface
+    ///      honest about its tier -- a component the mechanism does not depend
+    ///      on cannot be quietly promoted into a guarantee.
+    ReputationRegister public immutable reputation;
 
     /// @notice Delay between requesting a withdrawal and being able to execute it.
     /// @dev Must exceed the window in which a claimant could realistically
@@ -136,7 +146,8 @@ contract StakePool {
         uint256 maxSlashBps_,
         uint256 unbondingPeriod_,
         address[] memory resolvers_,
-        uint256 threshold_
+        uint256 threshold_,
+        address reputation_
     ) {
         if (maxSlashBps_ > 10_000) revert CapOutOfRange(maxSlashBps_);
         // A zero-length unbonding period would reintroduce the v0 front-running
@@ -149,6 +160,7 @@ contract StakePool {
         admin = admin_;
         maxSlashBps = maxSlashBps_;
         unbondingPeriod = unbondingPeriod_;
+        reputation = ReputationRegister(reputation_);
         _setCommittee(resolvers_, threshold_);
     }
 
@@ -335,6 +347,15 @@ contract StakePool {
         openDisputeCount[rec.operator] -= 1;
 
         emit DisputeResolved(disputeId, d.attestationId, decisionUpheld, rec.confidence, slash);
+
+        // Fold the outcome into the operator's calibration history. Same
+        // (confidence, outcome) pair that drove the slash, so the score and
+        // the penalty cannot diverge. Recorded BEFORE the payout call so a
+        // reverting claimant cannot suppress its own dispute's effect on
+        // reputation.
+        if (address(reputation) != address(0)) {
+            reputation.record(rec.operator, rec.confidence, decisionUpheld);
+        }
 
         if (slash > 0) {
             (bool ok,) = d.claimant.call{value: slash}("");

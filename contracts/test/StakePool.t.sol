@@ -64,7 +64,7 @@ contract StakePoolTest is Test {
     function setUp() public {
         verifier = new MockVerifier();
         attestation = new Attestation(address(verifier));
-        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING, _committee(), 2);
+        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING, _committee(), 2, address(0));
 
         vm.deal(operator, 1_000 ether);
         vm.deal(claimant, 1 ether);
@@ -241,7 +241,7 @@ contract StakePoolTest is Test {
     // ---------------------------------------------------------------
 
     function test_capIsEnforcedOnResolution() public {
-        StakePool capped = new StakePool(address(attestation), admin, 2_500, UNBONDING, _committee(), 2); // 25%
+        StakePool capped = new StakePool(address(attestation), admin, 2_500, UNBONDING, _committee(), 2, address(0)); // 25%
         vm.prank(operator);
         capped.stake{value: 100 ether}();
         bytes32 attId = _attest(0.99e18);

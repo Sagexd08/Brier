@@ -1,0 +1,1182 @@
+{
+  "summary": {
+    "n_rejections_examined": 40,
+    "n_counterfactual_found": 40,
+    "found_rate": 1.0,
+    "mean_sparsity_when_found": 1.075,
+    "max_sparsity": 2,
+    "immutable_violations": 0,
+    "implausible_values": 0,
+    "mean_shap_overlap": 0.7625,
+    "hash_deterministic": true,
+    "immutable_features": [
+      "age_years",
+      "foreign_worker",
+      "n_liable_maintenance",
+      "personal_status_sex"
+    ],
+    "n_actionable_features": 16
+  },
+  "cases": [
+    {
+      "index": 2,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9187222123146057,
+      "p_after": 0.004818028770387173,
+      "changes": [
+        {
+          "feature": "checking_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.004818028770387173
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "checking_status",
+        "credit_history",
+        "employment_since",
+        "age_years",
+        "property"
+      ],
+      "cf_features_in_shap_top5": [
+        "checking_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "dfa0c03a4889ed4c6a6fe9ca582f32189046392a9e12757717f2abe908d637e5"
+    },
+    {
+      "index": 5,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.949148416519165,
+      "p_after": 0.030281243845820427,
+      "changes": [
+        {
+          "feature": "savings_status",
+          "from": 0.0,
+          "to": 2.0,
+          "p_after": 0.030281243845820427
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "credit_amount",
+        "installment_rate_pct_income",
+        "savings_status",
+        "age_years",
+        "checking_status"
+      ],
+      "cf_features_in_shap_top5": [
+        "savings_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "584f6e431464948f1698dbb95380fdb2af5691225836ab710cad99e8a306ccbc"
+    },
+    {
+      "index": 9,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.8659689426422119,
+      "p_after": 0.011387157253921032,
+      "changes": [
+        {
+          "feature": "employment_since",
+          "from": 2.0,
+          "to": 4.0,
+          "p_after": 0.011387157253921032
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "housing",
+        "credit_amount",
+        "duration_months",
+        "installment_rate_pct_income",
+        "other_debtors"
+      ],
+      "cf_features_in_shap_top5": [],
+      "overlap_fraction": 0.0,
+      "evidence_hash": "414cf4c099045431056d686a7bd3fb11e914d719c474ace49604ec17095d49a2"
+    },
+    {
+      "index": 13,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.977719247341156,
+      "p_after": 0.3050293028354645,
+      "changes": [
+        {
+          "feature": "duration_months",
+          "from": 21.0,
+          "to": 4.0,
+          "p_after": 0.3050293028354645
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "employment_since",
+        "age_years",
+        "housing",
+        "checking_status",
+        "credit_amount"
+      ],
+      "cf_features_in_shap_top5": [],
+      "overlap_fraction": 0.0,
+      "evidence_hash": "7379657c06bf795880f0e19bb61ab76b6d75c900c42c56352c12f5b4519f2016"
+    },
+    {
+      "index": 19,
+      "found": true,
+      "sparsity": 2,
+      "p_before": 0.9966214895248413,
+      "p_after": 0.02680438570678234,
+      "changes": [
+        {
+          "feature": "credit_amount",
+          "from": 339.0,
+          "to": 3651.0,
+          "p_after": 0.6881892085075378
+        },
+        {
+          "feature": "savings_status",
+          "from": 0.0,
+          "to": 2.0,
+          "p_after": 0.02680438570678234
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "checking_status",
+        "other_installment_plans",
+        "residence_since",
+        "credit_history",
+        "purpose"
+      ],
+      "cf_features_in_shap_top5": [],
+      "overlap_fraction": 0.0,
+      "evidence_hash": "7d4c69c8b61051f6e34fbb370e53655f30babb5578f8c9316694c6f1bc11b5ca"
+    },
+    {
+      "index": 25,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.8131734132766724,
+      "p_after": 0.0685684010386467,
+      "changes": [
+        {
+          "feature": "duration_months",
+          "from": 18.0,
+          "to": 4.0,
+          "p_after": 0.0685684010386467
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "housing",
+        "other_installment_plans",
+        "credit_history",
+        "installment_rate_pct_income",
+        "telephone"
+      ],
+      "cf_features_in_shap_top5": [],
+      "overlap_fraction": 0.0,
+      "evidence_hash": "bcd90acf41f15bec46943b272aa4192e74ffe1ce459dea71f00b9ae0acd4c783"
+    },
+    {
+      "index": 26,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9438374042510986,
+      "p_after": 0.014620980247855186,
+      "changes": [
+        {
+          "feature": "credit_amount",
+          "from": 14896.0,
+          "to": 1743.0,
+          "p_after": 0.014620980247855186
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "credit_amount",
+        "checking_status",
+        "duration_months",
+        "other_installment_plans",
+        "installment_rate_pct_income"
+      ],
+      "cf_features_in_shap_top5": [
+        "credit_amount"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "2e1b4da87cbe7dba1fcf0f28db5f04f4e468c1c923c1cbdaee6c8dad43e1aeb9"
+    },
+    {
+      "index": 28,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.779011070728302,
+      "p_after": 0.017136402428150177,
+      "changes": [
+        {
+          "feature": "checking_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.017136402428150177
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "checking_status",
+        "property",
+        "employment_since",
+        "installment_rate_pct_income",
+        "job"
+      ],
+      "cf_features_in_shap_top5": [
+        "checking_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "a8fd4266fee3da15ff0d1c64e100436fccb4b970db3a13b378e5d70c6f1e178d"
+    },
+    {
+      "index": 29,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.6903181076049805,
+      "p_after": 0.0025505132507532835,
+      "changes": [
+        {
+          "feature": "installment_rate_pct_income",
+          "from": 3.0,
+          "to": 1.0,
+          "p_after": 0.0025505132507532835
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "credit_amount",
+        "checking_status",
+        "duration_months",
+        "installment_rate_pct_income",
+        "savings_status"
+      ],
+      "cf_features_in_shap_top5": [
+        "installment_rate_pct_income"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "74d1f6ae4a9092f5f11961c6bbd33180e951716ce1a47c9b12ec8e65626ae401"
+    },
+    {
+      "index": 31,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.8952887654304504,
+      "p_after": 0.00833586510270834,
+      "changes": [
+        {
+          "feature": "savings_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.00833586510270834
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "employment_since",
+        "age_years",
+        "housing",
+        "credit_amount",
+        "installment_rate_pct_income"
+      ],
+      "cf_features_in_shap_top5": [],
+      "overlap_fraction": 0.0,
+      "evidence_hash": "b48f29289897c73f7b93b54995c86db5a6b720cbfef55bfaf59ea7d543d4558e"
+    },
+    {
+      "index": 43,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9993979930877686,
+      "p_after": 0.04627714678645134,
+      "changes": [
+        {
+          "feature": "duration_months",
+          "from": 36.0,
+          "to": 4.0,
+          "p_after": 0.04627714678645134
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "duration_months",
+        "checking_status",
+        "housing",
+        "credit_amount",
+        "savings_status"
+      ],
+      "cf_features_in_shap_top5": [
+        "duration_months"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "5ac8378f2f42c0b534b54b21552094744553fc3d44593b706c25a5f0c66bdca1"
+    },
+    {
+      "index": 47,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9246770143508911,
+      "p_after": 0.004346606321632862,
+      "changes": [
+        {
+          "feature": "duration_months",
+          "from": 45.0,
+          "to": 9.0,
+          "p_after": 0.004346606321632862
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "checking_status",
+        "duration_months",
+        "age_years",
+        "savings_status",
+        "installment_rate_pct_income"
+      ],
+      "cf_features_in_shap_top5": [
+        "duration_months"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "85da02caa89f1c10269828673411623ca5d5a7a187be155e1bcd06c3728cb2a6"
+    },
+    {
+      "index": 51,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9967793822288513,
+      "p_after": 0.1877504587173462,
+      "changes": [
+        {
+          "feature": "duration_months",
+          "from": 24.0,
+          "to": 4.0,
+          "p_after": 0.1877504587173462
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "duration_months",
+        "checking_status",
+        "employment_since",
+        "housing",
+        "installment_rate_pct_income"
+      ],
+      "cf_features_in_shap_top5": [
+        "duration_months"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "f02e41b1c0c23b631f152e191f62bca79e84e8898912194a13eaa193a859853a"
+    },
+    {
+      "index": 52,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9931373596191406,
+      "p_after": 0.014255817048251629,
+      "changes": [
+        {
+          "feature": "checking_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.014255817048251629
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "checking_status",
+        "credit_amount",
+        "savings_status",
+        "employment_since",
+        "duration_months"
+      ],
+      "cf_features_in_shap_top5": [
+        "checking_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "4946c2a38e212cd3bf35fc40add915e529ca5cd0cdb1740563c76c82b2acfc81"
+    },
+    {
+      "index": 59,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9065767526626587,
+      "p_after": 0.003751248586922884,
+      "changes": [
+        {
+          "feature": "installment_rate_pct_income",
+          "from": 4.0,
+          "to": 1.0,
+          "p_after": 0.003751248586922884
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "installment_rate_pct_income",
+        "savings_status",
+        "credit_amount",
+        "duration_months",
+        "employment_since"
+      ],
+      "cf_features_in_shap_top5": [
+        "installment_rate_pct_income"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "acc001731050d004e9ffd4802662faea3a903d339b39f3b329930352a669379c"
+    },
+    {
+      "index": 62,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.7575898170471191,
+      "p_after": 0.12097275257110596,
+      "changes": [
+        {
+          "feature": "checking_status",
+          "from": 0.0,
+          "to": 2.0,
+          "p_after": 0.12097275257110596
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "other_installment_plans",
+        "checking_status",
+        "credit_amount",
+        "purpose",
+        "telephone"
+      ],
+      "cf_features_in_shap_top5": [
+        "checking_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "12939cbe7e6d58a33c3b83f2b16d92eb414104fd06b022ef4879c6932926d11f"
+    },
+    {
+      "index": 63,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9252052903175354,
+      "p_after": 0.0025847330689430237,
+      "changes": [
+        {
+          "feature": "savings_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.0025847330689430237
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "installment_rate_pct_income",
+        "checking_status",
+        "savings_status",
+        "housing",
+        "duration_months"
+      ],
+      "cf_features_in_shap_top5": [
+        "savings_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "0f0ed1be2be5bb81c8b99ea1695ee83d6eb74021a9e82203a1abcbdafceef1eb"
+    },
+    {
+      "index": 67,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.6369464993476868,
+      "p_after": 0.03159286081790924,
+      "changes": [
+        {
+          "feature": "duration_months",
+          "from": 24.0,
+          "to": 12.0,
+          "p_after": 0.03159286081790924
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "credit_amount",
+        "checking_status",
+        "age_years",
+        "duration_months",
+        "installment_rate_pct_income"
+      ],
+      "cf_features_in_shap_top5": [
+        "duration_months"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "9ec9a26768737b77ee22d9bedb4628cb4748513b9d64a4ddd2dc4bd7c5e94eae"
+    },
+    {
+      "index": 71,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9280790090560913,
+      "p_after": 0.007345656398683786,
+      "changes": [
+        {
+          "feature": "savings_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.007345656398683786
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "duration_months",
+        "employment_since",
+        "savings_status",
+        "residence_since",
+        "checking_status"
+      ],
+      "cf_features_in_shap_top5": [
+        "savings_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "9bda8b092abb2207741177b7c59a28eafeefc97f685c3770b549c863c4bae839"
+    },
+    {
+      "index": 80,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9107641577720642,
+      "p_after": 0.010540260002017021,
+      "changes": [
+        {
+          "feature": "credit_amount",
+          "from": 9960.0,
+          "to": 1743.0,
+          "p_after": 0.010540260002017021
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "credit_amount",
+        "installment_rate_pct_income",
+        "age_years",
+        "savings_status",
+        "employment_since"
+      ],
+      "cf_features_in_shap_top5": [
+        "credit_amount"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "9eaa3f46af7a6a0761afcf1d01af8aeae27daa6325ad49dc5637efe4f4bfc433"
+    },
+    {
+      "index": 86,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9807518720626831,
+      "p_after": 0.05304927006363869,
+      "changes": [
+        {
+          "feature": "savings_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.05304927006363869
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "credit_amount",
+        "age_years",
+        "savings_status",
+        "residence_since",
+        "credit_history"
+      ],
+      "cf_features_in_shap_top5": [
+        "savings_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "a22e751b6ca206a1761626a0ac73cf8b7c68ad1e6ddf67d317d68f57ac232371"
+    },
+    {
+      "index": 88,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9893103837966919,
+      "p_after": 0.1584855616092682,
+      "changes": [
+        {
+          "feature": "credit_amount",
+          "from": 9398.0,
+          "to": 3651.0,
+          "p_after": 0.1584855616092682
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "credit_amount",
+        "age_years",
+        "installment_rate_pct_income",
+        "duration_months",
+        "purpose"
+      ],
+      "cf_features_in_shap_top5": [
+        "credit_amount"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "0c4d4b9f0034ab66f54e206461f8de075db15e0795e84f21f00b319694676777"
+    },
+    {
+      "index": 92,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9799675941467285,
+      "p_after": 0.2269018292427063,
+      "changes": [
+        {
+          "feature": "checking_status",
+          "from": 1.0,
+          "to": 3.0,
+          "p_after": 0.2269018292427063
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "employment_since",
+        "age_years",
+        "checking_status",
+        "telephone",
+        "duration_months"
+      ],
+      "cf_features_in_shap_top5": [
+        "checking_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "0e73626124cc1db65fc8cb386d3b428861edd2a482b1c4a1293977cd1eeecd5d"
+    },
+    {
+      "index": 98,
+      "found": true,
+      "sparsity": 2,
+      "p_before": 0.986914336681366,
+      "p_after": 0.049234166741371155,
+      "changes": [
+        {
+          "feature": "savings_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.5561719536781311
+        },
+        {
+          "feature": "employment_since",
+          "from": 2.0,
+          "to": 3.0,
+          "p_after": 0.049234166741371155
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "credit_history",
+        "housing",
+        "installment_rate_pct_income",
+        "age_years",
+        "checking_status"
+      ],
+      "cf_features_in_shap_top5": [],
+      "overlap_fraction": 0.0,
+      "evidence_hash": "5e7775f7006d2241dc567f43b78c6d8eb46501a58a9844c1abf6f71db4d8699e"
+    },
+    {
+      "index": 101,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.8841264843940735,
+      "p_after": 0.10163334012031555,
+      "changes": [
+        {
+          "feature": "other_installment_plans",
+          "from": 0.0,
+          "to": 2.0,
+          "p_after": 0.10163334012031555
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "other_installment_plans",
+        "savings_status",
+        "employment_since",
+        "credit_amount",
+        "age_years"
+      ],
+      "cf_features_in_shap_top5": [
+        "other_installment_plans"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "cf2a8f2663269286a4b160f94c20456c1e0ae5be955158fa0af1789a87d6bece"
+    },
+    {
+      "index": 105,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9983384609222412,
+      "p_after": 0.1029941588640213,
+      "changes": [
+        {
+          "feature": "savings_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.1029941588640213
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "credit_amount",
+        "savings_status",
+        "installment_rate_pct_income",
+        "credit_history",
+        "housing"
+      ],
+      "cf_features_in_shap_top5": [
+        "savings_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "1ec726b75e6e3ff179e2460f669008c000ea5ce9881753b50622e21a3a9c68e3"
+    },
+    {
+      "index": 107,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.6656970381736755,
+      "p_after": 0.004126715008169413,
+      "changes": [
+        {
+          "feature": "credit_amount",
+          "from": 683.0,
+          "to": 3016.0,
+          "p_after": 0.004126715008169413
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "duration_months",
+        "credit_amount",
+        "other_installment_plans",
+        "age_years",
+        "employment_since"
+      ],
+      "cf_features_in_shap_top5": [
+        "credit_amount"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "8722b05337511c91a9fbe0dab16cb4aa03954389a8d82a7e120062adf8e41582"
+    },
+    {
+      "index": 113,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.659931480884552,
+      "p_after": 0.011772754602134228,
+      "changes": [
+        {
+          "feature": "employment_since",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.011772754602134228
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "employment_since",
+        "residence_since",
+        "checking_status",
+        "age_years",
+        "purpose"
+      ],
+      "cf_features_in_shap_top5": [
+        "employment_since"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "885dbb664bac2df37eb7b1bd15a6e6ad4451bef22f0febb7359a49cb47053028"
+    },
+    {
+      "index": 114,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.5714106559753418,
+      "p_after": 0.030999798327684402,
+      "changes": [
+        {
+          "feature": "credit_amount",
+          "from": 7472.0,
+          "to": 3651.0,
+          "p_after": 0.030999798327684402
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "employment_since",
+        "installment_rate_pct_income",
+        "age_years",
+        "savings_status",
+        "purpose"
+      ],
+      "cf_features_in_shap_top5": [],
+      "overlap_fraction": 0.0,
+      "evidence_hash": "2e0f2f9213e81dc88921d7ba9482937c923a650900e37c4a5e46233bec1e23df"
+    },
+    {
+      "index": 116,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.5298278331756592,
+      "p_after": 0.03959275037050247,
+      "changes": [
+        {
+          "feature": "credit_amount",
+          "from": 8471.0,
+          "to": 3651.0,
+          "p_after": 0.03959275037050247
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "savings_status",
+        "checking_status",
+        "installment_rate_pct_income",
+        "age_years",
+        "credit_amount"
+      ],
+      "cf_features_in_shap_top5": [
+        "credit_amount"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "877613d21c9e679d8ae784fed09f0cbe77b3462e56acca18a8bc97395031d2af"
+    },
+    {
+      "index": 118,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9431105256080627,
+      "p_after": 0.01873028837144375,
+      "changes": [
+        {
+          "feature": "checking_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.01873028837144375
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "checking_status",
+        "credit_amount",
+        "age_years",
+        "housing",
+        "purpose"
+      ],
+      "cf_features_in_shap_top5": [
+        "checking_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "433412b0c5cf10f4a2c73418f92f4ec8100d190869e1e3ee5d9988edced25ce7"
+    },
+    {
+      "index": 120,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.8175843954086304,
+      "p_after": 0.030653463676571846,
+      "changes": [
+        {
+          "feature": "credit_amount",
+          "from": 2511.0,
+          "to": 3651.0,
+          "p_after": 0.030653463676571846
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "employment_since",
+        "checking_status",
+        "age_years",
+        "duration_months",
+        "installment_rate_pct_income"
+      ],
+      "cf_features_in_shap_top5": [],
+      "overlap_fraction": 0.0,
+      "evidence_hash": "31585dee9cd8b4a0c72946be6f2f0c442ba4cf087d32ff736b41baff161402c3"
+    },
+    {
+      "index": 126,
+      "found": true,
+      "sparsity": 2,
+      "p_before": 0.9989603757858276,
+      "p_after": 0.04521435499191284,
+      "changes": [
+        {
+          "feature": "savings_status",
+          "from": 1.0,
+          "to": 3.0,
+          "p_after": 0.7463716864585876
+        },
+        {
+          "feature": "employment_since",
+          "from": 1.0,
+          "to": 3.0,
+          "p_after": 0.04521435499191284
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "employment_since",
+        "age_years",
+        "credit_amount",
+        "installment_rate_pct_income",
+        "purpose"
+      ],
+      "cf_features_in_shap_top5": [
+        "employment_since"
+      ],
+      "overlap_fraction": 0.5,
+      "evidence_hash": "08db0f54270bae4c07df9c9647c5096d36e810a48aafadca2ced4fc7edf66a95"
+    },
+    {
+      "index": 129,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9936564564704895,
+      "p_after": 0.09728611260652542,
+      "changes": [
+        {
+          "feature": "duration_months",
+          "from": 36.0,
+          "to": 4.0,
+          "p_after": 0.09728611260652542
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "employment_since",
+        "duration_months",
+        "checking_status",
+        "credit_amount",
+        "installment_rate_pct_income"
+      ],
+      "cf_features_in_shap_top5": [
+        "duration_months"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "3b470b947c2dbfc462bc8a5815cc6b6ecd4f6d2387c2c61445d11700a08ec71e"
+    },
+    {
+      "index": 134,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.6691470146179199,
+      "p_after": 0.0011782011715695262,
+      "changes": [
+        {
+          "feature": "checking_status",
+          "from": 1.0,
+          "to": 3.0,
+          "p_after": 0.0011782011715695262
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "purpose",
+        "checking_status",
+        "age_years",
+        "housing",
+        "duration_months"
+      ],
+      "cf_features_in_shap_top5": [
+        "checking_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "965fc1113b5f57d706264749e548ce971960340fc743d7941338304d021f7e9c"
+    },
+    {
+      "index": 137,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.8679355382919312,
+      "p_after": 0.024090789258480072,
+      "changes": [
+        {
+          "feature": "savings_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.024090789258480072
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "checking_status",
+        "purpose",
+        "installment_rate_pct_income",
+        "age_years",
+        "credit_history"
+      ],
+      "cf_features_in_shap_top5": [],
+      "overlap_fraction": 0.0,
+      "evidence_hash": "c0c4960f0231a38674413a9c9f2b321281b73e36cefaade9c34845659de6b3eb"
+    },
+    {
+      "index": 142,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.8904651403427124,
+      "p_after": 0.015000185929238796,
+      "changes": [
+        {
+          "feature": "other_installment_plans",
+          "from": 0.0,
+          "to": 2.0,
+          "p_after": 0.015000185929238796
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "other_installment_plans",
+        "checking_status",
+        "credit_amount",
+        "age_years",
+        "n_existing_credits"
+      ],
+      "cf_features_in_shap_top5": [
+        "other_installment_plans"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "3f4c9742940e5224b410c15a78624f567572f9376fda20d6f147ef9cdac2bfa2"
+    },
+    {
+      "index": 148,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9983798265457153,
+      "p_after": 0.137112557888031,
+      "changes": [
+        {
+          "feature": "savings_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.137112557888031
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "checking_status",
+        "employment_since",
+        "installment_rate_pct_income",
+        "savings_status",
+        "housing"
+      ],
+      "cf_features_in_shap_top5": [
+        "savings_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "01658ce31eb7a60f23da5f66b7b64a2dea07ccdde97162ed99979c1761eea64d"
+    },
+    {
+      "index": 150,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.9760417938232422,
+      "p_after": 0.027820071205496788,
+      "changes": [
+        {
+          "feature": "credit_amount",
+          "from": 10623.0,
+          "to": 1409.0,
+          "p_after": 0.027820071205496788
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "credit_amount",
+        "checking_status",
+        "credit_history",
+        "purpose",
+        "installment_rate_pct_income"
+      ],
+      "cf_features_in_shap_top5": [
+        "credit_amount"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "97223692bc8b8a971eb6beea843fe5d5ce399ab1eec7b37e3a460f59bc7a4610"
+    },
+    {
+      "index": 151,
+      "found": true,
+      "sparsity": 1,
+      "p_before": 0.8167968392372131,
+      "p_after": 0.004345504567027092,
+      "changes": [
+        {
+          "feature": "savings_status",
+          "from": 0.0,
+          "to": 3.0,
+          "p_after": 0.004345504567027092
+        }
+      ],
+      "violations": [],
+      "implausible_values": [],
+      "shap_top5": [
+        "checking_status",
+        "savings_status",
+        "other_debtors",
+        "duration_months",
+        "credit_history"
+      ],
+      "cf_features_in_shap_top5": [
+        "savings_status"
+      ],
+      "overlap_fraction": 1.0,
+      "evidence_hash": "a0fab23f43e20871adf38f2010dbca016dd8be3bd64964c4eae471538ba8ba3c"
+    }
+  ]
+}

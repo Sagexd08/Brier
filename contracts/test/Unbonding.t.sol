@@ -50,7 +50,7 @@ contract UnbondingTest is Test {
 
     function setUp() public {
         attestation = new Attestation(address(new OkVerifier()));
-        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING, _committee(), 2);
+        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING, _committee(), 2, address(0));
         vm.deal(operator, 10_000 ether);
         vm.deal(claimant, 1 ether);
     }
@@ -289,6 +289,6 @@ contract UnbondingTest is Test {
         vm.expectRevert(
             abi.encodeWithSelector(StakePool.UnbondingPeriodTooShort.selector, uint256(0))
         );
-        new StakePool(address(attestation), admin, 10_000, 0, _committee(), 2);
+        new StakePool(address(attestation), admin, 10_000, 0, _committee(), 2, address(0));
     }
 }

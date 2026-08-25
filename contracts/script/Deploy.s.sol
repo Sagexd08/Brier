@@ -28,8 +28,7 @@ contract Deploy is Script {
         Halo2Verifier verifier = new Halo2Verifier();
         Attestation attestation = new Attestation(address(verifier));
         StakePool pool = new StakePool(
-            address(attestation), admin, capBps, unbonding, committee, threshold
-        );
+            address(attestation), admin, capBps, unbonding, committee, threshold, address(0));
 
         vm.stopBroadcast();
 
