@@ -27,3 +27,10 @@ contracts/cache/
 contracts/broadcast/
 contracts/gasreport.txt
 contracts/lib/
+
+# Rust / Anchor / SP1 build artefacts
+target/
+**/target/
+solana/.anchor/
+solana/test-ledger/
+**/*.rs.bk
