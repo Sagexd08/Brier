@@ -12,7 +12,7 @@ FIGS = ROOT / "figures"
 
 TARGETS = [
     ("figure-a-architecture.svg", 1180, 620),
-    ("figure-c-threat-model.svg", 1180, 800),
+    ("figure-c-threat-model.svg", 1180, 1010),
 ]
 
 SHELL = """<!doctype html><meta charset="utf-8">
