@@ -34,3 +34,15 @@ target/
 solana/.anchor/
 solana/test-ledger/
 **/*.rs.bk
+
+# Secrets. NEVER commit a real key.
+# .env.example is the only env file that may be tracked, and it is empty.
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+# NOTE: do NOT un-ignore pk.key -- EZKL proving keys are 132 MiB each.
+solana/**/keypair*.json

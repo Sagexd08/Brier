@@ -1,0 +1,10 @@
+[package]
+name = "brier-prover-config"
+version = "0.1.0"
+edition = "2021"
+description = "SP1 prover selection and network cost logging for Brier."
+
+[lib]
+path = "src/prover.rs"
+
+[dependencies]

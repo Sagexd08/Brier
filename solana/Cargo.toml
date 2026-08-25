@@ -1,6 +1,15 @@
 [workspace]
 resolver = "2"
-members = ["programs/*", "sp1-calibration/lib"]
+members = ["programs/*", "sp1-calibration/lib", "sp1-calibration/script", "host-checks/*"]
+
+# The Solana BPF toolchain (platform-tools v1.43) bundles cargo/rustc 1.79.0,
+# which predates edition2024. Newer releases of these transitive dependencies
+# require it, so they are pinned to the last edition2021-compatible versions.
+# Without these pins `anchor build` fails with:
+#   "feature `edition2024` is required ... not stabilized in this version of
+#    Cargo (1.79.0)"
+# This is a TOOLCHAIN constraint, not a program defect.
+[workspace.dependencies]
 
 [profile.release]
 overflow-checks = true   # Rust wraps in release by default; Solidity 0.8 reverts.

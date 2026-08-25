@@ -17,4 +17,8 @@ no-log-ix-name = []
 idl-build = ["anchor-lang/idl-build"]
 
 [dependencies]
-anchor-lang = "0.31.1"
+# `init-if-needed` is opt-in because it enables re-initialisation attacks if
+# used carelessly. Used ONLY for the stake account, whose initialiser is the
+# operator itself and whose fields are additive (bonded += amount), so a repeat
+# init cannot reset another party's balance. Phase 3 attacks this directly.
+anchor-lang = { version = "0.31.1", features = ["init-if-needed"] }

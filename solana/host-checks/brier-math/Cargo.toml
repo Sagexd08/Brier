@@ -1,0 +1,5 @@
+[package]
+name = "brier-math-host-check"
+version = "0.1.0"
+edition = "2021"
+description = "Host-runnable copy of the on-chain Brier math, for toolchain-free CI."
