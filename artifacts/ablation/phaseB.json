@@ -1,0 +1,440 @@
+{
+  "seeds": [
+    42,
+    1337,
+    7,
+    2024,
+    31415,
+    271828,
+    99,
+    12345,
+    555,
+    8675309
+  ],
+  "alphas": [
+    0.2,
+    0.1,
+    0.05
+  ],
+  "per_seed": [
+    {
+      "seed": 42,
+      "n_conformal": 100,
+      "levels": {
+        "0.20": {
+          "target_coverage": 0.8,
+          "empirical_coverage": 0.77,
+          "avg_set_size": 1.115,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.885,
+            "2": 0.115
+          },
+          "quantile": 0.6006622910499573
+        },
+        "0.10": {
+          "target_coverage": 0.9,
+          "empirical_coverage": 0.85,
+          "avg_set_size": 1.33,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.67,
+            "2": 0.33
+          },
+          "quantile": 0.7404659986495972
+        },
+        "0.05": {
+          "target_coverage": 0.95,
+          "empirical_coverage": 0.9,
+          "avg_set_size": 1.465,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.535,
+            "2": 0.465
+          },
+          "quantile": 0.8134232759475708
+        }
+      }
+    },
+    {
+      "seed": 1337,
+      "n_conformal": 100,
+      "levels": {
+        "0.20": {
+          "target_coverage": 0.8,
+          "empirical_coverage": 0.755,
+          "avg_set_size": 1.025,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.975,
+            "2": 0.025
+          },
+          "quantile": 0.5287249684333801
+        },
+        "0.10": {
+          "target_coverage": 0.9,
+          "empirical_coverage": 0.855,
+          "avg_set_size": 1.25,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.75,
+            "2": 0.25
+          },
+          "quantile": 0.6289964318275452
+        },
+        "0.05": {
+          "target_coverage": 0.95,
+          "empirical_coverage": 0.93,
+          "avg_set_size": 1.445,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.555,
+            "2": 0.445
+          },
+          "quantile": 0.7391971051692963
+        }
+      }
+    },
+    {
+      "seed": 7,
+      "n_conformal": 100,
+      "levels": {
+        "0.20": {
+          "target_coverage": 0.8,
+          "empirical_coverage": 0.755,
+          "avg_set_size": 1.045,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.955,
+            "2": 0.045
+          },
+          "quantile": 0.524570107460022
+        },
+        "0.10": {
+          "target_coverage": 0.9,
+          "empirical_coverage": 0.82,
+          "avg_set_size": 1.255,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.745,
+            "2": 0.255
+          },
+          "quantile": 0.6261677742004395
+        },
+        "0.05": {
+          "target_coverage": 0.95,
+          "empirical_coverage": 0.855,
+          "avg_set_size": 1.335,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.665,
+            "2": 0.335
+          },
+          "quantile": 0.652583658695221
+        }
+      }
+    },
+    {
+      "seed": 2024,
+      "n_conformal": 100,
+      "levels": {
+        "0.20": {
+          "target_coverage": 0.8,
+          "empirical_coverage": 0.815,
+          "avg_set_size": 1.17,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.83,
+            "2": 0.17
+          },
+          "quantile": 0.5912198424339294
+        },
+        "0.10": {
+          "target_coverage": 0.9,
+          "empirical_coverage": 0.93,
+          "avg_set_size": 1.485,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.515,
+            "2": 0.485
+          },
+          "quantile": 0.7598759680986404
+        },
+        "0.05": {
+          "target_coverage": 0.95,
+          "empirical_coverage": 0.975,
+          "avg_set_size": 1.755,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.245,
+            "2": 0.755
+          },
+          "quantile": 0.8608893305063248
+        }
+      }
+    },
+    {
+      "seed": 31415,
+      "n_conformal": 100,
+      "levels": {
+        "0.20": {
+          "target_coverage": 0.8,
+          "empirical_coverage": 0.73,
+          "avg_set_size": 0.99,
+          "size_distribution": {
+            "0": 0.01,
+            "1": 0.99,
+            "2": 0.0
+          },
+          "quantile": 0.4916727542877197
+        },
+        "0.10": {
+          "target_coverage": 0.9,
+          "empirical_coverage": 0.875,
+          "avg_set_size": 1.28,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.72,
+            "2": 0.28
+          },
+          "quantile": 0.6850523948669434
+        },
+        "0.05": {
+          "target_coverage": 0.95,
+          "empirical_coverage": 0.97,
+          "avg_set_size": 1.73,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.27,
+            "2": 0.73
+          },
+          "quantile": 0.9053590372204781
+        }
+      }
+    },
+    {
+      "seed": 271828,
+      "n_conformal": 100,
+      "levels": {
+        "0.20": {
+          "target_coverage": 0.8,
+          "empirical_coverage": 0.775,
+          "avg_set_size": 1.03,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.97,
+            "2": 0.03
+          },
+          "quantile": 0.534278154373169
+        },
+        "0.10": {
+          "target_coverage": 0.9,
+          "empirical_coverage": 0.845,
+          "avg_set_size": 1.245,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.755,
+            "2": 0.245
+          },
+          "quantile": 0.6468998193740845
+        },
+        "0.05": {
+          "target_coverage": 0.95,
+          "empirical_coverage": 0.9,
+          "avg_set_size": 1.495,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.505,
+            "2": 0.495
+          },
+          "quantile": 0.7500429749488831
+        }
+      }
+    },
+    {
+      "seed": 99,
+      "n_conformal": 100,
+      "levels": {
+        "0.20": {
+          "target_coverage": 0.8,
+          "empirical_coverage": 0.82,
+          "avg_set_size": 1.15,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.85,
+            "2": 0.15
+          },
+          "quantile": 0.5552492737770081
+        },
+        "0.10": {
+          "target_coverage": 0.9,
+          "empirical_coverage": 0.9,
+          "avg_set_size": 1.445,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.555,
+            "2": 0.445
+          },
+          "quantile": 0.6959122121334076
+        },
+        "0.05": {
+          "target_coverage": 0.95,
+          "empirical_coverage": 0.965,
+          "avg_set_size": 1.67,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.33,
+            "2": 0.67
+          },
+          "quantile": 0.8019756823778152
+        }
+      }
+    },
+    {
+      "seed": 12345,
+      "n_conformal": 100,
+      "levels": {
+        "0.20": {
+          "target_coverage": 0.8,
+          "empirical_coverage": 0.83,
+          "avg_set_size": 1.16,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.84,
+            "2": 0.16
+          },
+          "quantile": 0.5782011449337006
+        },
+        "0.10": {
+          "target_coverage": 0.9,
+          "empirical_coverage": 0.91,
+          "avg_set_size": 1.435,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.565,
+            "2": 0.435
+          },
+          "quantile": 0.7230410873889923
+        },
+        "0.05": {
+          "target_coverage": 0.95,
+          "empirical_coverage": 0.945,
+          "avg_set_size": 1.635,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.365,
+            "2": 0.635
+          },
+          "quantile": 0.7975912690162659
+        }
+      }
+    },
+    {
+      "seed": 555,
+      "n_conformal": 100,
+      "levels": {
+        "0.20": {
+          "target_coverage": 0.8,
+          "empirical_coverage": 0.815,
+          "avg_set_size": 1.155,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.845,
+            "2": 0.155
+          },
+          "quantile": 0.61532062292099
+        },
+        "0.10": {
+          "target_coverage": 0.9,
+          "empirical_coverage": 0.87,
+          "avg_set_size": 1.32,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.68,
+            "2": 0.32
+          },
+          "quantile": 0.7043997645378113
+        },
+        "0.05": {
+          "target_coverage": 0.95,
+          "empirical_coverage": 0.91,
+          "avg_set_size": 1.49,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.51,
+            "2": 0.49
+          },
+          "quantile": 0.78886678814888
+        }
+      }
+    },
+    {
+      "seed": 8675309,
+      "n_conformal": 100,
+      "levels": {
+        "0.20": {
+          "target_coverage": 0.8,
+          "empirical_coverage": 0.865,
+          "avg_set_size": 1.185,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.815,
+            "2": 0.185
+          },
+          "quantile": 0.5823860466480255
+        },
+        "0.10": {
+          "target_coverage": 0.9,
+          "empirical_coverage": 0.96,
+          "avg_set_size": 1.525,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.475,
+            "2": 0.525
+          },
+          "quantile": 0.7307795286178589
+        },
+        "0.05": {
+          "target_coverage": 0.95,
+          "empirical_coverage": 0.985,
+          "avg_set_size": 1.68,
+          "size_distribution": {
+            "0": 0.0,
+            "1": 0.32,
+            "2": 0.68
+          },
+          "quantile": 0.8138655424118042
+        }
+      }
+    }
+  ],
+  "summary": {
+    "0.20": {
+      "target_coverage": 0.8,
+      "coverage_mean": 0.7929999999999999,
+      "coverage_std": 0.039949968710876346,
+      "coverage_min": 0.73,
+      "seeds_at_or_above_target": 5,
+      "avg_set_size_mean": 1.1024999999999998,
+      "avg_set_size_std": 0.06860211367006122
+    },
+    "0.10": {
+      "target_coverage": 0.9,
+      "coverage_mean": 0.8815000000000002,
+      "coverage_std": 0.04080747480548142,
+      "coverage_min": 0.82,
+      "seeds_at_or_above_target": 4,
+      "avg_set_size_mean": 1.3570000000000002,
+      "avg_set_size_std": 0.1004290794541103
+    },
+    "0.05": {
+      "target_coverage": 0.95,
+      "coverage_mean": 0.9334999999999999,
+      "coverage_std": 0.0397523584206019,
+      "coverage_min": 0.855,
+      "seeds_at_or_above_target": 4,
+      "avg_set_size_mean": 1.5699999999999998,
+      "avg_set_size_std": 0.13418271125595874
+    }
+  }
+}

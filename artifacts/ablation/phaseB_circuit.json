@@ -1,0 +1,37 @@
+{
+  "temperature": 2.6529700756073,
+  "conformal_quantile": 0.7404659986495972,
+  "alpha": 0.1,
+  "results": {
+    "temperature_only": {
+      "name": "temperature_only",
+      "logrows": 15,
+      "circuit_rows": 32768,
+      "num_rows_used": 39,
+      "total_assignments": 79,
+      "setup_s": 2.001385100011248,
+      "prove_s": 1.7209594000014476,
+      "proof_bytes": 17525,
+      "verify_s": 0.07997510000132024
+    },
+    "temperature_plus_conformal": {
+      "name": "temperature_plus_conformal",
+      "logrows": 15,
+      "circuit_rows": 32768,
+      "num_rows_used": 95,
+      "total_assignments": 191,
+      "setup_s": 1.7904348999727517,
+      "prove_s": 1.6550616000313312,
+      "proof_bytes": 17828,
+      "verify_s": 0.059633800003211945
+    }
+  },
+  "verdict": {
+    "budget_logrows": 15,
+    "fits_budget": true,
+    "logrows_delta": 0,
+    "rows_used_delta": 56,
+    "prove_s_ratio": 0.9617086841385909,
+    "tier": "2 (in-circuit)"
+  }
+}
