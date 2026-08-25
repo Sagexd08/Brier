@@ -1,6 +1,6 @@
 # Brier: Confidence-Calibrated Slashing for On-Chain AI Decision Accountability
 
-**A research proposal and v0 implementation report**
+**A research proposal with a measured v0 prototype**
 
 Repository: <https://github.com/Sagexd08/Brier> · Version: v0 (prototype) · Date: August 2026
 
@@ -20,11 +20,13 @@ Error from 0.1853 ± 0.0248 to 0.0870 ± 0.0218 on held-out UCI German Credit da
 in every seed; an EZKL/halo2 circuit proves the calibration head in 2.09 s,
 verified on-chain for 684,696 gas. This is a mechanism and a prototype, **not a
 deployable protocol**: only the calibration head is proved, its input logit
-unverified, dispute resolution one admin key, no unbonding period.
+unverified, dispute resolution one admin key, no unbonding period. The proposal
+states what each of those gaps would take to close, and what evidence would
+settle whether the mechanism survives contact with them.
 
 ---
 
-## 1. Motivation
+## 1. Introduction
 
 ### 1.1 The regulatory setting
 
@@ -93,6 +95,48 @@ Foresight Arena is reward-based, involves no staked collateral at risk, no
 slashing, and no zero-knowledge proofs [5]. We claim novelty in the combination,
 not in any component.
 
+### 1.3 Research questions
+
+The proposal is organised around four questions. Each names the evidence that
+would answer it; §6 reports how far the v0 prototype gets, and §8 proposes the
+work that would close the remainder.
+
+**RQ1 — Incentive.** Does penalising a disputed decision by its Brier score make
+truthful confidence reporting the operator's loss-minimising strategy, and does
+that property survive implementation in fixed-point on-chain arithmetic?
+*Evidence:* an analytic derivation (§3.2), plus numerical verification of the
+deployed Solidity against it (§5.5, §6.5).
+
+**RQ2 — Feasibility.** Can the confidence-producing step be proved in zero
+knowledge and verified on-chain at a cost a per-decision workflow could absorb?
+*Evidence:* measured proving time, proof size, and verification gas (§6.3, §6.4).
+
+**RQ3 — Cost structure.** How does proving cost scale with the size of the
+proved head, and does that scaling favour proving a small calibration head over
+a full classifier? *Evidence:* a parameter sweep across four orders of magnitude
+(§6.3).
+
+**RQ4 — Sufficiency.** Is a proved calibration head enough to make the resulting
+attestation trustworthy? *Evidence:* an adversarial reading of the trust
+boundary, with each claimed weakness executed as a test (§4.3, §7). The answer
+established here is **no**, and that answer is what §8 is addressed to.
+
+### 1.4 Contributions
+
+1. A slashing rule built on a strictly proper scoring rule, with the properness
+   argument derived in closed form (§3.2) and its scope conditions stated as
+   part of the claim rather than as trailing caveats (§3.3).
+2. A working implementation: fixed-point Brier arithmetic in Solidity at 543
+   gas, an EZKL/halo2 circuit over the calibration head, and an attestation
+   contract that rejects any decision whose proof does not verify.
+3. A measured evaluation over 10 pinned seeds, including a leakage control that
+   comes out *worse than not calibrating at all*, and a negative result on head
+   capacity reported at the strength the data supports rather than the strength
+   that would read better.
+4. An adversarial trust model (§4.3) in which every asserted weakness is
+   demonstrated by an executing test, so the threat model cannot drift away from
+   the code without the test suite failing.
+
 ---
 
 ## 2. Related work
@@ -138,26 +182,65 @@ sole property this mechanism depends on.
 
 ---
 
-## 3. Core contribution
+## 3. The mechanism
 
-**Claim (testable).** Defining the slash on a disputed decision as
-$\text{slash} = S \cdot (c - o)^2$, where $S$ is staked collateral, $c \in [0,1]$
-the operator's reported confidence that its decision was correct, and
-$o \in \{0,1\}$ the adjudicated outcome, yields a mechanism in which reporting
-the operator's true subjective probability minimises expected loss — so honest
-confidence reporting is the loss-minimising strategy rather than an assumption —
-and this is implementable today, with the confidence-producing step proved in
-zero knowledge at 2.09 s on a commodity CPU and verified on-chain for 684,696 gas.
+### 3.1 The slashing rule
 
-**Scope conditions, stated as part of the claim rather than as caveats.** The
-properness argument holds *conditional on* the adjudicated outcome being
-truthful, and on dispute selection being independent of the reported confidence.
-Neither condition is guaranteed by this prototype. Specifically:
+Let $S$ be the collateral an operator has staked, $c \in [0,1]$ the confidence it
+reported that its decision was correct, and $o \in \{0,1\}$ the adjudicated
+outcome of a dispute over that decision. On an upheld dispute the contract slashes
+
+$$\text{slash} = S \cdot (c - o)^2$$
+
+subject to a protocol maximum fraction of $S$. The penalty is the Brier score of
+a single forecast, denominated in stake.
+
+### 3.2 Why truthful reporting minimises expected loss
+
+Suppose the operator privately believes the decision is correct with probability
+$p$, and that a dispute, if opened, is adjudicated truthfully — so $o = 1$ with
+probability $p$. Reporting $c$, its expected slash is
+
+$$E[\text{slash}] = S ( p(c-1)^2 + (1-p)c^2 ) = S ( c^2 - 2pc + p )$$
+
+and completing the square in $c$ gives
+
+$$E[\text{slash}] = S ( (c-p)^2 + p(1-p) )$$
+
+Two things follow, and together they are the whole argument.
+
+**The unique minimum is at $c = p$.** The expression is a strictly convex
+parabola in $c$, so any misreport in either direction costs the operator
+$S(c-p)^2$ in expectation. Overclaiming confidence is not merely unrewarded, it
+is priced — and priced quadratically, so shading the truth slightly is cheap
+while asserting near-certainty about a coin flip costs close to the entire stake.
+This is strict properness [10] instantiated as a collateral rule: the operator
+does not need to be honest, it needs only to be selfish.
+
+**The residual $S \cdot p(1-p)$ is irreducible.** It does not depend on what the
+operator reports. An operator facing genuine uncertainty pays for that
+uncertainty however honestly it reports, which is the economically correct
+reading: the term is the price of writing an opinion on a hard case, and it is
+maximised at $p = 0.5$, where the model knows least. The mechanism cleanly
+separates the cost of *being uncertain* from the cost of *misrepresenting
+uncertainty*, and only the second is avoidable by the operator.
+
+The deployed contract computes this in fixed point rather than over the reals, so
+properness is re-established empirically against the shipped code rather than
+inherited from the algebra: §5.5 scans all 101 candidate reports at two distinct
+true probabilities and confirms the expected-loss minimiser is the true one in
+both, and monotonicity is fuzzed at 256 runs per direction.
+
+### 3.3 Scope conditions, stated as part of the claim
+
+The derivation assumes the adjudicated outcome is truthful and that dispute
+selection is independent of the reported confidence. Neither condition is
+guaranteed by this prototype. Specifically:
 
 1. **Input-logit provenance is unproven.** The circuit takes the base model's
    logit as an unverified public input. An operator that fabricates the logit
    obtains a proof that verifies. The proof binds the calibration step, not the
-   pipeline (Figure C, tier 1; `ThreatModel.t.sol::test_tier1_marginIsUnverifiedOperatorSuppliedInput`).
+   pipeline (Figure 3, tier 1; `ThreatModel.t.sol::test_tier1_marginIsUnverifiedOperatorSuppliedInput`).
 2. **Off-chain misreporting before proving is not prevented.** Nothing forces
    the operator to feed the circuit the logit its deployed model actually
    produced.
@@ -166,27 +249,33 @@ Neither condition is guaranteed by this prototype. Specifically:
    dominant strategy under that surface is not analysed here.
 
 The mechanism is proper; the *system* is proper only to the extent that these
-conditions hold, and in v0 they do not.
+conditions hold, and in v0 they do not. Closing conditions 1 and 3 is the
+substance of the proposed work in §8.
 
 ---
 
 ## 4. System design
 
-### 4.1 Figure A — Component architecture
+### 4.1 Components and where the circuit sits
 
-![Figure A — Component architecture](figures/figure-a-architecture.png)
+![Figure 1 — Component architecture. Solid outlines are implemented and measured; dashed amber is specified but unbuilt; red is the single component inside the zk circuit.](figures/figure-a-architecture.png)
 
 Solid outlines mark components implemented and measured in the repository;
 dashed amber marks specified-but-unbuilt. Red marks the single component inside
 the zk circuit. The base classifier and the SHAP explainer sit outside the
 circuit by design; the SHAP vector is hash-committed as evidence only.
 
-### 4.2 Figure B — Protocol sequence
+### 4.2 Protocol sequence and per-step cost
 
-Rendered below for PDF export; the source is inline Mermaid (and
-`figures/figure-b-sequence.mmd`) so it also renders natively on GitHub.
+The sequence below is annotated with the gas each step actually cost on a local
+chain, so the expensive steps are visible rather than asserted: verification
+dominates, and the Brier arithmetic that is the substance of the mechanism is
+three orders of magnitude cheaper than proving that it ran. Two notes in the
+diagram mark where v0 computes a penalty it cannot enforce — the operator's
+unrestricted `withdraw()` between attestation and dispute (§7.3), and the single
+administrative key that decides the outcome (§7.2).
 
-![Figure B — Protocol sequence](figures/figure-b-sequence.png)
+![Figure 2 — Protocol sequence, annotated with measured gas per step and the two points at which v0 is unenforced.](figures/figure-b-sequence.png)
 
 ```mermaid
 sequenceDiagram
@@ -224,9 +313,9 @@ sequenceDiagram
     Note over SP,CL: resolveDispute + payout: 97,390 gas
 ```
 
-### 4.3 Figure C — Trust boundaries and threat model
+### 4.3 Trust boundaries
 
-![Figure C — Trust boundaries and threat model](figures/figure-c-threat-model.png)
+![Figure 3 — Trust boundaries. Green is cryptographically guaranteed, amber economically assumed, red fully trusted; each weakness names the test that demonstrates it.](figures/figure-c-threat-model.png)
 
 This is the diagram against which every other claim in this document should be
 checked. Three tiers:
@@ -245,9 +334,9 @@ path requires no cryptographic work: fabricate the logit (tier 1 does not bind
 it), or front-run the dispute with `withdraw()` (tier 2), or rely on the admin
 key (tier 3).
 
-### 4.4 Figure D — Calibration reliability
+### 4.4 Calibration reliability
 
-![Figure D — Calibration reliability](figures/figure-d-calibration.png)
+![Figure 4 — Reliability before and after temperature scaling, with the train-fitted leakage control at right. Bin values are read directly from the run artifacts; no curve is fitted.](figures/figure-d-calibration.png)
 
 Bin values are read directly from `artifacts/calibration/phase1_report.json`; no
 curve is fitted or smoothed. Left: uncalibrated, ECE 0.2164, with a bin at mean
@@ -326,11 +415,11 @@ All figures below are produced by scripts in the repository. Environment:
 Windows 11, Python 3.13.5, xgboost 3.1.2, torch 2.9.1+cpu, EZKL 23.0.5,
 Foundry 1.7.1, laptop CPU, no GPU. Seed 42.
 
-### 6.1R Calibration across 10 seeds (research pass)
+### 6.1 Calibration
 
-Single-seed results are reported in §6.1 for reference; these are the figures
-the calibration claims rest on. Seeds are pinned in `config.EVAL_SEEDS`; the
-full list is always run.
+The calibration claims rest on the 10-seed pass. Seeds are pinned in
+`config.EVAL_SEEDS` and the full list is always run, so a favourable subset
+cannot be reported selectively.
 
 | Head | ECE mean ± std | Brier mean ± std | Accuracy mean ± std |
 |---|---|---|---|
@@ -339,23 +428,37 @@ full list is always run.
 | MLP (321 params) | 0.1055 ± 0.0234 | 0.1908 ± 0.0119 | 0.7330 ± 0.0199 |
 | *Control: fitted on TRAIN* | *0.2434 ± 0.0212* | — | — |
 
-Learned $T = 3.4657 \pm 0.4491$, and $T > 1$ in **every** seed. Calibration reduces
-ECE in **every** seed; the control is worse than not calibrating in **every**
-seed (paired Wilcoxon $p = 0.002$, the minimum attainable at $n = 10$).
+Learned $T = 3.4657 \pm 0.4491$, with $T > 1$ in **every** seed — the base model
+required softening everywhere, never sharpening. Temperature scaling reduces ECE
+in **every** seed, and the train-fitted control is worse than not calibrating at
+all in **every** seed (paired Wilcoxon $p = 0.002$, the minimum attainable at
+$n = 10$). Accuracy is unchanged by temperature scaling, as it must be: a
+monotone rescaling of the logit cannot move the decision boundary. Calibration
+buys a better-priced confidence, not a better classifier, and the table separates
+the two.
 
-**Correction to a v0 claim.** v0 asserted "temperature scaling beats the MLP
-head" from one run per head. Across seeds it holds as a *majority* result —
-7/10 seeds, $W = 7.0$, $p = 0.03711$, median difference $-0.01816$ — not a uniform
-one. The claim is retained at that reduced strength and pinned by
-`tests/test_multiseed.py::test_temperature_beats_mlp_claim_matches_reported_strength`.
+**Negative result on head capacity, reported at the strength the data supports.**
+The 321-parameter MLP head does not beat the 1-parameter head. Across the 10
+pinned seeds temperature scaling has the lower ECE in **7 of 10** — paired
+Wilcoxon $W = 7.0$, $p = 0.037$, median difference $-0.018$. This is a *majority*
+result, not a uniform one, and it is stated that way deliberately: a single run
+per head would have supported the stronger and less accurate claim. With 200
+calibration points the extra capacity usually fails to generalise, but in 3 of 10
+seeds the MLP wins. The reported strength is pinned by
+`tests/test_multiseed.py::test_temperature_beats_mlp_claim_matches_reported_strength`,
+so overstating it later would fail the suite. The convenient part of this result
+is that the better estimator is also the cheaper circuit; that agreement is a
+measured outcome rather than a design assumption.
 
-**Cherry-picking audit.** Seed 42, published alone in v0, ranks 6th of 10 by ECE
-reduction (48.7% vs 52.8% mean) while carrying the *highest* uncalibrated ECE of
-any seed. The single-seed figures were therefore pessimistic in absolute terms
-and middling in relative terms. `SEED = 42` was committed once, before results
-existed, and never changed; the repository contains no notebooks.
+**Seed-selection audit.** Because a single seed can be chosen after the fact, we
+report where ours falls. Seed 42 ranks 6th of 10 by ECE reduction (48.7% against
+a 52.8% mean) while carrying the *highest* uncalibrated ECE of any seed — the
+single-seed figures are therefore pessimistic in absolute terms and middling in
+relative terms. `SEED = 42` was committed once, before any result existed, and
+never changed; the repository contains no notebooks.
 
-### 6.1 Calibration at seed 42 (single run, for reference)
+**Seed 42 in detail**, since it is the seed the figures, circuits and end-to-end
+run are generated from:
 
 | Head | Params | ECE | MCE | Brier |
 |---|---|---|---|---|
@@ -364,18 +467,8 @@ existed, and never changed; the repository contains no notebooks.
 | MLP | 321 | 0.1436 | 0.7766 | 0.2030 |
 | *Control: temperature fitted on TRAIN* | 1 | *0.2773* | — | — |
 
-ECE reduction: 48.7%. Learned $T = 3.0121$ ($T > 1$ confirms the base model
-required softening). Base accuracy: train 1.0000, test 0.7150.
-
-**Negative result, retained — and its strength corrected.** At seed 42 the
-321-parameter MLP head underperforms the 1-parameter head on held-out ECE
-(0.1436 vs 0.1111). Across the 10 pinned seeds (§6.1R) the effect is real but
-**not uniform**: temperature scaling has the lower ECE in **7 of 10** seeds
-(paired Wilcoxon $W = 7.0$, $p = 0.037$, median difference $-0.018$). With 200
-calibration points the additional capacity usually fails to generalise, but in
-3 of 10 seeds the MLP wins. The simplest head is both the better estimator on
-average and the cheaper circuit; that agreement is a measured outcome, not a
-design assumption, and it is a majority rather than a universal result.
+Learned $T = 3.0121$; base accuracy train 1.0000, test 0.7150. Figure 4 plots
+the left two columns of this table as reliability curves.
 
 ### 6.2 Explainability
 
@@ -397,20 +490,23 @@ across 3 reruns; 5/5 directional sanity checks pass
 | Calldata per proof | 3,300 B | 3,300 B |
 | Tamper-soundness | 4/4 rejected | 4/4 rejected |
 
-**Result, extended from 2 points to 10 (§6.3R).** Proving cost is invariant to a
-**16,897× parameter increase**. A 10-point sweep from 1 to 16,897 parameters
-holds `logrows` = 15 at every point; rows used scale linearly with parameters
-(slope 0.98 rows/param, $r = 0.992$) while proving time does not follow
-(mean 2.13 s ± 0.09, regression slope +0.009 s/decade, Spearman
-$ho = -0.188$, $p = 0.603$). Fixed lookup and column overhead dominate
-multiply-accumulate count. No fallback to a smaller head was required.
+**Proving cost is invariant to a 16,897× parameter increase.** A 10-point sweep
+from 1 to 16,897 parameters holds `logrows` = 15 at every point. Rows used scale
+linearly with parameter count (slope 0.98 rows/param, $r = 0.992$) but proving
+time does not follow it: mean 2.13 s, standard deviation 0.09, regression slope
++0.009 s per decade of parameters, Spearman rank correlation $-0.188$ at
+$p = 0.603$ — indistinguishable from no relationship. Fixed lookup-argument and
+column overhead dominate the multiply-accumulate count entirely. This is the
+answer to RQ3, and it is the reason the design proves a head rather than a
+classifier: within the circuit's capacity, a larger head is very nearly free,
+so the binding constraint is capacity, not parameter count.
 
 **Scope limit.** This holds *within* logrows = 15. The largest head fills 16,511
 of 32,768 rows (50.4%), so the sweep does not cross the capacity boundary; where
 cost steps at logrows 16+ is **unmeasured**. The claim is "flat until the head
 stops fitting the circuit," not "flat without limit."
 
-![Figure E — proving cost vs head size](figures/figure-e-circuit-sweep.png)
+![Figure 5 — Proving cost against head size across four orders of magnitude. Rows used scale linearly with parameters; proving time does not follow.](figures/figure-e-circuit-sweep.png)
 
 Soundness is tested rather than assumed: an honest proof verifies, while a
 tampered public output, a flipped byte at the proof head, a flipped byte
@@ -450,12 +546,12 @@ percentage column is the comparable one and absolute ETH values across rows are 
 `withdraw()` has no unbonding period, an operator that front-runs `openDispute()`
 reduces every slash in this table to zero; `ThreatModel.t.sol::test_tier2_operatorCanFrontRunDisputeByWithdrawing`
 executes exactly that, turning a 98.01 ETH slash into 0. The table reports what
-the mechanism computes, not what it can currently enforce (§7.3, Figure C tier 2).
+the mechanism computes, not what it can currently enforce (§7.3, Figure 3 tier 2).
 
 ### 6.5 Test suite
 
 53 Solidity tests (Foundry) and 29 Python tests, all passing. This includes 5
-tests in `ThreatModel.t.sol` that **demonstrate the weaknesses** in Figure C
+tests in `ThreatModel.t.sol` that **demonstrate the weaknesses** in Figure 3
 rather than assert the system is secure; a failure there means the threat model
 has drifted from the code.
 
@@ -499,7 +595,7 @@ is unsolved, not merely unimplemented.
 pending-dispute check. An operator watching the mempool can withdraw the entire
 stake before `openDispute()` is mined. `test_tier2_operatorCanFrontRunDisputeByWithdrawing`
 executes this path: a decision that would otherwise incur a 98.01 ETH slash
-incurs **0**, and the claimant receives nothing. The economic tier of Figure C is
+incurs **0**, and the claimant receives nothing. The economic tier of Figure 3 is
 therefore not merely weak but unenforced, and the headline slashing results in
 §6.4 hold only against an operator that does not take this action.
 
@@ -523,48 +619,128 @@ thousands of simultaneous claims — is not modelled.
 
 ---
 
-## 8. Future work
+## 8. Proposed work
 
-1. **Decentralised adjudication.** Replace the admin key with a Kleros-style
-   juror pool [7], adding an evidentiary standard, appeals, and economic security
-   exceeding the value at risk. Requires resolving what evidence establishes that
-   a rejection was wrong given the unobservable counterfactual (§7.2).
-2. **Unbonding period.** Close §7.3 with a withdrawal delay exceeding the dispute
-   window, and analyse the resulting capital-efficiency cost to the operator.
-3. **Input-logit provenance.** Three paths, in decreasing order of guarantee
-   strength: prove the base classifier in-circuit (expensive for a depth-8,
-   400-tree ensemble); commit to feature vector and model weights so a fabricated
-   logit is *detectable* though not *proved*; or attest the base model through a
-   secure enclave, substituting a hardware trust assumption for a cryptographic
-   one. Only the third is cheap today, and it is strictly the weakest.
-4. **Collusion detection.** Graph-based analysis over the claimant/operator
-   bipartite graph to detect self-dealing disputes. Untried here; listed as a
-   direction, not a result.
-5. **Subgroup calibration as the slashed quantity.** Slashing on within-group
-   ECE rather than aggregate confidence would target the harm in §7.4 directly.
-6. **Non-deterministic decision classes (LLM outputs).** We flag this as
-   **substantially harder, not a natural extension.** The present design depends
-   on a deterministic decision with a scalar confidence and a binary outcome.
-   Free-form generation has no canonical scalar confidence, no binary ground
-   truth, and no stable notion of "the same decision" across sampling seeds.
-   Applying a proper scoring rule requires first defining the event space being
-   scored, which is an open problem rather than an engineering task.
+§7 is a list of reasons the present system should not be trusted. This section is
+the work that would remove them, ordered by what blocks what. Each item states
+the deliverable and the evidence that would count as having done it — the point
+being that these are falsifiable targets, not intentions.
+
+### 8.1 Closing the enforcement gap (prerequisite)
+
+**W1 — Unbonding period.** Add a withdrawal delay strictly exceeding the dispute
+window, so a pending dispute cannot be outrun. *Deliverable:* a lock in
+`StakePool` plus the parameter analysis that sets its length. *Evidence:*
+`test_tier2_operatorCanFrontRunDisputeByWithdrawing` inverts — the same
+transaction sequence that currently reduces a 98.01 ETH slash to zero must
+revert. *Cost to measure:* the capital-efficiency penalty the delay imposes on
+an honest operator, which is the real design tension and is not yet quantified.
+
+W1 is a prerequisite for everything else: until it lands, the slashing figures in
+§6.4 describe a computation rather than an enforceable penalty, and no
+incentive-compatibility claim about the deployed system can be made.
+
+### 8.2 Making the attested confidence mean something
+
+**W2 — Input-logit provenance.** Three paths, in decreasing order of guarantee
+strength and increasing order of practicality:
+
+| Path | Guarantee | Cost | Status |
+|---|---|---|---|
+| Prove the base classifier in-circuit | Cryptographic, end-to-end | Prohibitive for depth-8, 400 trees | Unmeasured; §6.3 suggests capacity, not parameters, is the wall |
+| Commit to feature vector and model weights | Fabrication becomes *detectable*, not *impossible* | Cheap — hashes only | Closest to shippable |
+| Attest the base model in a secure enclave | Hardware trust replaces cryptographic trust | Cheap | Strictly the weakest of the three |
+
+The honest ordering matters: only the third is cheap today, and it is the one
+that gives up the most. *Evidence:* the first path is answered by measuring where
+proving cost steps past logrows 15 for a real ensemble — the boundary §6.3
+explicitly did not cross. That measurement is the immediate next experiment.
+
+**W3 — Decentralised adjudication.** Replace the admin key with a Kleros-style
+juror pool [7]: an evidentiary standard, appeals, and economic security exceeding
+the value at risk. *Evidence:* `test_tier3_adminCanSlashAnHonestOperator` and
+`test_tier3_adminCanShieldAMiscalibratedOperator` must both become unreachable.
+
+W3 has a hard research problem underneath it, and it should not be presented as
+an integration task. For a loan *rejection* the counterfactual is unobservable —
+a rejected applicant never demonstrates repayment — so "the decision was wrong"
+has no on-chain referent. Any juror pool needs a definition of the adjudicated
+event before it can vote on one. Candidate framings worth evaluating: restrict
+disputes to decisions with an observable counterfactual (approvals that
+defaulted); adjudicate *process* compliance rather than outcome; or score against
+a delayed, independently sourced outcome oracle. None is obviously right.
+
+### 8.3 Strengthening the empirical claims
+
+**W4 — Subgroup calibration as the slashed quantity.** §7.4 is the sharpest
+scientific gap: a model can be well calibrated in aggregate and badly
+miscalibrated for a protected subgroup, which is precisely the harm this
+mechanism should price and currently cannot see. Slashing on within-group ECE
+rather than aggregate confidence would target it directly. *Evidence:* a
+demonstration that the current rule fails to penalise a model constructed to be
+subgroup-miscalibrated but aggregate-calibrated, and that the revised rule does.
+
+**W5 — External validity.** The empirical claims rest on one dataset, one model
+family, and one decision class (§7.5). *Evidence:* replication on a second credit
+dataset and a second model family, plus a calibration-drift study over time,
+which is currently not evaluated at all.
+
+**W6 — Collusion detection.** Graph analysis over the claimant/operator bipartite
+graph to detect self-dealing disputes. Listed as a direction rather than a
+result; nothing here has been tried.
+
+### 8.4 Explicitly out of scope
+
+**Non-deterministic decision classes (LLM outputs).** We flag this as
+**substantially harder, not a natural extension.** The present design depends on
+a deterministic decision with a scalar confidence and a binary outcome. Free-form
+generation has no canonical scalar confidence, no binary ground truth, and no
+stable notion of "the same decision" across sampling seeds. Applying a proper
+scoring rule there requires first defining the event space being scored, which is
+an open research problem and not an engineering task. We would rather name it as
+out of scope than imply the mechanism generalises for free.
 
 ---
 
 ## 9. Conclusion
 
-We have demonstrated a working, measured prototype of confidence-weighted
-slashing: a strictly proper scoring rule implemented in fixed-point Solidity with
-monotonicity and properness verified numerically, driven by a calibration step
-that is proved in zero knowledge in 2.09 s and verified on-chain for 684,696 gas,
-on real credit data where calibration reduces ECE from 0.2164 to 0.1111. We have
-**not** demonstrated a trust-minimised protocol: only the calibration head is
-proved and its input logit is unverified, dispute resolution is a single
-administrative key, and the absence of an unbonding period lets an operator
-front-run a dispute and reduce a 98% slash to zero. The mechanism-design claim is
-supported by the evidence presented; the systems claim is not, and closing that
-distance is the substance of the work that remains.
+Returning to the four questions of §1.3.
+
+**RQ1 is answered affirmatively.** The Brier slash has a unique expected-loss
+minimum at the operator's true subjective probability (§3.2), and the deployed
+fixed-point Solidity reproduces that minimum numerically at two distinct true
+probabilities, with monotonicity fuzzed in both directions.
+
+**RQ2 is answered affirmatively, with the cost stated plainly.** The calibration
+head proves in 2.09 s on a laptop CPU and verifies on-chain for 684,696 gas —
+roughly 33× a plain transfer. The mechanism's own arithmetic is 543 gas, about
+0.08% of the per-decision cost. Essentially all cost is halo2 verification, not
+confidence-weighted slashing.
+
+**RQ3 is answered, within a stated boundary.** Proving cost is flat across a
+16,897× parameter increase; capacity, not parameter count, is the binding
+constraint. The boundary itself — where cost steps past logrows 15 — is
+unmeasured, and measuring it is the next experiment.
+
+**RQ4 is answered negatively, and that is the substantive finding.** A proved
+calibration head is *not* sufficient to make an attestation trustworthy. The
+proof binds the map from logit to confidence and nothing else: an operator that
+fabricates the logit obtains a proof that verifies, and the chain accepts it.
+Beyond that, dispute resolution is a single administrative key, and the absence
+of an unbonding period lets an operator front-run a dispute and reduce a 98%
+slash to zero. Each of these is demonstrated by a passing test, not conceded in
+prose.
+
+The two claims should therefore be separated cleanly. The **mechanism-design
+claim** — that confidence-weighted slashing on a strictly proper scoring rule
+makes honest confidence reporting loss-minimising, and that it is cheap to
+implement and verify — is supported by the evidence presented here. The
+**systems claim** — that this constitutes a trust-minimised accountability
+protocol — is not supported, and §8 is a plan for closing that distance rather
+than an assertion that it is nearly closed. The most useful result of the
+prototype may be the negative one: it establishes precisely which parts of
+"verifiable AI accountability" the cryptography actually buys, and which parts
+remain a matter of whom you trust.
 
 ---
 
@@ -618,7 +794,13 @@ and Estimation*, Journal of the American Statistical Association,
 
 ---
 
-## Appendix: reproducing the results
+## Appendix A — Reproducing the results
+
+Every number in this document is produced by a script in the repository; none is
+transcribed by hand. The sequence below regenerates all of them from a clean
+checkout. `10_train_calibrate.py` carries an ECE gate that fails loudly if
+calibration does not reduce error, so a silently broken run cannot produce a
+quiet result.
 
 ```bash
 pip install -r requirements.txt
@@ -635,6 +817,7 @@ anvil &                                  # §6.4  end-to-end
 forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast
 python scripts/40_demo_e2e.py
 python scripts/90_render_results.py     # regenerate RESULTS.md
-python scripts/91_figure_d_reliability.py   # Figure D
-python scripts/92_render_svg.py             # Figures A and C
+python scripts/91_figure_d_reliability.py   # Figure 4
+python scripts/92_render_svg.py             # Figures 1 and 3
+python scripts/93_figure_e_sweep.py          # Figure 5
 ```

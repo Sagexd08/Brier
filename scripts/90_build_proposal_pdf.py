@@ -127,13 +127,18 @@ def md_to_html(md: str) -> tuple[str, list[tuple[int, str, str]]]:
 
         # fenced code
         if line.startswith("```"):
+            lang = line[3:].strip().lower()
             i += 1
             buf = []
             while i < n and not lines[i].startswith("```"):
                 buf.append(lines[i])
                 i += 1
             i += 1
-            out.append("<pre><code>%s</code></pre>" % html_mod.escape("\n".join(buf)))
+            # Mermaid sources exist so PROPOSAL.md renders diagrams natively on
+            # GitHub. In print the rendered PNG sits immediately above them, so
+            # emitting the source too duplicates a page of content.
+            if lang != "mermaid":
+                out.append("<pre><code>%s</code></pre>" % html_mod.escape("\n".join(buf)))
             continue
 
         # heading
@@ -145,6 +150,13 @@ def md_to_html(md: str) -> tuple[str, list[tuple[int, str, str]]]:
             if lvl <= 3:
                 toc.append((lvl, txt, sid))
             out.append('<h%d id="%s">%s</h%d>' % (lvl, sid, _inline(txt), lvl))
+            i += 1
+            continue
+
+        # display math: $$ ... $$ alone on a line
+        m = re.match(r"^\s*\$\$(.+?)\$\$\s*$", line)
+        if m:
+            out.append('<div class="mathblock">%s</div>' % _render_math(m.group(1)))
             i += 1
             continue
 
@@ -218,6 +230,7 @@ def md_to_html(md: str) -> tuple[str, list[tuple[int, str, str]]]:
         # paragraph
         buf = []
         while i < n and lines[i].strip() and not re.match(r"^(#{1,6}\s|```|>|---+\s*$|\s*([-*+]|\d+\.)\s)", lines[i]) \
+                and not re.match(r"^\s*\$\$.+\$\$\s*$", lines[i]) \
                 and not lines[i].lstrip().startswith("|"):
             buf.append(lines[i])
             i += 1
@@ -258,6 +271,10 @@ pre code { background: none; padding: 0; font-size: inherit; }
 .math { font-family: "Cambria Math", "Latin Modern Math", Georgia, serif; font-style: italic;
         white-space: nowrap; }
 .math sub, .math sup { font-style: normal; }
+.mathblock { font-family: "Cambria Math", "Latin Modern Math", Georgia, serif;
+             font-style: italic; text-align: center; font-size: 11.4pt;
+             margin: 11pt 0 12pt; break-inside: avoid; page-break-inside: avoid; }
+.mathblock .math { font-size: inherit; white-space: normal; }
 
 table { border-collapse: collapse; width: 100%; margin: 8pt 0 10pt; font-size: 8.9pt;
         break-inside: avoid; page-break-inside: avoid; }
@@ -339,7 +356,7 @@ def build() -> None:
 <div class="cover">
   %s
   <h1>Brier: Confidence-Calibrated Slashing for On-Chain AI Decision Accountability</h1>
-  <div class="sub">A research proposal and v0 implementation report</div>
+  <div class="sub">A research proposal with a measured v0 prototype</div>
   <div class="meta">
     <div><b>Version</b> &nbsp; v0 (prototype)</div>
     <div><b>Date</b> &nbsp; August 2026</div>
@@ -349,9 +366,10 @@ def build() -> None:
   <div class="caveat">
     <b>This is a mechanism and a measured prototype, not a deployable protocol.</b>
     Only the calibration head is zero-knowledge proved &mdash; its input logit is
-    unverified, dispute resolution rests on an admin-appointed committee, and the
-    figures reported here come from a local chain. Section&nbsp;8 states each
-    limitation in full.
+    unverified, dispute resolution rests on a single administrative key, there is
+    no unbonding period, and the figures reported here come from a local chain.
+    Section&nbsp;7 states each limitation in full; Section&nbsp;8 sets out what
+    closing them would take.
   </div>
 </div>
 %s

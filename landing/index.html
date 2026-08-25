@@ -58,7 +58,6 @@ html, body { background: #000000 !important; color: #ffffff; }
   --hero-btn-h: 42px;
   --h1: 48px;
   --lede: 15.5px;
-  --badge: 12.5px;
   --stat-size: 13.5px;
   --header-y: 22px;
   --header-x: 40px;
@@ -450,28 +449,6 @@ body.menu-open .menu-backdrop {
   width: 100%;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 22px;
-  padding: 9px 15px;
-  border: 0;
-  border-radius: 5px;
-  background: linear-gradient(90deg, #7d7d7d 0%, #2a2a2a 52%, #0a0a0a 100%);
-  color: #f2f2f2;
-  font-size: var(--badge);
-  font-weight: 400;
-  letter-spacing: -0.01em;
-}
-.badge-star {
-  width: 18px;
-  height: 20px;
-  display: block;
-  fill: #fff;
-  filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.45));
-}
-
 .hero h1 {
   display: flex;
   flex-direction: column;
@@ -553,7 +530,6 @@ body.menu-open .menu-backdrop {
 .appear--scale { animation-name: in-scale; }
 .appear--soft  { animation-name: in-soft; }
 .appear--mask  { animation-name: in-mask; }
-.appear--pop   { animation-name: in-pop; }
 .appear--btn   { animation-name: in-btn; }
 .appear--side  { animation-name: in-side; }
 .appear--stat  { animation-name: in-stat; }
@@ -579,15 +555,6 @@ body.menu-open .menu-backdrop {
 @keyframes in-side { from { opacity: 0; transform: translateX(22px); } to { opacity: 1; transform: translateX(0); } }
 @keyframes in-stat { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-.badge-star {
-  animation: in-star 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both;
-}
-@keyframes in-star {
-  0%   { opacity: 0; transform: scale(0.2) rotate(-50deg); }
-  65%  { opacity: 1; transform: scale(1.2) rotate(8deg); }
-  100% { opacity: 1; transform: scale(1) rotate(0deg); }
-}
-
 .hero h1 em {
   animation: in-em 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.72s both;
 }
@@ -601,7 +568,7 @@ body.menu-open .menu-backdrop {
     transition: none !important;
     animation: none !important;
   }
-  .appear, .hero-photo, .hero h1 em, .badge-star {
+  .appear, .hero-photo, .hero h1 em {
     opacity: 1;
     transform: none;
     clip-path: none;
@@ -616,12 +583,11 @@ body.menu-open .menu-backdrop {
   :root {
     --logo: 17px; --logo-mark: 24px; --nav: 15px; --nav-h: 44px;
     --btn: 15px; --btn-h: 44px; --hero-btn-h: 48px;
-    --h1: 64px; --lede: 18px; --badge: 13.5px; --stat-size: 15px;
+    --h1: 64px; --lede: 18px; --stat-size: 15px;
     --header-y: 28px; --header-x: 64px; --stats-x: 96px; --stats-y: 44px;
     --copy-max: 980px; --lede-max: 540px;
   }
   .nav a { padding: 0 20px; }
-  .badge { margin-bottom: 26px; }
   .lede { margin-top: 22px; }
   .hero-actions { margin-top: 30px; gap: 12px; }
   .stat-icon { width: 22px; height: 22px; }
@@ -632,7 +598,7 @@ body.menu-open .menu-backdrop {
   :root {
     --logo: 18px; --logo-mark: 26px; --nav: 16px; --nav-h: 48px;
     --btn: 16px; --btn-h: 48px; --hero-btn-h: 52px;
-    --h1: 76px; --lede: 20px; --badge: 14.5px; --stat-size: 16px;
+    --h1: 76px; --lede: 20px; --stat-size: 16px;
     --header-y: 32px; --header-x: 80px; --stats-x: 120px; --stats-y: 52px;
     --copy-max: 1120px; --lede-max: 620px;
   }
@@ -640,7 +606,6 @@ body.menu-open .menu-backdrop {
   .nav a { padding: 0 22px; }
   .btn { padding: 0 22px; }
   .hero-actions .btn { padding: 0 22px; }
-  .badge { padding: 10px 15px; }
   .stat-icon-wide { width: 48px; height: 26px; }
 }
 
@@ -661,19 +626,17 @@ body.menu-open .menu-backdrop {
   :root {
     --logo: 15px; --nav: 13px; --nav-h: 36px;
     --btn: 13px; --btn-h: 38px; --hero-btn-h: 40px;
-    --h1: 42px; --lede: 15px; --badge: 12px; --stat-size: 12.5px;
+    --h1: 42px; --lede: 15px; --stat-size: 12.5px;
     --header-y: 16px; --header-x: 28px; --stats-x: 36px; --stats-y: 28px;
     --hero-gap: 64px; --copy-max: 760px; --lede-max: 440px;
   }
   .nav a { padding: 0 14px; }
-  .badge { margin-bottom: 16px; }
   .lede { margin-top: 14px; }
   .hero-actions { margin-top: 20px; }
 }
 
 @media (min-width: 901px) and (max-height: 850px) {
   :root { --header-y: 14px; --stats-y: 24px; --hero-gap: 48px; --h1: 40px; }
-  .badge { margin-bottom: 12px; }
   .lede { margin-top: 12px; }
   .hero-actions { margin-top: 16px; }
 }
@@ -683,7 +646,6 @@ body.menu-open .menu-backdrop {
     --h1: 34px; --lede: 14px; --hero-gap: 32px; --stats-y: 18px;
     --nav-h: 30px; --btn-h: 34px; --hero-btn-h: 36px;
   }
-  .badge { margin-bottom: 8px; }
 }
 
 /* Desktop: the hero still occupies exactly one frame. The page scrolls
@@ -705,7 +667,7 @@ body.menu-open .menu-backdrop {
 
   :root {
     --logo: 16px; --btn: 15px; --btn-h: 46px; --hero-btn-h: 48px;
-    --h1: 36px; --lede: 16.5px; --badge: 13.5px; --stat-size: 15px;
+    --h1: 36px; --lede: 16.5px; --stat-size: 15px;
     --header-y: 16px; --header-x: 18px; --stats-x: 20px; --stats-y: 28px;
     --hero-gap: 36px;
   }
@@ -1027,13 +989,6 @@ body.menu-open .menu-backdrop {
   <main class="hero" id="top">
     <div class="hero-copy">
 
-      <span class="badge appear appear--pop" style="--d:0.22s">
-        <svg class="badge-star" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 2.6C12.55 2.6 12.88 3.15 13.08 4.7c.62 4.7 1.52 5.6 6.22 6.22 1.55.2 2.1.53 2.1 1.08s-.55.88-2.1 1.08c-4.7.62-5.6 1.52-6.22 6.22-.2 1.55-.53 2.1-1.08 2.1s-.88-.55-1.08-2.1c-.62-4.7-1.52-5.6-6.22-6.22C3.15 12.88 2.6 12.55 2.6 12s.55-.88 2.1-1.08c4.7-.62 5.6-1.52 6.22-6.22C11.12 3.15 11.45 2.6 12 2.6Z"/>
-        </svg>
-        Verifiable AI Accountability
-      </span>
-
       <h1>
         <span class="headline-line appear appear--mask" style="--d:0.42s">Make <em>AI decisions</em></span>
         <span class="headline-line appear appear--mask" style="--d:0.62s">accountable.</span>
@@ -1168,7 +1123,7 @@ body.menu-open .menu-backdrop {
   appears.forEach(function (el) {
     el.addEventListener("animationend", function () {
       el.classList.add("is-in");
-    }, { once: true });
+    } { once: true });
   });
 
   /* 2. Fallback: if nothing is actually animating after two frames,
