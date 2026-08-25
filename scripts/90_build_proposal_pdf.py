@@ -37,12 +37,33 @@ OUT = ROOT / "landing" / "brier-proposal.pdf"
 # ----------------------------------------------------------------------
 _MATH_LITERAL = {
     r"\neq": "\u2260",
+    r"\leq": "\u2264",
+    r"\geq": "\u2265",
     r"\pm": "\u00b1",
     r"\cdot": "\u00b7",
     r"\times": "\u00d7",
     r"\to": "\u2192",
     r"\in": "\u2208",
+    r"\approx": "\u2248",
+    r"\ll": "\u226a",
+    r"\gg": "\u226b",
     r"\sigma": "\u03c3",
+    r"\alpha": "\u03b1",
+    r"\lambda": "\u03bb",
+    r"\delta": "\u03b4",
+    r"\rho": "\u03c1",
+    r"\mu": "\u03bc",
+    r"\nu": "\u03bd",
+    r"\Theta": "\u0398",
+    r"\infty": "\u221e",
+    r"\ldots": "\u2026",
+    r"\dots": "\u2026",
+    r"\left": "",
+    r"\right": "",
+    r"\!": "",
+    r"\,": "\u2009",
+    r"\;": "\u2002",
+    r"\quad": "\u2003",
     r"\text": "",
 }
 
@@ -72,6 +93,16 @@ def _render_math(expr: str) -> str:
     # \{ \} escapes survive to literal braces
     s = s.replace(r"\{", "{").replace(r"\}", "}")
     s = re.sub(r"\\[a-zA-Z]+", lambda m: m.group(0)[1:], s)  # unknown macro -> its name
+
+    # A hyphen-minus set in an italic serif reads as a hyphen, which is wrong
+    # in mathematics. Promote it to U+2212 wherever it is a binary or unary
+    # operator rather than part of an identifier.
+    s = re.sub(r"(?<=[0-9A-Za-z\)\]])\s*-\s*(?=[0-9A-Za-z\(\[])", "\u2009\u2212\u2009", s)
+    s = re.sub(r"(?<=[\(\[])-", "\u2212", s)
+
+    # Thin space around the remaining binary operators for LaTeX-like colour.
+    s = re.sub(r"\s*([+=<>])\s*", "\u2009\\1\u2009", s)
+    s = s.replace("\u2009=\u2009", "\u2009=\u2009")
     return '<span class="math">%s</span>' % s
 
 
@@ -110,12 +141,53 @@ def _inline(text: str) -> str:
     return text
 
 
+# ----------------------------------------------------------------------
+# Numbered environments.
+#
+# The proposal states results as theorems, propositions and definitions, so
+# the renderer provides amshtm-style environments rather than leaving them as
+# bold-run-in paragraphs. Numbering is sequential per environment class, which
+# is what a reader of a paper expects.
+# ----------------------------------------------------------------------
+ENVIRONMENTS = {
+    "definition": ("Definition", "defn"),
+    "assumption": ("Assumption", "defn"),
+    "proposition": ("Proposition", "plain"),
+    "theorem": ("Theorem", "plain"),
+    "lemma": ("Lemma", "plain"),
+    "corollary": ("Corollary", "plain"),
+    "remark": ("Remark", "rem"),
+}
+
+
+class Counters:
+    """Per-class counters for environments, tables and figures."""
+
+    def __init__(self) -> None:
+        self.env: dict[str, int] = {}
+        self.table = 0
+        self.figure = 0
+
+    def next_env(self, kind: str) -> int:
+        self.env[kind] = self.env.get(kind, 0) + 1
+        return self.env[kind]
+
+    def next_table(self) -> int:
+        self.table += 1
+        return self.table
+
+    def next_figure(self) -> int:
+        self.figure += 1
+        return self.figure
+
+
 def _slug(s: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
 
 
 def md_to_html(md: str) -> tuple[str, list[tuple[int, str, str]]]:
     """Convert the proposal's Markdown subset to HTML. Returns (body, toc)."""
+    ctr = Counters()
     out: list[str] = []
     toc: list[tuple[int, str, str]] = []
     lines = md.split("\n")
@@ -150,6 +222,53 @@ def md_to_html(md: str) -> tuple[str, list[tuple[int, str, str]]]:
             if lvl <= 3:
                 toc.append((lvl, txt, sid))
             out.append('<h%d id="%s">%s</h%d>' % (lvl, sid, _inline(txt), lvl))
+            i += 1
+            continue
+
+        # ---- numbered environment:  :::proposition Optional title
+        m = re.match(r"^:::(\w+)\s*(.*)$", line)
+        if m and m.group(1).lower() in ENVIRONMENTS:
+            kind = m.group(1).lower()
+            title = m.group(2).strip()
+            label, style = ENVIRONMENTS[kind]
+            num = ctr.next_env(label)
+            i += 1
+            buf = []
+            while i < n and not lines[i].startswith(":::"):
+                buf.append(lines[i])
+                i += 1
+            i += 1  # closing :::
+            head = "%s %d" % (label, num)
+            if title:
+                head += " (%s)" % title
+            body = _inline(" ".join(x for x in buf if x.strip()))
+            out.append(
+                '<div class="thm thm--%s"><span class="head">%s.</span> '
+                '<span class="body">%s</span></div>' % (style, head, body)
+            )
+            continue
+
+        # ---- proof environment
+        if re.match(r"^:::proof\s*$", line, re.I):
+            i += 1
+            buf = []
+            while i < n and not lines[i].startswith(":::"):
+                buf.append(lines[i])
+                i += 1
+            i += 1
+            body = _inline(" ".join(x for x in buf if x.strip()))
+            out.append(
+                '<div class="proof"><span class="head">Proof.</span> %s'
+                '<span class="qed">&#9633;</span></div>' % body
+            )
+            continue
+
+        # ---- table caption:  Table: text   (must precede the table)
+        m = re.match(r"^Table:\s*(.+)$", line)
+        if m:
+            num = ctr.next_table()
+            out.append('<p class="tabcaption"><span class="lab">Table %d:</span> %s</p>'
+                       % (num, _inline(m.group(1).strip())))
             i += 1
             continue
 
@@ -215,11 +334,18 @@ def md_to_html(md: str) -> tuple[str, list[tuple[int, str, str]]]:
             out.append("<%s>%s</%s>" % (tag, "".join("<li>%s</li>" % _inline(it) for it in items), tag))
             continue
 
-        # standalone image -> figure
+        # standalone image -> numbered figure
         m = re.match(r"^!\[([^\]]*)\]\(([^)]+)\)\s*$", line)
         if m:
-            out.append('<figure><img alt="%s" src="%s" /><figcaption>%s</figcaption></figure>'
-                       % (m.group(1), _embed_image(m.group(2)), _inline(m.group(1))))
+            num = ctr.next_figure()
+            caption = m.group(1)
+            # Strip any hand-written "Figure N —" prefix; numbering is automatic.
+            caption = re.sub(r"^Figure\s+\d+\s*[-\u2013\u2014:]\s*", "", caption)
+            out.append(
+                '<figure><img alt="%s" src="%s" />'
+                '<figcaption><span class="lab">Figure %d:</span> %s</figcaption></figure>'
+                % (caption[:60], _embed_image(m.group(2)), num, _inline(caption))
+            )
             i += 1
             continue
 
@@ -231,6 +357,8 @@ def md_to_html(md: str) -> tuple[str, list[tuple[int, str, str]]]:
         buf = []
         while i < n and lines[i].strip() and not re.match(r"^(#{1,6}\s|```|>|---+\s*$|\s*([-*+]|\d+\.)\s)", lines[i]) \
                 and not re.match(r"^\s*\$\$.+\$\$\s*$", lines[i]) \
+                and not lines[i].startswith(":::") \
+                and not re.match(r"^Table:\s", lines[i]) \
                 and not lines[i].lstrip().startswith("|"):
             buf.append(lines[i])
             i += 1
@@ -240,93 +368,283 @@ def md_to_html(md: str) -> tuple[str, list[tuple[int, str, str]]]:
     return "\n".join(out), toc
 
 
+FONT_DIR = ROOT / "artifacts" / "fonts"
+
+# Computer Modern, embedded as data URIs so the PDF is self-contained and the
+# build is reproducible offline. Falls back to a system serif if the cache is
+# missing (run scripts/89_fetch_fonts.py to populate it).
+_FACES = [
+    ("CMU Serif", "cmunrm.woff", "normal", "400"),
+    ("CMU Serif", "cmunbx.woff", "normal", "700"),
+    ("CMU Serif", "cmunti.woff", "italic", "400"),
+    ("CMU Serif", "cmunbi.woff", "italic", "700"),
+    ("CMU Sans", "cmunss.woff", "normal", "400"),
+    ("CMU Sans", "cmunsx.woff", "normal", "700"),
+    ("CMU Typewriter", "cmuntt.woff", "normal", "400"),
+]
+
+
+def font_face_css() -> str:
+    out = []
+    for family, filename, style, weight in _FACES:
+        f = FONT_DIR / filename
+        if not f.is_file():
+            continue
+        uri = "data:font/woff;base64," + base64.b64encode(f.read_bytes()).decode("ascii")
+        out.append(
+            "@font-face{font-family:'%s';src:url(%s) format('woff');"
+            "font-style:%s;font-weight:%s;font-display:block;}"
+            % (family, uri, style, weight)
+        )
+    return "\n".join(out)
+
+
+SERIF = "'CMU Serif', 'Latin Modern Roman', 'CMU Serif Roman', Cambria, Georgia, 'Times New Roman', serif"
+SANS = "'CMU Sans', 'Latin Modern Sans', 'Helvetica Neue', Arial, sans-serif"
+MONO = "'CMU Typewriter', 'Latin Modern Mono', Consolas, 'Courier New', monospace"
+
 CSS = """
-@page { size: A4; margin: 20mm 18mm 18mm; }
+@page {
+  size: A4;
+  margin: 26mm 24mm 24mm;
+}
 @page :first { margin-top: 0; }
 
 * { box-sizing: border-box; }
+
+html { -webkit-font-smoothing: antialiased; }
+
 body {
-  font-family: "Charter", "Georgia", "Times New Roman", serif;
-  font-size: 10.2pt; line-height: 1.52; color: #16191d; margin: 0;
-  -webkit-font-smoothing: antialiased;
+  font-family: %(serif)s;
+  font-size: 10.6pt;
+  line-height: 1.34;
+  color: #000000;
+  margin: 0;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
 }
-h1, h2, h3, h4 { font-family: "Helvetica Neue", Arial, sans-serif; color: #0d1013; line-height: 1.22; }
-h1 { font-size: 20pt; letter-spacing: -0.02em; margin: 0 0 6pt; }
-h2 { font-size: 13pt; margin: 20pt 0 7pt; padding-bottom: 3pt; border-bottom: 0.6pt solid #c8ced6;
-     break-after: avoid; page-break-after: avoid; }
-h3 { font-size: 11pt; margin: 14pt 0 5pt; break-after: avoid; page-break-after: avoid; }
-h4 { font-size: 10pt; margin: 11pt 0 4pt; }
-p { margin: 0 0 7pt; text-align: justify; hyphens: auto; orphans: 3; widows: 3; }
-a { color: #1c4f8a; text-decoration: none; }
-hr { border: 0; border-top: 0.6pt solid #d5dae1; margin: 13pt 0; }
+
+/* ---------------- headings ---------------- */
+h1, h2, h3, h4 {
+  font-family: %(serif)s;
+  color: #000;
+  line-height: 1.2;
+  text-align: left;
+  hyphens: none;
+}
+h2 {
+  font-size: 12.4pt;
+  font-weight: 700;
+  margin: 17pt 0 7pt;
+  break-after: avoid; page-break-after: avoid;
+}
+h3 {
+  font-size: 11pt;
+  font-weight: 700;
+  margin: 13pt 0 5pt;
+  color: #1a3d6d;
+  break-after: avoid; page-break-after: avoid;
+}
+h4 {
+  font-size: 10.6pt;
+  font-weight: 700;
+  margin: 10pt 0 3pt;
+  break-after: avoid; page-break-after: avoid;
+}
+
+p { margin: 0 0 5.5pt; orphans: 3; widows: 3; }
+p + p { text-indent: 1.4em; }
+
+a { color: #1a3d6d; text-decoration: none; }
 strong { font-weight: 700; }
+em { font-style: italic; }
 
-code, pre { font-family: "SF Mono", "Consolas", "Menlo", monospace; }
-code { font-size: 8.8pt; background: #eef1f4; padding: 0.5pt 3pt; border-radius: 2pt; }
-pre { background: #f5f7f9; border: 0.5pt solid #dde2e8; border-radius: 3pt; padding: 7pt 9pt;
-      font-size: 8.4pt; line-height: 1.42; overflow-wrap: break-word; white-space: pre-wrap;
-      break-inside: avoid; page-break-inside: avoid; }
-pre code { background: none; padding: 0; font-size: inherit; }
+hr { border: 0; border-top: 0.5pt solid #bbb; margin: 12pt 0; }
 
-.math { font-family: "Cambria Math", "Latin Modern Math", Georgia, serif; font-style: italic;
-        white-space: nowrap; }
-.math sub, .math sup { font-style: normal; }
-.mathblock { font-family: "Cambria Math", "Latin Modern Math", Georgia, serif;
-             font-style: italic; text-align: center; font-size: 11.4pt;
-             margin: 11pt 0 12pt; break-inside: avoid; page-break-inside: avoid; }
+/* ---------------- abstract ---------------- */
+.abstract {
+  margin: 0 0 14pt;
+  padding: 10pt 0 0;
+  border-top: 0.9pt solid #000;
+}
+.abstract-end { border-bottom: 0.9pt solid #000; margin-bottom: 15pt; padding-bottom: 11pt; }
+.abstract h2 {
+  font-size: 11pt;
+  text-align: center;
+  margin: 0 0 6pt;
+}
+.abstract p { font-size: 9.9pt; line-height: 1.32; margin-bottom: 4pt; }
+.abstract p + p { text-indent: 1.4em; }
+
+/* ---------------- code ---------------- */
+code, pre { font-family: %(mono)s; }
+code {
+  font-size: 9.1pt;
+  overflow-wrap: anywhere;
+}
+pre {
+  background: #f7f7f7;
+  border: 0.4pt solid #ddd;
+  padding: 6pt 8pt;
+  font-size: 8.5pt;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  text-align: left;
+  hyphens: none;
+  break-inside: avoid; page-break-inside: avoid;
+  margin: 7pt 0 9pt;
+}
+pre code { font-size: inherit; }
+
+/* ---------------- math ---------------- */
+.math {
+  font-family: %(serif)s;
+  font-style: italic;
+  white-space: nowrap;
+}
+.math sub, .math sup { font-style: normal; font-size: 0.72em; }
+.mathblock {
+  font-family: %(serif)s;
+  font-style: italic;
+  text-align: center;
+  font-size: 11.4pt;
+  margin: 9pt 0 10pt;
+  break-inside: avoid;
+}
 .mathblock .math { font-size: inherit; white-space: normal; }
 
-table { border-collapse: collapse; width: 100%; margin: 8pt 0 10pt; font-size: 8.9pt;
-        break-inside: avoid; page-break-inside: avoid; }
-th, td { border: 0.5pt solid #ccd2da; padding: 3.6pt 6pt; text-align: left; vertical-align: top; }
-th { background: #eef1f5; font-family: "Helvetica Neue", Arial, sans-serif; font-weight: 600;
-     font-size: 8.4pt; }
-tbody tr:nth-child(even) { background: #fafbfc; }
+/* ---------------- tables: booktabs ---------------- */
+table {
+  border-collapse: collapse;
+  width: 100%%;
+  margin: 3pt 0 11pt;
+  font-size: 9pt;
+  break-inside: avoid; page-break-inside: avoid;
+  text-align: left;
+  hyphens: none;
+}
+thead tr { border-top: 1.1pt solid #000; border-bottom: 0.5pt solid #000; }
+tbody tr:last-child { border-bottom: 1.1pt solid #000; }
+th, td {
+  border: 0;
+  padding: 2.9pt 7pt 2.9pt 0;
+  vertical-align: top;
+}
+th { font-weight: 700; }
+/* numeric-looking columns read better flush right */
+td.num, th.num { text-align: right; padding-right: 0; }
 
-blockquote { margin: 8pt 0; padding: 6pt 11pt; border-left: 2.2pt solid #9aa5b1;
-             background: #f6f8fa; font-size: 9.6pt; break-inside: avoid; }
-blockquote p { margin: 0; }
+.tabcaption {
+  font-family: %(sans)s;
+  font-size: 8.6pt;
+  line-height: 1.34;
+  margin: 11pt 0 0;
+  text-align: left;
+  hyphens: none;
+  break-after: avoid; page-break-after: avoid;
+}
+.tabcaption .lab { font-weight: 700; color: #a03020; }
 
-ul, ol { margin: 0 0 8pt; padding-left: 17pt; }
-li { margin-bottom: 2.6pt; text-align: justify; }
+/* ---------------- figures ---------------- */
+figure {
+  margin: 12pt 0 13pt;
+  text-align: center;
+  break-inside: avoid; page-break-inside: avoid;
+}
+figure img { max-width: 100%%; height: auto; }
+figcaption {
+  font-family: %(sans)s;
+  font-size: 8.6pt;
+  line-height: 1.34;
+  margin-top: 6pt;
+  text-align: left;
+  hyphens: none;
+}
+figcaption .lab { font-weight: 700; color: #a03020; }
 
-figure { margin: 11pt 0 13pt; text-align: center; break-inside: avoid; page-break-inside: avoid; }
-figure img { max-width: 100%; height: auto; border: 0.5pt solid #dde2e8; border-radius: 2pt; }
-figcaption { font-size: 8.4pt; color: #58616b; margin-top: 4pt;
-             font-family: "Helvetica Neue", Arial, sans-serif; text-align: center; }
+/* ---------------- theorem environments ---------------- */
+.thm {
+  margin: 8pt 0 8pt;
+  break-inside: avoid; page-break-inside: avoid;
+}
+.thm .head { font-weight: 700; }
+.thm .name { font-weight: 700; }
+/* Statement environments are italic, as in amsthm's plain style. */
+.thm--plain .body { font-style: italic; }
+/* Definitions and remarks stay upright, as in amsthm's definition style. */
+.thm--defn .body, .thm--rem .body { font-style: normal; }
+.thm .body { display: inline; }
+.thm p { display: inline; margin: 0; text-indent: 0; }
 
-/* ---- cover ---- */
-.cover { height: 297mm; padding: 34mm 20mm 20mm; display: flex; flex-direction: column;
-         break-after: page; page-break-after: always; }
-.cover-mark { width: 34pt; height: 34pt; margin-bottom: 20pt; }
-.cover h1 { font-size: 25pt; line-height: 1.16; letter-spacing: -0.025em; margin-bottom: 11pt;
-            max-width: 15cm; }
-.cover .sub { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 11.5pt; color: #4a545f;
-              margin-bottom: 26pt; }
-.cover .meta { font-family: "Helvetica Neue", Arial, sans-serif; font-size: 9pt; color: #58616b;
-               line-height: 1.85; }
-.cover .meta b { color: #16191d; font-weight: 600; }
-.cover .spacer { flex: 1; }
-.cover .caveat { border: 0.6pt solid #d8b4ae; background: #fdf4f2; border-left: 2.4pt solid #C44536;
-                 border-radius: 3pt; padding: 10pt 13pt; font-size: 9.2pt; line-height: 1.55;
-                 color: #3d2320; max-width: 15cm; }
-.cover .caveat b { color: #C44536; }
+.proof {
+  margin: 7pt 0 9pt;
+  break-inside: avoid; page-break-inside: avoid;
+}
+.proof .head { font-style: italic; }
+.proof .qed { float: right; }
+.proof p { display: inline; margin: 0; text-indent: 0; }
+.proof::after { content: ""; display: block; clear: both; }
 
-/* ---- contents ---- */
+/* ---------------- lists ---------------- */
+ul, ol { margin: 0 0 6pt; padding-left: 15pt; }
+li { margin-bottom: 1.8pt; }
+
+blockquote {
+  margin: 7pt 0 8pt 14pt;
+  font-size: 9.7pt;
+  break-inside: avoid;
+}
+blockquote p { margin: 0; text-indent: 0; }
+
+/* ---------------- title block ---------------- */
+.titleblock {
+  padding: 34mm 0 0;
+  text-align: center;
+  margin-bottom: 16pt;
+}
+.titleblock .t1 {
+  font-size: 17.5pt;
+  font-weight: 700;
+  line-height: 1.24;
+  margin-bottom: 3pt;
+}
+.titleblock .t2 {
+  font-size: 13.4pt;
+  font-weight: 700;
+  line-height: 1.28;
+  margin-bottom: 16pt;
+}
+.titleblock .author { font-size: 11.4pt; font-weight: 700; margin-bottom: 2pt; }
+.titleblock .affil { font-size: 10.4pt; margin-bottom: 12pt; }
+.titleblock .meta { font-size: 9pt; }
+.titleblock .meta span { margin: 0 7pt; }
+
+/* ---------------- contents ---------------- */
 .toc { break-after: page; page-break-after: always; }
-.toc h2 { margin-top: 0; }
-.toc ol { list-style: none; padding: 0; margin: 0;
-          font-family: "Helvetica Neue", Arial, sans-serif; font-size: 9.6pt; }
-.toc li { margin: 0; padding: 3.4pt 0; border-bottom: 0.4pt dotted #d5dae1; }
-.toc li.l3 { padding-left: 15pt; font-size: 9pt; color: #4a545f; }
-.toc a { color: #16191d; }
-"""
+.toc h2 { font-size: 12.4pt; margin: 0 0 8pt; }
+.toc ol {
+  list-style: none; padding: 0; margin: 0; font-size: 9pt;
+  column-count: 2; column-gap: 20pt;
+}
+.toc li { margin: 0; padding: 1.15pt 0; break-inside: avoid; }
+.toc li.l2 { font-weight: 700; margin-top: 3pt; }
+.toc li.l3 { padding-left: 13pt; font-size: 8.7pt; font-weight: 400; }
+.toc a { color: #000; }
 
-MARK = """<svg class="cover-mark" viewBox="0 0 24 24" fill="#16191d">
-<g transform="rotate(-30 12 12)">
-<circle cx="7.3" cy="3.2" r="1.45"/><rect x="5.5" y="4.7" width="3.6" height="14.6" rx="1.8"/>
-<rect x="14.9" y="4.7" width="3.6" height="14.6" rx="1.8"/><circle cx="16.7" cy="20.8" r="1.45"/>
-</g></svg>"""
+.caveat {
+  border: 0.6pt solid #c0a49f;
+  background: #fdf6f4;
+  border-left: 2.2pt solid #a03020;
+  padding: 8pt 11pt;
+  font-size: 9.4pt;
+  line-height: 1.36;
+  margin: 14pt 0 0;
+  text-align: left;
+}
+.caveat b { color: #a03020; }
+""" % {"serif": SERIF, "sans": SANS, "mono": MONO}
 
 
 def build() -> None:
@@ -335,11 +653,23 @@ def build() -> None:
 
     md = SRC.read_text(encoding="utf-8")
 
-    # The cover reproduces the title block, so drop it from the flow.
+    # The title block reproduces the heading, so drop it from the flow.
     body_md = md
     m = re.search(r"^---\s*$", md, re.M)
     if m and md.lstrip().startswith("# "):
         body_md = md[m.end():]
+
+    # The abstract is set apart from the body, LaTeX-style, so it is lifted
+    # out of the normal flow and rendered between rules.
+    abstract_html = ""
+    am = re.search(r"^## Abstract\s*$(.*?)^---\s*$", body_md, re.M | re.S)
+    if am:
+        abstract_body, _ = md_to_html(am.group(1).strip())
+        abstract_html = (
+            '<div class="abstract"><h2>Abstract</h2>'
+            '<div class="abstract-end">%s</div></div>' % abstract_body
+        )
+        body_md = body_md[am.end():]
 
     body, toc = md_to_html(body_md)
 
@@ -348,33 +678,35 @@ def build() -> None:
         if lvl > 3:
             continue
         clean = re.sub(r"[*`$\\]", "", txt)
-        toc_html.append('<li class="l%d"><a href="#%s">%s</a></li>' % (lvl, sid, html_mod.escape(clean)))
+        toc_html.append('<li class="l%d"><a href="#%s">%s</a></li>'
+                        % (lvl, sid, html_mod.escape(clean)))
     toc_html.append("</ol></div>")
 
     page = """<!doctype html><html lang="en"><head><meta charset="utf-8" />
-<title>Brier — Confidence-Calibrated Slashing</title><style>%s</style></head><body>
-<div class="cover">
-  %s
-  <h1>Brier: Confidence-Calibrated Slashing for On-Chain AI Decision Accountability</h1>
-  <div class="sub">A research proposal with a measured v0 prototype</div>
+<title>What Does the Proof Actually Buy? Confidence-Calibrated Slashing</title>
+<style>%s</style><style>%s</style></head><body>
+<div class="titleblock">
+  <div class="t1">What Does the Proof Actually Buy?</div>
+  <div class="t2">Confidence-Calibrated Slashing for<br />On-Chain AI Decision Accountability</div>
+  <div class="author">Sohom Chatterjee</div>
+  <div class="affil">Sister Nivedita University</div>
   <div class="meta">
-    <div><b>Version</b> &nbsp; v0 (prototype)</div>
-    <div><b>Date</b> &nbsp; August 2026</div>
-    <div><b>Repository</b> &nbsp; <a href="https://github.com/Sagexd08/Brier">github.com/Sagexd08/Brier</a></div>
+    <span>Version v0 (prototype)</span>&middot;<span>August 2026</span>&middot;<span>Artifact: circuits, contracts, benchmark, analysis</span>
   </div>
-  <div class="spacer"></div>
   <div class="caveat">
     <b>This is a mechanism and a measured prototype, not a deployable protocol.</b>
     Only the calibration head is zero-knowledge proved &mdash; its input logit is
     unverified, dispute resolution rests on an admin-appointed N-of-M committee
-    whose collusion carries the authority a single key would, and the figures
-    reported here come from a local chain. Section&nbsp;7 states each limitation
-    in full; Section&nbsp;8 separates what has shipped from what remains.
+    whose collusion carries the authority a single key would, and an unvalidated
+    collusion detector can withhold a claimant's payout. Section&nbsp;7 states
+    each limitation in full; Section&nbsp;8 separates what has shipped from what
+    remains.
   </div>
 </div>
 %s
 %s
-</body></html>""" % (CSS, MARK, "".join(toc_html), body)
+%s
+</body></html>""" % (font_face_css(), CSS, abstract_html, "".join(toc_html), body)
 
     tmp = OUT.parent / "_proposal_render.html"
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -385,22 +717,28 @@ def build() -> None:
     except ImportError:
         raise SystemExit("playwright not installed:  pip install playwright && playwright install chromium")
 
+    running_title = "What Does the Proof Actually Buy? Confidence-Calibrated Slashing for On-Chain AI Decision Accountability"
+
     with sync_playwright() as p:
         browser = p.chromium.launch()
         pg = browser.new_page()
         pg.goto(tmp.as_uri(), wait_until="networkidle")
+        pg.wait_for_timeout(500)
         pg.pdf(
             path=str(OUT),
             format="A4",
             print_background=True,
             display_header_footer=True,
-            header_template='<div style="font:7.5pt Helvetica,Arial;color:#98a1ab;width:100%;'
-                            'padding:0 18mm;text-align:right;">Brier &mdash; v0 proposal</div>',
-            footer_template='<div style="font:7.5pt Helvetica,Arial;color:#98a1ab;width:100%;'
-                            'padding:0 18mm;display:flex;justify-content:space-between;">'
-                            '<span>github.com/Sagexd08/Brier</span>'
-                            '<span class="pageNumber"></span></div>',
-            margin={"top": "16mm", "bottom": "15mm", "left": "18mm", "right": "18mm"},
+            header_template=(
+                '<div style="font:8pt \'CMU Serif\', Cambria, Georgia, serif;color:#000;'
+                'width:100%;padding:0 24mm;border-bottom:0.4pt solid #999;'
+                'padding-bottom:3pt;margin-bottom:4pt;">' + running_title + "</div>"
+            ),
+            footer_template=(
+                '<div style="font:9pt \'CMU Serif\', Cambria, Georgia, serif;color:#000;'
+                'width:100%;text-align:center;"><span class="pageNumber"></span></div>'
+            ),
+            margin={"top": "20mm", "bottom": "16mm", "left": "24mm", "right": "24mm"},
         )
         browser.close()
 

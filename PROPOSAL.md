@@ -206,28 +206,42 @@ sole property this mechanism depends on.
 
 ### 3.1 The slashing rule
 
+:::definition Confidence-calibrated slash
 Let $S$ be the collateral an operator has staked, $c \in [0,1]$ the confidence it
-reported that its decision was correct, and $o \in \{0,1\}$ the adjudicated
-outcome of a dispute over that decision. On an upheld dispute the contract slashes
+reported that its decision was correct, and $o \in \{0,1\}$ the adjudicated outcome
+of a dispute over that decision. On an upheld dispute the contract slashes
+$\text{slash} = S \cdot (c-o)^2$, subject to a protocol maximum fraction of $S$.
+:::
 
-$$\text{slash} = S \cdot (c - o)^2$$
-
-subject to a protocol maximum fraction of $S$. The penalty is the Brier score of
-a single forecast, denominated in stake.
+The penalty is therefore the Brier score of a single forecast, denominated in
+stake. Everything that follows depends on one property of that score and on
+nothing else about it.
 
 ### 3.2 Why truthful reporting minimises expected loss
 
-Suppose the operator privately believes the decision is correct with probability
-$p$, and that a dispute, if opened, is adjudicated truthfully — so $o = 1$ with
-probability $p$. Reporting $c$, its expected slash is
+:::assumption Truthful adjudication
+The operator privately believes the decision is correct with probability $p$. A
+dispute, if opened, is adjudicated truthfully, so $o = 1$ with probability $p$;
+and the decision to open a dispute is independent of the reported $c$.
+:::
 
-$$E[\text{slash}] = S ( p(c-1)^2 + (1-p)c^2 ) = S ( c^2 - 2pc + p )$$
+:::proposition Strict properness of the Brier slash
+Under Assumption 1, an operator reporting $c$ faces expected slash
+$E[\text{slash}] = S ( (c-p)^2 + p(1-p) )$. This is uniquely minimised at
+$c = p$, and every misreport costs $S(c-p)^2$ in expectation.
+:::
 
-and completing the square in $c$ gives
+:::proof
+The dispute is upheld with probability $p$, in which case $o = 1$ and the slash
+is $S(c-1)^2$; otherwise $o = 0$ and the slash is $Sc^2$. Hence
+$E[\text{slash}] = S ( p(c-1)^2 + (1-p)c^2 ) = S ( c^2 - 2pc + p )$.
+Completing the square in $c$ gives $S ( (c-p)^2 + p(1-p) )$. The bracket is a
+strictly convex parabola in $c$ whose only stationary point is $c = p$, and the
+residual $p(1-p)$ does not depend on $c$, so the minimum is unique and the
+excess cost of reporting $c \neq p$ is exactly $S(c-p)^2$.
+:::
 
-$$E[\text{slash}] = S ( (c-p)^2 + p(1-p) )$$
-
-Two things follow, and together they are the whole argument.
+Two consequences follow, and together they are the whole argument.
 
 **The unique minimum is at $c = p$.** The expression is a strictly convex
 parabola in $c$, so any misreport in either direction costs the operator
@@ -237,13 +251,17 @@ while asserting near-certainty about a coin flip costs close to the entire stake
 This is strict properness [10] instantiated as a collateral rule: the operator
 does not need to be honest, it needs only to be selfish.
 
-**The residual $S \cdot p(1-p)$ is irreducible.** It does not depend on what the
-operator reports. An operator facing genuine uncertainty pays for that
-uncertainty however honestly it reports, which is the economically correct
-reading: the term is the price of writing an opinion on a hard case, and it is
-maximised at $p = 0.5$, where the model knows least. The mechanism cleanly
-separates the cost of *being uncertain* from the cost of *misrepresenting
-uncertainty*, and only the second is avoidable by the operator.
+:::corollary Uncertainty is priced, and separately from dishonesty
+The residual $S \cdot p(1-p)$ is irreducible: it is incurred whatever the
+operator reports, and is maximised at $p = 0.5$.
+:::
+
+An operator facing genuine uncertainty pays for it however honestly it
+reports. That is the economically correct reading: the term is the price of
+writing an opinion on a hard case. The mechanism therefore separates the cost
+of *being uncertain* from the cost of *misrepresenting uncertainty*, and only
+the second is avoidable by the operator — which is precisely the behaviour a
+slashing rule should reward.
 
 The deployed contract computes this in fixed point rather than over the reals, so
 properness is re-established empirically against the shipped code rather than
@@ -280,20 +298,20 @@ substance of the proposed work in §8.
 
 ![Figure 1 — Component architecture. Solid outlines are implemented and measured; dashed amber is specified but unbuilt; red is the single component inside the zk circuit.](figures/figure-a-architecture.png)
 
-Solid outlines mark components implemented and measured in the repository;
-dashed amber marks specified-but-unbuilt. Red marks the single component inside
-the zk circuit. The base classifier and the SHAP explainer sit outside the
-circuit by design; the SHAP vector is hash-committed as evidence only.
+The base classifier and the SHAP explainer sit outside the circuit by design:
+the vector they produce is hash-committed as evidence, which establishes that
+the operator recorded a particular explanation and nothing about whether that
+explanation is faithful.
 
 ### 4.2 Protocol sequence and per-step cost
 
 The sequence below is annotated with the gas each step actually cost on a local
 chain, so the expensive steps are visible rather than asserted: verification
 dominates, and the Brier arithmetic that is the substance of the mechanism is
-three orders of magnitude cheaper than proving that it ran. Two notes in the
-diagram mark where v0 computes a penalty it cannot enforce — the operator's
-unrestricted `withdraw()` between attestation and dispute (§7.3), and the single
-administrative key that decides the outcome (§7.2).
+three orders of magnitude cheaper than proving that it ran. The diagram also marks the
+one step the mechanism still cannot enforce against: resolution is a committee
+action, so a penalty the contract computes correctly can be waived by the people
+who resolve it (§7.2).
 
 ![Figure 2 — Protocol sequence, annotated with measured gas per step and the two points at which v0 is unenforced.](figures/figure-b-sequence.png)
 
@@ -394,6 +412,8 @@ this work.
 
 Two heads were implemented and both are proved:
 
+Table: The two calibration heads. Both emit a logit, so the circuit stays affine plus ReLU and contains no transcendental function.
+
 | Head | Parameters | Form |
 |---|---|---|
 | Temperature scaling | 1 | $\sigma(L/T)$, $T$ learned in log-space |
@@ -477,6 +497,8 @@ The calibration claims rest on the 10-seed pass. Seeds are pinned in
 `config.EVAL_SEEDS` and the full list is always run, so a favourable subset
 cannot be reported selectively.
 
+Table: Calibration across the 10 pinned seeds. Temperature scaling reduces ECE in every seed; the train-fitted control is worse than not calibrating in every seed.
+
 | Head | ECE mean ± std | Brier mean ± std | Accuracy mean ± std |
 |---|---|---|---|
 | Uncalibrated | 0.1853 ± 0.0248 | 0.2060 ± 0.0191 | 0.7505 ± 0.0209 |
@@ -501,7 +523,7 @@ result, not a uniform one, and it is stated that way deliberately: a single run
 per head would have supported the stronger and less accurate claim. With 200
 calibration points the extra capacity usually fails to generalise, but in 3 of 10
 seeds the MLP wins. The reported strength is pinned by
-`tests/test_multiseed.py::test_temperature_beats_mlp_claim_matches_reported_strength`,
+`test_temperature_beats_mlp_claim_matches_reported_strength`,
 so overstating it later would fail the suite. The convenient part of this result
 is that the better estimator is also the cheaper circuit; that agreement is a
 measured outcome rather than a design assumption.
@@ -515,6 +537,8 @@ never changed; the repository contains no notebooks.
 
 **Seed 42 in detail**, since it is the seed the figures, circuits and end-to-end
 run are generated from:
+
+Table: Seed 42 in detail, the seed from which the figures, circuits and end-to-end run are generated.
 
 | Head | Params | ECE | MCE | Brier |
 |---|---|---|---|---|
@@ -534,6 +558,8 @@ across 3 reruns; 5/5 directional sanity checks pass
 `credit_history` $-0.756$, `checking_status` $-0.943$, `savings_status` $-0.834$).
 
 ### 6.3 Proving and verification
+
+Table: Proving and verification cost for the two heads. A 321x parameter increase changes neither the circuit size nor the proving time.
 
 | Metric | Temperature (1 param) | MLP (321 params) |
 |---|---|---|
@@ -570,6 +596,8 @@ mid-proof, and a wrong verifying key are each rejected.
 
 ### 6.4 On-chain cost and end-to-end behaviour
 
+Table: Measured gas per operation. Verification dominates; the Brier arithmetic that is the substance of the mechanism is roughly 0.08% of the per-decision cost.
+
 | Operation | Gas |
 |---|---|
 | `Halo2Verifier` deployment (one-off) | 2,942,192 |
@@ -586,6 +614,8 @@ gas — approximately 0.08% of the per-decision cost. **Essentially all cost is
 halo2 verification, not the mechanism.**
 
 End-to-end, on a local Anvil chain, with a real proof generated per decision:
+
+Table: End-to-end behaviour on a local chain, one real zk proof generated per decision. Percentages are of the stake remaining as each scenario ran.
 
 | Scenario | Confidence | Outcome | Slash (% of stake) | Prove |
 |---|---|---|---|---|
@@ -616,6 +646,8 @@ with XGBoost, were evaluated on the identical 10-seed protocol. The XGBoost arm
 reproduces §6.1 exactly, which is the check that the protocol is the same one
 rather than merely a similar one.
 
+Table: Phase A. The ensemble improves uncalibrated ECE and temperature scaling then absorbs the difference entirely.
+
 | Model | Uncalibrated ECE | Calibrated ECE | Calibrated Brier | Accuracy |
 |---|---|---|---|---|
 | XGBoost (baseline) | 0.1853 ± 0.0235 | 0.0870 ± 0.0207 | 0.1758 ± 0.0107 | 0.7505 ± 0.0198 |
@@ -639,6 +671,8 @@ rather than against sophistication in general.
 
 5 independently seeded network copies; disagreement is the standard
 deviation of member probabilities, supplied to the head alongside the margin.
+
+Table: Phase C. The capacity control is the informative row: the same head fed a constant beats the baseline, so the epistemic signal is what destroys the gain.
 
 | Arm | ECE | Brier | Accuracy |
 |---|---|---|---|
@@ -667,6 +701,8 @@ because a design that only reports its successes is not measuring anything.
 
 Empirical coverage across the pinned seeds, at three levels:
 
+Table: Phase B. Coverage tracks the target and sits 1-2 points below it at every level, within sampling noise at n = 10.
+
 | Target | Empirical coverage | Min over seeds | Seeds ≥ target | Avg set size |
 |---|---|---|---|---|
 | 0.80 | 0.7930 ± 0.0399 | 0.7300 | 5/10 | 1.102 |
@@ -683,6 +719,8 @@ because coverage alone is trivially satisfiable: always return both labels and
 you have 100% coverage and no information.
 
 **The circuit gate, measured rather than argued.**
+
+Table: Phase B circuit gate. Conformal set construction fits the established budget at no measurable proving cost.
 
 | Head | logrows | Rows used | Proving time | Proof size |
 |---|---|---|---|---|
@@ -705,6 +743,8 @@ overall while covering a protected subgroup at 60%, which is the same limitation
 aggregate ECE has (§7.4).
 
 ### 6.8 Counterfactual evidence (Phase D)
+
+Table: Phase D. Counterfactuals over 40 rejections, checked for actionability and plausibility.
 
 | Metric | Value |
 |---|---|
@@ -731,6 +771,8 @@ sparsity, not minimality.
 A two-hop GraphSAGE classifier over the claimant projection of the dispute
 graph, against a degree-concentration baseline. Intensity is the fraction of a
 ring member's disputes aimed at the ring's operator.
+
+Table: Phase E. Detection against injected rings only; intensity is the fraction of a ring member's disputes aimed at its own operator.
 
 | Ring intensity | GNN AUC | Degree-baseline AUC |
 |---|---|---|
@@ -801,6 +843,8 @@ needs changing, the claim has been inflated.
 
 110 Solidity tests (Foundry) and 81 Python tests, all passing.
 
+Table: The Solidity suites. ThreatModel and CollusionOracle assert that documented weaknesses are reachable, not that the system is secure.
+
 | Suite | Tests | What it holds down |
 |---|---|---|
 | `BrierMath.t.sol` | 20 | Fixed-point properness, monotonicity, fuzzing |
@@ -828,10 +872,14 @@ These are unresolved trust gaps in the present design. They are not future work.
 
 ### 7.1 Only the calibration head is proved
 
-The zk proof establishes: *given a logit $L$ committed on-chain, the head
-identified by this verifying key maps $L$ to the attested confidence $c$.* It
-establishes nothing about where $L$ came from. The base classifier is not in any
-circuit. **An operator that fabricates $L$ obtains a proof that verifies**, as
+:::theorem Scope of the tier-1 guarantee
+For an attestation accepted on chain with verifying key $vk$ and public
+instances $(L, c)$, the proof establishes that the calibration head identified
+by $vk$ maps $L$ to $c$. It establishes nothing about the provenance of $L$.
+:::
+
+The proof binds a computation, not a pipeline. The base classifier is not in
+any circuit. **An operator that fabricates $L$ obtains a proof that verifies**, as
 demonstrated by `test_tier1_marginIsUnverifiedOperatorSuppliedInput`, in which
 the chain accepts `type(int256).max` as a margin and still marks the attestation
 proved. Any description of this system as "zero-knowledge proving the AI
@@ -883,11 +931,25 @@ is unsolved, not merely unimplemented.
 
 ### 7.3 The unbonding period closes the exit path, and two gaps remain
 
-Withdrawal is a two-step `requestWithdrawal` / `executeWithdrawal` separated by
-an unbonding delay, with a floor of one hour enforced at construction and seven
-days used in tests. Any open dispute against an operator freezes execution.
-`Unbonding.t.sol` fuzzes the invariant over randomised interleavings of request,
-dispute and execution rather than testing one sequence, and
+:::proposition Withdrawal cannot outrun an open dispute
+Let withdrawal require a request followed, after an unbonding delay $\tau > 0$,
+by a separate execution, and let execution revert while the operator has any
+open dispute. Then no sequence of operator actions completes a withdrawal
+between the opening and the resolution of a dispute against it.
+:::
+
+:::proof
+Execution is gated on the open-dispute count being zero, and that count is
+incremented by `openDispute` before any subsequent block. An operator whose
+dispute is open therefore fails the gate at execution time regardless of when
+the request was made, and a request made after the dispute opens must in
+addition wait $\tau$, during which the dispute remains open.
+:::
+
+The floor on the delay is one hour, enforced at construction, with seven days
+used in tests. `Unbonding.t.sol` fuzzes the invariant over randomised
+interleavings of request, dispute and execution rather than testing one
+sequence, and
 `test_tier2_frontRunDisputeByWithdrawing_isNowBlocked` is the standing
 regression for the specific v0 exploit — if it ever passes again, tier 2 has
 regressed.
@@ -1005,6 +1067,8 @@ unquantified.
 
 **W2 — Input-logit provenance.** Three paths, in decreasing order of guarantee
 strength and increasing order of practicality:
+
+Table: Candidate routes to binding the input logit, in decreasing order of guarantee strength.
 
 | Path | Guarantee | Cost | Status |
 |---|---|---|---|

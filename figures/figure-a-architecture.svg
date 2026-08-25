@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 620" width="1180" height="620" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 700" width="1180" height="700" font-family="Helvetica, Arial, sans-serif">
   <defs>
     <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4a4a"/>
@@ -8,7 +8,7 @@
     </marker>
   </defs>
 
-  <rect width="1180" height="620" fill="#ffffff"/>
+  <rect width="1180" height="700" fill="#ffffff"/>
   <text x="24" y="34" font-size="17" font-weight="bold" fill="#1a1a1a">Figure A — Component architecture</text>
   <text x="24" y="55" font-size="12" fill="#5a5a5a">Brier v0. Solid outline = implemented and measured in this repo. Dashed amber = specified but NOT built.</text>
 
@@ -87,18 +87,25 @@
   <text x="788" y="353" font-size="11" fill="#444">slash = stake · (conf − outcome)² , capped</text>
   <text x="788" y="369" font-size="11" fill="#444">slashAmount: 543 gas (pure)</text>
   <text x="788" y="385" font-size="11" fill="#444">resolveDispute + payout: 97,390 gas</text>
-  <text x="788" y="402" font-size="11" fill="#c44536" font-weight="bold">no unbonding period → withdraw is unguarded</text>
+  <text x="788" y="402" font-size="11" fill="#2e7d4f" font-weight="bold">unbonding delay + dispute freeze → exit guarded</text>
 
   <!-- dispute resolver: SPLIT box, v0 vs target -->
   <rect x="776" y="436" width="360" height="66" fill="#f4ecec" stroke="#c44536" stroke-width="2.2" rx="5"/>
-  <text x="788" y="457" font-size="13" font-weight="bold" fill="#1a1a1a">Dispute resolver — v0: single admin key</text>
-  <text x="788" y="475" font-size="11" fill="#444">onlyAdmin resolveDispute(id, upheld)</text>
-  <text x="788" y="491" font-size="11" fill="#c44536" font-weight="bold">FULLY TRUSTED · no jury, oracle, or appeal</text>
+  <text x="788" y="457" font-size="13" font-weight="bold" fill="#1a1a1a">Dispute resolver — N-of-M committee</text>
+  <text x="788" y="475" font-size="11" fill="#444">resolveDispute(id, upheld) · threshold ≥ 2</text>
+  <text x="788" y="491" font-size="11" fill="#c44536" font-weight="bold">BOUNDED TRUST · N colluding = v0 admin</text>
 
-  <rect x="776" y="514" width="360" height="60" fill="#fdf7e8" stroke="#9a7b2f" stroke-width="1.8" stroke-dasharray="5 3" rx="5"/>
-  <text x="788" y="535" font-size="13" font-weight="bold" fill="#5f4c1c">Target: decentralised adjudication</text>
-  <text x="788" y="553" font-size="11" fill="#6b5a2c">Kleros-style jury / evidentiary standard / appeals</text>
-  <text x="788" y="568" font-size="11" fill="#9a7b2f" font-weight="bold">NOT BUILT</text>
+  <rect x="776" y="514" width="360" height="46" fill="#f0eef4" stroke="#6b5b95" stroke-width="1.8" rx="5"/>
+  <text x="788" y="533" font-size="12.5" font-weight="bold" fill="#1a1a1a">ReputationRegister · ModelRegistry</text>
+  <text x="788" y="550" font-size="10.5" fill="#444">EMA of realised Brier · content-addressed versions</text>
+
+  <rect x="776" y="570" width="360" height="46" fill="#f7e4e2" stroke="#8f2418" stroke-width="2" rx="5"/>
+  <text x="788" y="589" font-size="12.5" font-weight="bold" fill="#8f2418">CollusionOracle — unvalidated detector</text>
+  <text x="788" y="606" font-size="10.5" fill="#c44536">blocks disputes · quarantines payouts · cannot slash</text>
+
+  <rect x="776" y="626" width="360" height="44" fill="#fdf7e8" stroke="#9a7b2f" stroke-width="1.8" stroke-dasharray="5 3" rx="5"/>
+  <text x="788" y="645" font-size="12.5" font-weight="bold" fill="#5f4c1c">Target: staked jury with appeals</text>
+  <text x="788" y="662" font-size="10.5" fill="#9a7b2f" font-weight="bold">NOT BUILT</text>
 
   <!-- cross-lane arrows -->
   <path d="M 482 292 L 620 292 L 620 152 L 772 152" fill="none" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>

@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FIGS = ROOT / "figures"
 
 TARGETS = [
-    ("figure-a-architecture.svg", 1180, 620),
+    ("figure-a-architecture.svg", 1180, 700),
     ("figure-c-threat-model.svg", 1180, 1060),
 ]
 
