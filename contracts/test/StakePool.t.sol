@@ -37,14 +37,34 @@ contract StakePoolTest is Test {
     address admin = address(0xA11CE);
     address operator = address(0x0BE7A704);
     address claimant = address(0xC1A1);
+    // Bounded-trust committee: 2-of-3. NOT decentralised; see docs/PHASE3B_TRUST_MODEL.md
+    address r1 = address(0x00000000000000000000000000000000000000A1);
+    address r2 = address(0x00000000000000000000000000000000000000A2);
+    address r3 = address(0x00000000000000000000000000000000000000A3);
 
     bytes emptyProof = hex"";
     uint256[] emptyInstances;
 
+
+    function _committee() internal returns (address[] memory) {
+        address[] memory c = new address[](3);
+        c[0] = r1; c[1] = r2; c[2] = r3;
+        return c;
+    }
+
+
+    /// Reach the 2-of-3 threshold. Bounded trust: TWO keys, not one.
+    function _resolve(bytes32 disputeId, bool upheld) internal {
+        vm.prank(r1);
+        pool.resolveDispute(disputeId, upheld);
+        vm.prank(r2);
+        pool.resolveDispute(disputeId, upheld);
+    }
+
     function setUp() public {
         verifier = new MockVerifier();
         attestation = new Attestation(address(verifier));
-        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING);
+        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING, _committee(), 2);
 
         vm.deal(operator, 1_000 ether);
         vm.deal(claimant, 1 ether);
@@ -130,8 +150,7 @@ contract StakePoolTest is Test {
     /// (a) confident + correct == no meaningful slash
     function test_scenario_confidentAndCorrect_noSlash() public {
         (, bytes32 dispId) = _stakeAndAttest(100 ether, 0.99e18);
-        vm.prank(admin);
-        pool.resolveDispute(dispId, true); // decision upheld
+        _resolve(dispId, true); // decision upheld
 
         // (0.99 - 1)^2 = 0.0001 -> 0.01% of 100 ETH = 0.01 ETH
         assertEq(pool.stakeOf(operator), 100 ether - 0.01 ether);
@@ -142,8 +161,7 @@ contract StakePoolTest is Test {
     /// (b) confident + wrong == large slash
     function test_scenario_confidentAndWrong_largeSlash() public {
         (, bytes32 dispId) = _stakeAndAttest(100 ether, 0.99e18);
-        vm.prank(admin);
-        pool.resolveDispute(dispId, false); // overturned
+        _resolve(dispId, false); // overturned
 
         // (0.99 - 0)^2 = 0.9801 -> 98.01 ETH
         assertEq(pool.stakeOf(operator), 100 ether - 98.01 ether);
@@ -153,8 +171,7 @@ contract StakePoolTest is Test {
     /// (c) uncertain + wrong == small slash
     function test_scenario_uncertainAndWrong_smallSlash() public {
         (, bytes32 dispId) = _stakeAndAttest(100 ether, 0.55e18);
-        vm.prank(admin);
-        pool.resolveDispute(dispId, false);
+        _resolve(dispId, false);
 
         // (0.55)^2 = 0.3025 -> 30.25 ETH, far below the confident case
         assertEq(pool.stakeOf(operator), 100 ether - 30.25 ether);
@@ -192,24 +209,29 @@ contract StakePoolTest is Test {
         pool.openDispute(attId);
     }
 
-    function test_onlyAdminCanResolve() public {
+    /// A non-resolver cannot resolve. (Phase 3b: was onlyAdmin in v0.)
+    function test_onlyCommitteeMembersCanResolve() public {
         (, bytes32 dispId) = _stakeAndAttest(10 ether, 0.8e18);
         vm.prank(claimant);
-        vm.expectRevert(StakePool.NotAdmin.selector);
+        vm.expectRevert(abi.encodeWithSelector(StakePool.NotResolver.selector, claimant));
+        pool.resolveDispute(dispId, false);
+
+        // Even the admin cannot resolve unless it is on the committee.
+        vm.prank(admin);
+        vm.expectRevert(abi.encodeWithSelector(StakePool.NotResolver.selector, admin));
         pool.resolveDispute(dispId, false);
     }
 
     function test_cannotResolveTwice() public {
         (, bytes32 dispId) = _stakeAndAttest(10 ether, 0.8e18);
-        vm.startPrank(admin);
-        pool.resolveDispute(dispId, false);
+        _resolve(dispId, false);
+        vm.prank(r3);
         vm.expectRevert(abi.encodeWithSelector(StakePool.DisputeNotOpen.selector, dispId));
         pool.resolveDispute(dispId, false);
-        vm.stopPrank();
     }
 
     function test_resolveUnknownDisputeReverts() public {
-        vm.prank(admin);
+        vm.prank(r1);
         vm.expectRevert(abi.encodeWithSelector(StakePool.UnknownDispute.selector, bytes32("x")));
         pool.resolveDispute(bytes32("x"), true);
     }
@@ -219,14 +241,16 @@ contract StakePoolTest is Test {
     // ---------------------------------------------------------------
 
     function test_capIsEnforcedOnResolution() public {
-        StakePool capped = new StakePool(address(attestation), admin, 2_500, UNBONDING); // 25%
+        StakePool capped = new StakePool(address(attestation), admin, 2_500, UNBONDING, _committee(), 2); // 25%
         vm.prank(operator);
         capped.stake{value: 100 ether}();
         bytes32 attId = _attest(0.99e18);
         vm.prank(claimant);
         bytes32 dispId = capped.openDispute(attId);
 
-        vm.prank(admin);
+        vm.prank(r1);
+        capped.resolveDispute(dispId, false);
+        vm.prank(r2);
         capped.resolveDispute(dispId, false);
         // Uncapped would be 98.01 ETH; the cap clamps it to 25 ETH.
         assertEq(capped.stakeOf(operator), 75 ether);
@@ -234,8 +258,7 @@ contract StakePoolTest is Test {
 
     function test_slashNeverExceedsOperatorStake() public {
         (, bytes32 dispId) = _stakeAndAttest(1 ether, WAD); // confidence 1.0, wrong
-        vm.prank(admin);
-        pool.resolveDispute(dispId, false);
+        _resolve(dispId, false);
         assertEq(pool.stakeOf(operator), 0, "full stake slashed, never underflows");
     }
 
@@ -243,16 +266,14 @@ contract StakePoolTest is Test {
         bytes32 attId = _attest(0.99e18); // operator never staked
         vm.prank(claimant);
         bytes32 dispId = pool.openDispute(attId);
-        vm.prank(admin);
-        pool.resolveDispute(dispId, false);
+        _resolve(dispId, false);
         assertEq(pool.stakeOf(operator), 0);
     }
 
     function test_previewMatchesActualSlash() public {
         (bytes32 attId, bytes32 dispId) = _stakeAndAttest(100 ether, 0.77e18);
         uint256 preview = pool.previewSlash(attId, false);
-        vm.prank(admin);
-        pool.resolveDispute(dispId, false);
+        _resolve(dispId, false);
         (,,, uint256 actual) = pool.disputes(dispId);
         assertEq(preview, actual, "preview must not lie");
     }
@@ -265,7 +286,9 @@ contract StakePoolTest is Test {
         vm.prank(address(bad));
         bytes32 dispId = pool.openDispute(attId);
 
-        vm.prank(admin);
+        vm.prank(r1);
+        pool.resolveDispute(dispId, false);
+        vm.prank(r2);
         vm.expectRevert(StakePool.PayoutFailed.selector);
         pool.resolveDispute(dispId, false);
         // Stake must be untouched after the revert.
@@ -360,8 +383,7 @@ contract StakePoolTest is Test {
         bytes32 dispId = pool.openDispute(attId);
 
         uint256 claimantBefore = claimant.balance;
-        vm.prank(admin);
-        pool.resolveDispute(dispId, upheld);
+        _resolve(dispId, upheld);
 
         (,,, uint256 slashed) = pool.disputes(dispId);
         assertLe(slashed, stakeAmt, "cannot slash more than staked");

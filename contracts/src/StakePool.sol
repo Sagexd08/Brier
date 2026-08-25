@@ -9,12 +9,15 @@ import {Attestation} from "./Attestation.sol";
 ///         resolves against a decision, stake is slashed in proportion to how
 ///         MISCALIBRATED the operator was, using the Brier score.
 ///
-/// ============================ SIMULATED =============================
-/// Dispute resolution in this MVP is ADMIN-ARBITRATED. A single address
-/// decides every outcome, which means a single key decides who loses money.
-/// There is no decentralized jury, no oracle, no evidentiary standard, and
-/// no appeals process. This is the largest gap between this MVP and anything
-/// deployable. See docs/PATH_TO_PRODUCTION.md.
+/// ========================= BOUNDED TRUST ============================
+/// Dispute resolution requires N-of-M signatures from a FIXED, admin-set
+/// resolver committee. This is NOT decentralization: the committee is a fixed
+/// list chosen by the deployer, resolvers have nothing at stake, there is no
+/// evidentiary standard, no appeal, and no permissionless entry.
+///
+/// The only thing that changes versus a single admin key is the number of keys
+/// an adversary must corrupt: 1 -> N. N colluding resolvers have exactly the
+/// power the single admin had. See docs/PHASE3B_TRUST_MODEL.md.
 /// ====================================================================
 contract StakePool {
     using BrierMath for uint256;
@@ -36,6 +39,24 @@ contract StakePool {
 
     /// @notice Cap on any single slash, in basis points of the operator's stake.
     uint256 public maxSlashBps;
+
+    // ------------------------------------------------------------------
+    // Bounded-trust resolution (Phase 3b): N-of-M committee
+    // ------------------------------------------------------------------
+
+    /// @notice Fixed resolver committee. Membership is set by the admin.
+    address[] public resolvers;
+    mapping(address => bool) public isResolver;
+
+    /// @notice Signatures required to resolve a dispute.
+    uint256 public threshold;
+
+    /// @dev disputeId => resolver => whether that resolver has voted.
+    mapping(bytes32 => mapping(address => bool)) public hasVoted;
+    /// @dev disputeId => votes cast for "decision upheld".
+    mapping(bytes32 => uint256) public votesUpheld;
+    /// @dev disputeId => votes cast for "decision overturned".
+    mapping(bytes32 => uint256) public votesOverturned;
 
     mapping(address => uint256) public stakeOf;
     mapping(bytes32 => Dispute) public disputes;
@@ -82,6 +103,9 @@ contract StakePool {
         uint256 slashed
     );
     event PaidOut(bytes32 indexed disputeId, address indexed claimant, uint256 amount);
+    event ResolverVoted(bytes32 indexed disputeId, address indexed resolver, bool upheld,
+                        uint256 votesUpheld, uint256 votesOverturned);
+    event CommitteeChanged(address[] resolvers, uint256 threshold);
 
     error NotAdmin();
     error NoStake();
@@ -96,6 +120,10 @@ contract StakePool {
     error WithdrawalFrozenByOpenDispute(uint256 openDisputes);
     error WithdrawalAlreadyPending(uint256 amount, uint256 readyAt);
     error UnbondingPeriodTooShort(uint256 given);
+    error NotResolver(address caller);
+    error AlreadyVoted(bytes32 disputeId, address resolver);
+    error InvalidCommittee(uint256 m, uint256 n);
+    error DuplicateResolver(address resolver);
 
     modifier onlyAdmin() {
         if (msg.sender != admin) revert NotAdmin();
@@ -106,7 +134,9 @@ contract StakePool {
         address attestation_,
         address admin_,
         uint256 maxSlashBps_,
-        uint256 unbondingPeriod_
+        uint256 unbondingPeriod_,
+        address[] memory resolvers_,
+        uint256 threshold_
     ) {
         if (maxSlashBps_ > 10_000) revert CapOutOfRange(maxSlashBps_);
         // A zero-length unbonding period would reintroduce the v0 front-running
@@ -119,6 +149,47 @@ contract StakePool {
         admin = admin_;
         maxSlashBps = maxSlashBps_;
         unbondingPeriod = unbondingPeriod_;
+        _setCommittee(resolvers_, threshold_);
+    }
+
+    // ------------------------------------------------------------------
+    // Committee management
+    // ------------------------------------------------------------------
+
+    function _setCommittee(address[] memory resolvers_, uint256 threshold_) internal {
+        // A threshold of 1, or a threshold above the committee size, would make
+        // "N-of-M" meaningless; both are rejected.
+        if (threshold_ < 2 || threshold_ > resolvers_.length) {
+            revert InvalidCommittee(resolvers_.length, threshold_);
+        }
+        for (uint256 i = 0; i < resolvers.length; i++) {
+            isResolver[resolvers[i]] = false;
+        }
+        delete resolvers;
+        for (uint256 i = 0; i < resolvers_.length; i++) {
+            address r = resolvers_[i];
+            if (r == address(0) || isResolver[r]) revert DuplicateResolver(r);
+            isResolver[r] = true;
+            resolvers.push(r);
+        }
+        threshold = threshold_;
+        emit CommitteeChanged(resolvers_, threshold_);
+    }
+
+    /// @notice Replace the resolver committee.
+    /// @dev NOTE: the admin retains this power, so the admin can appoint a
+    ///      committee it controls. Bounded trust bounds the RESOLUTION step,
+    ///      not committee selection. Documented in docs/PHASE3B_TRUST_MODEL.md
+    ///      and asserted by test_tier3_adminCanReplaceTheCommittee.
+    function setCommittee(address[] calldata resolvers_, uint256 threshold_)
+        external
+        onlyAdmin
+    {
+        _setCommittee(resolvers_, threshold_);
+    }
+
+    function committeeSize() external view returns (uint256) {
+        return resolvers.length;
     }
 
     // ------------------------------------------------------------------
@@ -222,10 +293,33 @@ contract StakePool {
     /// `maxSlashBps`. A confident-and-wrong operator loses far more than an
     /// uncertain-and-wrong one; a confident-and-right operator loses almost
     /// nothing. That asymmetry is the product.
-    function resolveDispute(bytes32 disputeId, bool decisionUpheld) external onlyAdmin {
+    function resolveDispute(bytes32 disputeId, bool decisionUpheld) external {
+        if (!isResolver[msg.sender]) revert NotResolver(msg.sender);
+
         Dispute storage d = disputes[disputeId];
         if (d.claimant == address(0)) revert UnknownDispute(disputeId);
         if (d.status != DisputeStatus.Open) revert DisputeNotOpen(disputeId);
+        if (hasVoted[disputeId][msg.sender]) revert AlreadyVoted(disputeId, msg.sender);
+
+        hasVoted[disputeId][msg.sender] = true;
+        uint256 up = votesUpheld[disputeId];
+        uint256 over = votesOverturned[disputeId];
+        if (decisionUpheld) {
+            up += 1;
+            votesUpheld[disputeId] = up;
+        } else {
+            over += 1;
+            votesOverturned[disputeId] = over;
+        }
+        emit ResolverVoted(disputeId, msg.sender, decisionUpheld, up, over);
+
+        // Below threshold on both sides: record the vote and stop. The dispute
+        // stays Open, so the operator's withdrawal stays frozen meanwhile.
+        uint256 t = threshold;
+        if (up < t && over < t) return;
+
+        // One side reached the threshold; that side is the outcome.
+        decisionUpheld = up >= t;
 
         Attestation.Record memory rec = attestation.get(d.attestationId);
 

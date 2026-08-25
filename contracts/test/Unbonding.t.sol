@@ -27,13 +27,30 @@ contract UnbondingTest is Test {
     address admin = address(0xA11CE);
     address operator = address(0x0BE7A704);
     address claimant = address(0xC1A1);
+    address r1 = address(0x00000000000000000000000000000000000000A1);
+    address r2 = address(0x00000000000000000000000000000000000000A2);
+    address r3 = address(0x00000000000000000000000000000000000000A3);
 
     bytes emptyProof = hex"";
     uint256[] emptyInstances;
 
+    function _committee() internal view returns (address[] memory) {
+        address[] memory c = new address[](3);
+        c[0] = r1; c[1] = r2; c[2] = r3;
+        return c;
+    }
+
+    /// Reach the 2-of-3 threshold.
+    function _resolve(bytes32 disputeId, bool upheld) internal {
+        vm.prank(r1);
+        pool.resolveDispute(disputeId, upheld);
+        vm.prank(r2);
+        pool.resolveDispute(disputeId, upheld);
+    }
+
     function setUp() public {
         attestation = new Attestation(address(new OkVerifier()));
-        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING);
+        pool = new StakePool(address(attestation), admin, 10_000, UNBONDING, _committee(), 2);
         vm.deal(operator, 10_000 ether);
         vm.deal(claimant, 1 ether);
     }
@@ -129,8 +146,7 @@ contract UnbondingTest is Test {
 
         vm.prank(claimant);
         bytes32 dispId = pool.openDispute(attId);
-        vm.prank(admin);
-        pool.resolveDispute(dispId, false);
+        _resolve(dispId, false);
 
         (,,, uint256 slashed) = pool.disputes(dispId);
         assertEq(slashed, expected, "slash must match the pre-request preview");
@@ -201,8 +217,7 @@ contract UnbondingTest is Test {
 
         skip(UNBONDING + 1);
 
-        vm.prank(admin);
-        pool.resolveDispute(d1, true);
+        _resolve(d1, true);
         assertEq(pool.openDisputeCount(operator), 1, "one dispute still open");
 
         vm.prank(operator);
@@ -211,8 +226,7 @@ contract UnbondingTest is Test {
         );
         pool.executeWithdrawal();
 
-        vm.prank(admin);
-        pool.resolveDispute(d2, true);
+        _resolve(d2, true);
         assertEq(pool.openDisputeCount(operator), 0);
 
         vm.prank(operator);
@@ -231,8 +245,7 @@ contract UnbondingTest is Test {
 
         vm.prank(claimant);
         bytes32 dispId = pool.openDispute(attId);
-        vm.prank(admin);
-        pool.resolveDispute(dispId, false); // slashes 98.01 ETH
+        _resolve(dispId, false); // slashes 98.01 ETH
 
         skip(UNBONDING + 1);
         uint256 before = operator.balance;
@@ -276,6 +289,6 @@ contract UnbondingTest is Test {
         vm.expectRevert(
             abi.encodeWithSelector(StakePool.UnbondingPeriodTooShort.selector, uint256(0))
         );
-        new StakePool(address(attestation), admin, 10_000, 0);
+        new StakePool(address(attestation), admin, 10_000, 0, _committee(), 2);
     }
 }
