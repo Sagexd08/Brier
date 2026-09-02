@@ -28,9 +28,8 @@ each remaining gap would take to close, and what evidence would settle whether
 the mechanism survives contact with them. A subsequent pass ablated five
 candidate enhancements against this baseline: conformal prediction earns a place
 and fits the circuit budget at no measurable cost, while a deeper base model and
-deep-ensemble epistemic uncertainty do not — the latter measurably *harms*
-calibration. Both negative results are reported at the same prominence as the
-positive ones.
+deep-ensemble epistemic uncertainty do not, the latter measurably degrading
+calibration.
 
 ---
 
@@ -69,10 +68,10 @@ of a **regulatory gap** rather than a regulatory driver. We were unable to
 locate a provision in the 2025 Directions imposing model-explainability
 obligations, and we do not assert one exists.
 
-The honest framing is that regulation currently creates demand for *auditable
-records of automated decisions* and does not yet create demand for *calibrated
-confidence*. This proposal argues the latter is the more useful object, not that
-it is presently required.
+Regulation currently creates demand for *auditable records of automated
+decisions*, and does not yet create demand for *calibrated confidence*. This
+proposal argues that the latter is the more useful object; it does not claim
+the latter is presently required.
 
 ### 1.2 The gap in existing mechanisms
 
@@ -144,15 +143,14 @@ protocol, each kept only if it earns its place (§6.5–§6.9, and `ABLATION.md`
    contract that rejects any decision whose proof does not verify.
 3. A measured evaluation over 10 pinned seeds, including a leakage control that
    comes out *worse than not calibrating at all*, and a negative result on head
-   capacity reported at the strength the data supports rather than the strength
-   that would read better.
+   capacity reported at the strength the data supports — a majority effect at
+   $p = 0.037$, not the uniform one a single run would have suggested.
 4. An adversarial trust model (§4.3) in which every asserted weakness is
-   demonstrated by an executing test, so the threat model cannot drift away from
-   the code without the test suite failing.
-5. A conformal-prediction layer carrying a distribution-free coverage guarantee,
-   shown by measurement to fit the existing circuit budget — and an ablation of
-   four further enhancements, two of which are reported as failures because they
-   are (§6.5–§6.9).
+   demonstrated by an executing test, so the threat model cannot drift from the
+   code without the suite failing.
+5. A conformal-prediction layer carrying a distribution-free coverage
+   guarantee, shown by measurement to fit the existing circuit budget, and an
+   ablation of four further enhancements of which two fail (§6.5–§6.9).
 6. Two on-chain surfaces — an operator reputation register and a content-addressed
    model-version registry — each placed explicitly in the trust tier it actually
    occupies rather than the one its being on-chain might suggest (§4.3, §6.10).
@@ -200,6 +198,29 @@ predictive distribution $F$ rather than any $G \neq F$, and *strictly proper* if
 that maximum is unique [10]. The Brier score is strictly proper, which is the
 sole property this mechanism depends on.
 
+### 2.5 Positioning
+
+The delta is narrow and the table states it precisely. *Conf* = the penalty is
+weighted by the reporter's own stated confidence; *Stake* = the reporter has
+collateral at risk; *ZK* = the scored quantity is produced by a
+zero-knowledge-proved computation; *Adjud.* = how the outcome is determined.
+
+Table: Positioning against the mechanisms this work draws on. Feature
+attributions are from the cited sources and describe those systems as
+documented, not as re-implemented here.
+
+| Work | Conf | Stake | ZK | Adjud. | Primary contribution |
+|---|---|---|---|---|---|
+| Chainlink staking [3] | – | yes | – | alerting | Fixed-size slashing on SLA breach |
+| Nexus Mutual [4] | – | yes | – | member vote | Stake-weighted claim assessment |
+| Kleros [7] | – | yes | – | juror pool | General decentralised arbitration |
+| Foresight Arena [5] | yes | – | – | market | Brier-scored forecasting leaderboard |
+| EZKL [6] | – | – | yes | – | ONNX-to-halo2 verifiable inference |
+| This work | **yes** | **yes** | **yes** | N-of-M | Confidence-weighted slashing, measured |
+
+No row is dominated on every axis, and the combination in the final row is what
+is claimed as novel. Each component individually is prior art.
+
 ---
 
 ## 3. The mechanism
@@ -216,6 +237,23 @@ $\text{slash} = S \cdot (c-o)^2$, subject to a protocol maximum fraction of $S$.
 The penalty is therefore the Brier score of a single forecast, denominated in
 stake. Everything that follows depends on one property of that score and on
 nothing else about it.
+
+Table: Notation. Symbols are fixed here and used consistently throughout.
+Values in the final column are those of the deployed prototype.
+
+| Symbol | Meaning | Value |
+|---|---|---|
+| $S$ | operator collateral at stake | demonstration values |
+| $c$ | reported confidence the decision was correct, in [0,1] | attested, WAD |
+| $o$ | adjudicated outcome of a dispute, 0 or 1 | committee output |
+| $p$ | operator's private belief that the decision is correct | unobservable |
+| $L$ | base-model logit entering the calibration head | unverified input |
+| $T$ | temperature of the calibration head | 3.47 ± 0.45 |
+| $q$ | split-conformal quantile at level $\alpha$ | fitted off-chain |
+| $\alpha$ | conformal miscoverage level | 0.05, 0.10, 0.20 |
+| $vk$ | halo2 verifying key identifying the proved head | one per version |
+| $\tau$ | unbonding delay before a withdrawal may execute | 7 days (floor 1 h) |
+| $N/M$ | resolver threshold over committee size | 2 of 3 |
 
 ### 3.2 Why truthful reporting minimises expected loss
 
@@ -246,7 +284,7 @@ Two consequences follow, and together they are the whole argument.
 **The unique minimum is at $c = p$.** The expression is a strictly convex
 parabola in $c$, so any misreport in either direction costs the operator
 $S(c-p)^2$ in expectation. Overclaiming confidence is not merely unrewarded, it
-is priced — and priced quadratically, so shading the truth slightly is cheap
+is priced quadratically, so shading the truth slightly is cheap
 while asserting near-certainty about a coin flip costs close to the entire stake.
 This is strict properness [10] instantiated as a collateral rule: the operator
 does not need to be honest, it needs only to be selfish.
@@ -269,7 +307,49 @@ inherited from the algebra: §5.6 scans all 101 candidate reports at two distinc
 true probabilities and confirms the expected-loss minimiser is the true one in
 both, and monotonicity is fuzzed at 256 runs per direction.
 
-### 3.3 Scope conditions, stated as part of the claim
+### 3.3 What the mechanism requires, and where else it applies
+
+Definition 1 is stated over a (confidence, outcome) pair and a stake. Nothing in
+it mentions credit, and the properness argument of §3.2 uses no property of the
+decision beyond the three the definition names. It is therefore worth separating
+what the mechanism needs from what this particular deployment happens to supply.
+
+The mechanism requires exactly three things:
+
+1. **A scalar confidence** the operator commits to before the outcome is known.
+2. **A binary outcome** that is eventually adjudicated.
+3. **Collateral** the operator loses access to while a decision is disputable.
+
+Any setting supplying those three admits the same rule, and the properness
+argument transfers unchanged. Candidate settings, in decreasing order of fit:
+
+- **Price and data oracles.** Reporters already stake, and already have a
+  natural notion of being wrong. What they do not currently do is report
+  confidence at all (§1.2), which is a reporting-format change rather than a
+  mechanism change. The outcome is observable, which removes the hardest
+  problem this proposal has (§7.2).
+- **Model marketplaces and inference markets.** A served prediction with an
+  attached confidence, an escrowed bond, and a later ground-truth reveal is
+  structurally identical to the credit case, with the advantage that the
+  counterfactual is usually observed.
+- **Automated underwriting and claims triage.** Same shape as credit, same
+  unobservable-counterfactual problem for declines.
+- **Agent action markets.** An agent that commits to a confidence before taking
+  a consequential action fits the definition, but "the action was wrong" is
+  frequently not binary, which breaks requirement 2.
+
+The setting that does **not** fit, and which we flag because it is the one most
+often assumed to: free-form generation. It has no canonical scalar confidence,
+no binary ground truth, and no stable notion of the same decision across
+sampling seeds (§8.4).
+
+Credit scoring was selected as the instantiation for three reasons: the
+regulatory pressure is concrete (§1.1), a standard public dataset exists, and
+the counterfactual problem is at its *hardest* there. A mechanism that survives
+the rejection case is not made worse by settings where outcomes are observed;
+the converse would not hold.
+
+### 3.4 Scope conditions, stated as part of the claim
 
 The derivation assumes the adjudicated outcome is truthful and that dispute
 selection is independent of the reported confidence. Neither condition is
@@ -286,7 +366,7 @@ guaranteed by this prototype. Specifically:
    ever disputed, the operator faces an asymmetric loss surface, and the
    dominant strategy under that surface is not analysed here.
 
-The mechanism is proper; the *system* is proper only to the extent that these
+The mechanism is proper; the *system* is proper only insofar as these
 conditions hold, and in v0 they do not. Closing conditions 1 and 3 is the
 substance of the proposed work in §8.
 
@@ -590,7 +670,7 @@ stops fitting the circuit," not "flat without limit."
 
 ![Figure 5 — Proving cost against head size across four orders of magnitude. Rows used scale linearly with parameters; proving time does not follow.](figures/figure-e-circuit-sweep.png)
 
-Soundness is tested rather than assumed: an honest proof verifies, while a
+Soundness is tested, not assumed: an honest proof verifies, while a
 tampered public output, a flipped byte at the proof head, a flipped byte
 mid-proof, and a wrong verifying key are each rejected.
 
@@ -693,9 +773,11 @@ is **noise that the head overfits** on 200 calibration points. The cost is not
 close either: 5 model copies at 54 s
 per seed, roughly ten times the baseline, to make calibration worse.
 
-This is the clearest instance in this work of a claim that sounds obviously true
-and is not. It is reported at the same prominence as the positive results
-because a design that only reports its successes is not measuring anything.
+The wider lesson is about experimental design more than about ensembles. Had
+the control been omitted, the arms would have read as "epistemic uncertainty
+does not help", and the true effect — that the architecture helps while the
+signal cancels it — would have been invisible. Any ablation that adds capacity
+and a feature simultaneously needs the capacity-only arm to be interpretable.
 
 ### 6.7 Conformal prediction, and its circuit cost (Phase B)
 
@@ -718,7 +800,7 @@ target (`tests/test_conformal.py`). Set size is reported alongside coverage
 because coverage alone is trivially satisfiable: always return both labels and
 you have 100% coverage and no information.
 
-**The circuit gate, measured rather than argued.**
+**The circuit gate, measured, not argued.**
 
 Table: Phase B circuit gate. Conformal set construction fits the established budget at no measurable proving cost.
 
@@ -782,9 +864,10 @@ Table: Phase E. Detection against injected rings only; intensity is the fraction
 | 0.60 | 0.856 ± 0.104 | 0.841 ± 0.104 |
 | 0.50 | 0.807 ± 0.040 | 0.774 ± 0.066 |
 
-At intensity 1.00 a ring is trivially separable, so reporting only that number
-would be close to dishonest; the sweep runs to 0.50, where the ring is half
-camouflaged in ordinary traffic.
+At intensity 1.00 a ring is trivially separable and the AUC of 1.000 measures
+nothing but that separability, so the sweep continues to 0.50, where a ring
+member sends half its disputes elsewhere and the signal must come from graph
+structure.
 
 **This is the weakest evidence in the document, and it now carries the
 strongest consequences.** Labels exist only because the rings were injected.
@@ -799,9 +882,10 @@ over money, and §7.5 states what it costs.
 
 ### 6.10 Two on-chain surfaces, and where they actually sit
 
-Both additions here are on-chain, and neither is a cryptographic guarantee. The
-distinction is the whole content of this subsection, because being on-chain is
-routinely mistaken for being free of trusted parties, which neither of these is.
+Both additions are on-chain and neither is a cryptographic guarantee. Being
+on-chain establishes that a computation is public and replayable; it says
+nothing about whether its inputs can be trusted, and the two are routinely
+conflated.
 
 **Operator reputation (Phase F).** An exponential moving average of realised
 Brier score per operator, updated at each resolution from the same
@@ -867,6 +951,32 @@ edit cannot quietly upgrade a claim.
 ---
 
 ## 7. Limitations and threat model
+
+The subsections below state each unresolved gap in full. The table summarises
+which adversary capabilities the system covers and which it does not; the
+uncovered rows are part of the stated security model, not omissions from it.
+
+Table: Threat coverage. "Covered" means an adversary with that capability is
+either prevented or reliably detected; every uncovered row is a capability an
+adversary retains today.
+
+| Adversary capability | Covered | Mechanism, or reason not |
+|---|---|---|
+| Forge a proof for a head it did not run | yes | halo2 soundness; 4/4 tamper checks |
+| Alter an attested confidence after the fact | yes | stored on chain, proof-bound |
+| Substitute model weights under a claimed version | yes | ModelRegistry content hash (§6.10) |
+| Exit stake ahead of a pending dispute | yes | unbonding delay + dispute freeze (§7.3) |
+| Act alone as a single resolver | yes | N-of-M threshold (§7.2) |
+| **Fabricate the input logit $L$** | **no** | tier 1 binds the head, not the pipeline (§7.1) |
+| **Corrupt N of M resolvers** | **no** | equals v0's single-key power (§7.2) |
+| **Exit before any dispute is raised** | **no** | bound on the dispute window, not the lock (§7.3) |
+| **Misreport within a protected subgroup** | **no** | calibration is measured in aggregate (§7.4) |
+| **Flag an honest claimant** | **no** | detector unvalidated on real traffic (§7.5) |
+| Train dishonestly and register truthfully | no | content integrity ≠ training integrity (§6.10) |
+| Decline to attest at all | no | unattested decisions are outside the system |
+
+Five capabilities in bold are the ones an adversary would actually use. Each has
+a subsection below and a test that demonstrates it.
 
 These are unresolved trust gaps in the present design. They are not future work.
 
@@ -990,8 +1100,8 @@ population average.
 
 ### 7.5 An unvalidated detector has been given authority over money
 
-This is the sharpest limitation in the system, and unlike the others it is a
-choice rather than an inheritance.
+This is the sharpest limitation in the system, and unlike the others it was
+chosen rather than inherited.
 
 §6.9 reports detection performance on rings that were injected, so the labels
 exist by construction. There is no labelled real collusion, the protocol having
@@ -1146,7 +1256,30 @@ once it has enough data. If it does, the negative results of §6.5–§6.6 are
 statements about this dataset rather than about the approach, and they should be
 restated as such.
 
-### 8.4 Explicitly out of scope
+### 8.4 Sequencing
+
+The items above are not independent, and the ordering below reflects what
+unblocks what. W2 is placed first because every other guarantee in the system is
+conditional on the input it does not currently bind.
+
+Table: Proposed sequencing. "Answers" names the question each item closes;
+"Blocked by" names what must land first.
+
+| # | Item | Answers | Blocked by |
+|---|---|---|---|
+| 1 | W2a — measure where proving cost steps past logrows 15 | Is in-circuit provenance affordable at all? | — |
+| 2 | W2b — commit feature vector and weights | Makes fabrication detectable | 1 |
+| 3 | W1a — set the unbonding period from claim latency | How long is the dispute window? | — |
+| 4 | W6 — measure detector false-positive rate | Should the oracle be attached? | — |
+| 5 | W4 — subgroup calibration as the slashed quantity | Does the rule price the harm it should? | — |
+| 6 | W3 — staked jury, evidentiary standard, appeals | Can tier 3 be made accountable? | 3 |
+| 7 | W5 — second dataset, second model family, drift | Do the empirical claims travel? | — |
+
+Items 1, 3, 4, 5 and 7 are independent and can proceed in parallel. Item 6 is
+the largest and depends on a definition of the adjudicated event that does not
+yet exist (§7.2).
+
+### 8.5 Explicitly out of scope
 
 **Non-deterministic decision classes (LLM outputs).** We flag this as
 **substantially harder, not a natural extension.** The present design depends on
@@ -1196,7 +1329,7 @@ Beyond that, dispute resolution is an admin-appointed N-of-M committee whose
 collusion carries exactly the authority a single key did, and while the unbonding
 period now stops an operator outrunning a dispute, an operator that is simply
 never disputed inside the window still exits with the stake intact. Each of these
-is demonstrated by a passing test rather than conceded in prose.
+is demonstrated by a passing test, not conceded in prose.
 
 The two on-chain surfaces added since do not change this answer, and were built
 so as not to appear to. Reputation is auditable aggregation over tier-3 inputs;

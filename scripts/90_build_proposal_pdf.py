@@ -52,6 +52,15 @@ _MATH_LITERAL = {
     r"\lambda": "\u03bb",
     r"\delta": "\u03b4",
     r"\rho": "\u03c1",
+    r"\tau": "\u03c4",
+    r"\beta": "\u03b2",
+    r"\gamma": "\u03b3",
+    r"\epsilon": "\u03b5",
+    r"\theta": "\u03b8",
+    r"\phi": "\u03c6",
+    r"\omega": "\u03c9",
+    r"\Sigma": "\u03a3",
+    r"\Delta": "\u0394",
     r"\mu": "\u03bc",
     r"\nu": "\u03bd",
     r"\Theta": "\u0398",
@@ -264,12 +273,24 @@ def md_to_html(md: str) -> tuple[str, list[tuple[int, str, str]]]:
             continue
 
         # ---- table caption:  Table: text   (must precede the table)
+        #
+        # A caption is normally wrapped across several source lines, so keep
+        # consuming until a blank line or the table itself. Taking only the
+        # first line left the remainder to be re-parsed as a paragraph, which
+        # is how it escaped the caption and landed under it.
         m = re.match(r"^Table:\s*(.+)$", line)
         if m:
+            parts = [m.group(1).strip()]
+            i += 1
+            while (i < n and lines[i].strip()
+                   and not lines[i].lstrip().startswith("|")
+                   and not lines[i].startswith(":::")
+                   and not re.match(r"^(#{1,6}\s|```|Table:)", lines[i])):
+                parts.append(lines[i].strip())
+                i += 1
             num = ctr.next_table()
             out.append('<p class="tabcaption"><span class="lab">Table %d:</span> %s</p>'
-                       % (num, _inline(m.group(1).strip())))
-            i += 1
+                       % (num, _inline(" ".join(parts))))
             continue
 
         # display math: $$ ... $$ alone on a line
