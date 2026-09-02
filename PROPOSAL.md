@@ -112,7 +112,7 @@ work that would close the remainder.
 truthful confidence reporting the operator's loss-minimising strategy, and does
 that property survive implementation in fixed-point on-chain arithmetic?
 *Evidence:* an analytic derivation (§3.2), plus numerical verification of the
-deployed Solidity against it (§5.6, §6.11).
+deployed Solidity against it (§5.7, §6.12).
 
 **RQ2 — Feasibility.** Can the confidence-producing step be proved in zero
 knowledge and verified on-chain at a cost a per-decision workflow could absorb?
@@ -161,42 +161,120 @@ protocol, each kept only if it earns its place (§6.5–§6.9, and `ABLATION.md`
 
 ### 2.1 zkML and verifiable inference
 
+Verifiable inference asks a narrow question: given a committed model and an
+input, can a party prove the output was computed correctly without revealing
+the model, the input, or both? The field divides by proof system and by what
+part of the pipeline is placed in circuit.
+
 EZKL compiles computational graphs supplied in ONNX format into arithmetic
 circuits and produces zk-SNARK proofs of correct model execution, using a
 modified halo2 with Plonkish arithmetisation; anyone holding the verifying key
-can check the proof [6]. This prototype uses EZKL 23.0.5 directly. The broader
-design question EZKL raises — that proving cost scales with the proved
-subgraph — is what motivates proving a small calibration head rather than a full
-classifier, and is examined empirically in §6.3.
+can check the proof [6]. This prototype uses EZKL 23.0.5 directly. Related
+systems make different trade-offs along the same axis: zkCNN [11] specialises
+the proof system to convolutional structure and obtains large constant-factor
+gains at the cost of generality, while sumcheck-based approaches [12] target
+asymptotically cheaper proving for layered arithmetic circuits. The common
+finding across all of them is that cost tracks the proved subgraph, not the
+model's accuracy or its business importance.
+
+That finding is the design constraint this proposal is built around, and it
+cuts in an unobvious direction. If proving cost scales with what is proved,
+then the right question is not "how do we prove the model?" but "what is the
+smallest computation whose correctness the mechanism actually needs?" For
+confidence-calibrated slashing the answer is the calibration head — one
+parameter — and §6.3 measures what that buys: cost flat across a 16,897×
+parameter increase, because fixed lookup and column overhead dominate at these
+sizes. The corollary, which §7.1 states as a limitation, is that everything
+outside the proved subgraph is unbound, and the proposal is largely an argument
+about how much that omission costs.
 
 ### 2.2 Decentralised oracle staking and slashing
 
+Staking mechanisms bond a reporter's capital against its behaviour, and differ
+in what triggers a loss and how large that loss is.
+
 Chainlink's staking design uses on-chain service-level agreements, community
-alerting, and fixed-size slashing penalties [3]. Nexus Mutual's claim assessment
-uses stake-weighted voting with a quorum, escalation to a full member vote, and
-reward for majority-aligned voting [4]. Kleros provides general decentralised
-arbitration: jurors are drawn from PNK stakers, self-select into sub-courts, vote
-on evidence, and are rewarded for voting with the majority under a Schelling-point
-incentive, with appeals heard by successively larger juries [7]. Kleros is the
-most plausible substitute for this prototype's trusted administrator (§8).
+alerting, and fixed-size slashing penalties [3]. The size is the salient
+detail: 700 LINK per valid alerting event on the ETH/USD feed, independent of
+how wrong the feed was. This is a deliberate simplification — a constant
+penalty needs no adjudication of degree — and it is exactly the property this
+proposal replaces.
+
+Nexus Mutual's claim assessment uses stake-weighted voting with a quorum,
+escalation to a full member vote, and reward for majority-aligned voting [4].
+Kleros provides general decentralised arbitration: jurors are drawn from PNK
+stakers, self-select into sub-courts, vote on evidence, and are rewarded for
+voting with the majority under a Schelling-point incentive, with appeals heard
+by successively larger juries [7]. Both adjudicate a binary — was the claim
+valid, did the defendant breach — and neither scores the reporter's confidence,
+because in their settings the reporter does not state one.
+
+The distinction worth drawing is between *slashing for misbehaviour* and
+*scoring a forecast*. Slashing asks whether a rule was broken; scoring asks how
+far a stated belief was from what happened. The literature is rich in the first
+and, on-chain, nearly silent on the second. Kleros remains the most plausible
+substitute for this prototype's committee (§8.2), and adopting it would inherit
+a body of work on juror incentives that this proposal does not attempt to
+reproduce.
 
 ### 2.3 Calibration in machine learning
 
-Guo et al. show that modern neural networks are poorly calibrated, and that
-temperature scaling — a single-parameter extension of Platt scaling that divides
-logits by a learned $T > 0$ fitted on held-out data — is surprisingly effective
-at restoring calibration [8]. Temperature scaling is the primary calibration
-method here, chosen both for its empirical strength and because a
-single-parameter map is trivially cheap to arithmetise.
+A model is calibrated when its stated confidences match observed frequencies:
+of the decisions it calls 80% likely, about 80% should hold. Accuracy and
+calibration are independent — a model can be accurate and overconfident, or
+inaccurate and perfectly calibrated — and this mechanism prices only the
+second.
+
+Guo et al. show that modern neural networks are poorly calibrated, that this
+worsened as architectures grew, and that temperature scaling — a
+single-parameter extension of Platt scaling dividing logits by a learned
+$T > 0$ fitted on held-out data — is surprisingly effective at restoring it
+[8]. Because the map is monotone it cannot change any decision, so calibration
+is free in accuracy terms; §6.1 confirms accuracy is identical before and
+after, as it must be.
+
+Measurement is itself contested. Expected Calibration Error depends on a
+binning scheme, and Nixon et al. show that equal-width binning is biased when
+predictions cluster, proposing adaptive schemes that equalise bin population
+[13]. This matters here more than usual, because ECE is not merely a reported
+diagnostic — it is the quantity the mechanism's value proposition rests on. The
+implementation is therefore explicit about its convention (§5.5) and is
+known-answer tested; the sensitivity of the headline result to the binning
+choice is not evaluated, and §7.6 records that as a limitation.
+
+Temperature scaling is the primary method here for two reasons that happen to
+agree: it is empirically strong on small calibration sets, and a
+single-parameter affine map is the cheapest possible thing to arithmetise. §6.5
+and §6.6 test whether more capable alternatives beat it, and find they do not.
 
 ### 2.4 Proper scoring rules
 
 Brier introduced the mean-squared-error score for probability forecasts of
-binary outcomes [9]. Gneiting and Raftery develop the general theory: a scoring
-rule is *proper* if the forecaster maximises expected score by issuing its true
-predictive distribution $F$ rather than any $G \neq F$, and *strictly proper* if
-that maximum is unique [10]. The Brier score is strictly proper, which is the
-sole property this mechanism depends on.
+binary outcomes, in a meteorological setting where forecasters had every
+incentive to hedge [9]. Gneiting and Raftery develop the general theory: a
+scoring rule is *proper* if the forecaster maximises expected score by issuing
+its true predictive distribution $F$ over any $G \neq F$, and *strictly proper*
+if that maximum is unique [10]. They also give the Savage representation, under
+which every proper scoring rule corresponds to a convex function of the
+forecast, and the strictly proper rules to strictly convex ones — Brier
+corresponding to $F(p) = p^2$.
+
+Strict properness is the sole property this mechanism requires, and Brier is
+not the only rule with it. The logarithmic score and the spherical score are
+also strictly proper, and the log score has a stronger claim in information
+theory, being the unique local proper rule [10]. Under a collateral constraint
+the ranking inverts, for a reason that is specific to slashing rather than to
+forecasting: the log score is unbounded, so it cannot be paid from a finite
+stake, and truncating it destroys the very properness it was chosen for. §3.3
+states and proves that failure, and it is the reason the choice of Brier is a
+design decision rather than a default.
+
+A separate strand applies proper scoring rules to elicit beliefs where no
+ground truth will ever arrive — peer prediction and Bayesian truth serum
+[14] — by scoring reports against other reports. That approach is
+directly relevant to the unobservable-counterfactual problem of §7.2, and is
+noted in §8.2 as an alternative to producing a ground truth that does not
+exist.
 
 ### 2.5 Positioning
 
@@ -303,11 +381,69 @@ slashing rule should reward.
 
 The deployed contract computes this in fixed point rather than over the reals, so
 properness is re-established empirically against the shipped code rather than
-inherited from the algebra: §5.6 scans all 101 candidate reports at two distinct
+inherited from the algebra: §5.7 scans all 101 candidate reports at two distinct
 true probabilities and confirms the expected-loss minimiser is the true one in
 both, and monotonicity is fuzzed at 256 runs per direction.
 
-### 3.3 What the mechanism requires, and where else it applies
+### 3.3 Why the Brier score, and why the cap must be 100%
+
+Brier is not the only strictly proper scoring rule, and the choice among them
+is usually treated as a matter of taste. Under a collateral constraint it is
+not: boundedness stops being an aesthetic property and becomes the difference
+between a mechanism that works and one that cannot be implemented.
+
+The logarithmic score $-\log c$ (on $o = 1$) is strictly proper and is the
+standard alternative. It is also unbounded as $c \to 0$, so a slash defined
+from it is unbounded, and no finite stake can cover it. Any implementation must
+therefore truncate it — and truncation is exactly what the next result shows to
+be fatal. The spherical score is bounded but has no natural scale in units of
+stake. Brier is the proper rule whose range is already $[0,1]$, so
+"slash the whole stake" and "the worst possible score" coincide, and the
+cap never has to bind.
+
+That last point is usually stated as a convenience. It is a correctness
+requirement.
+
+:::proposition Capping the slash destroys strict properness
+Let the contract slash $S \cdot \min((c-o)^2, \kappa)$ for a cap
+$\kappa \in (0,1]$. Truthful reporting minimises expected loss if and only if
+$\kappa \geq \max(p, 1-p)$. For $\kappa < \max(p, 1-p)$ the unique minimiser is
+a boundary report: $c = 0$ when $p < 1/2$, and $c = 1$ when $p > 1/2$.
+:::
+
+:::proof
+Write $E(c)$ for the expected slash in units of $S$. Truthful reporting yields
+$E(p) = p(1-p)$, provided neither branch is capped at $c = p$. The two boundary
+reports yield $E(0) = p \cdot \min(1, \kappa) = p\kappa$ and
+$E(1) = (1-p) \kappa$, since $\kappa \leq 1$.
+
+Comparing, $E(0) < E(p)$ exactly when $p\kappa < p(1-p)$, that is when
+$\kappa < 1-p$; and $E(1) < E(p)$ exactly when $\kappa < p$. So the truthful
+report is beaten by some boundary report precisely when
+$\kappa < \max(p, 1-p)$, and survives otherwise. Since
+$\max(p, 1-p) \geq 1/2$, any cap below one half breaks properness at every
+$p \neq 1/2$. At $\kappa = 1$ the constraint $\kappa \geq \max(p,1-p)$ holds for
+all $p$, the caps never bind, and Proposition 1 applies unchanged.
+:::
+
+The direction of the failure is what makes this worth stating. A cap does not
+merely weaken the incentive; it inverts it. Capped liability protects the
+operator from the worst outcome of an extreme report, so extreme reports become
+cheap, and the mechanism starts paying for exactly the overconfidence it was
+built to price. This is the familiar risk-shifting effect of limited liability,
+arriving through a parameter that looks prudential.
+
+The practical consequence is a deployment rule. `maxSlashBps` must be 10,000,
+and it is: `test_cap_atOneHundredPercent_preservesProperness` confirms the
+minimiser is the true probability at four values of $p$, while
+`test_cap_belowHalf_rewardsMaximalOverconfidence` shows a 50% cap sending an
+operator to $c = 0$ or $c = 1$, and
+`test_cap_propernessHoldsExactlyOnTheInterval` pins the boundary at
+$\kappa = 0.75$. An operator lowering the cap to reduce exposure would silently
+convert the protocol into one that rewards the behaviour it exists to punish,
+so the constraint is enforced by a red test suite instead of a comment.
+
+### 3.4 What the mechanism requires, and where else it applies
 
 Definition 1 is stated over a (confidence, outcome) pair and a stake. Nothing in
 it mentions credit, and the properness argument of §3.2 uses no property of the
@@ -349,7 +485,7 @@ the counterfactual problem is at its *hardest* there. A mechanism that survives
 the rejection case is not made worse by settings where outcomes are observed;
 the converse would not hold.
 
-### 3.4 Scope conditions, stated as part of the claim
+### 3.5 Scope conditions, stated as part of the claim
 
 The derivation assumes the adjudicated outcome is truthful and that dispute
 selection is independent of the reported confidence. Neither condition is
@@ -513,7 +649,7 @@ than assert it, every run includes a control that fits the same head on the
 Temperature scaling returns a calibrated scalar with no guarantee attached. Two
 stronger constructions were implemented and evaluated against it.
 
-**Split conformal prediction** returns a *set* carrying a distribution-free
+**Split conformal prediction** [16, 17] returns a *set* carrying a distribution-free
 marginal coverage guarantee: over the joint draw of calibration and test data,
 the true label lies in the set at least $1-\alpha$ of the time, with no
 assumption that the model is correct or even well specified. The calibration
@@ -521,7 +657,7 @@ split is halved so the temperature and the conformal quantile never see the same
 points — reusing one split for both would break the exchangeability the
 guarantee rests on. Results in §6.5.
 
-**Deep-ensemble epistemic uncertainty** trains $N$ independently seeded copies of
+**Deep-ensemble epistemic uncertainty** [18] trains $N$ independently seeded copies of
 the neural base model and feeds the spread of their predictions to the
 calibration head alongside the margin, on the intuition that a confident score
 the members disagree about should be discounted. Results in §6.6, where that
@@ -529,7 +665,7 @@ intuition does not survive measurement.
 
 ### 5.4 Explainability
 
-SHAP TreeExplainer over the base model, top-5 attributions per decision, in
+SHAP [19] TreeExplainer over the base model, top-5 attributions per decision, in
 margin space. Correctness is checked by additivity (SHAP values plus base value
 must reconstruct the model margin; measured max absolute error
 $1.26 \times 10^{-5}$) and by bit-identical reproduction across reruns. Five
@@ -549,12 +685,49 @@ this explanation, not proof the explanation is faithful. Results in §6.7.
 
 ### 5.5 Evaluation metrics
 
-ECE (10 equal-width bins, weighted by bin population, empty bins skipped rather
-than counted as perfectly calibrated), MCE, Brier score, proof generation time,
-proof size, and on-chain verification gas. The ECE implementation is
-known-answer tested against hand-computed values.
+ECE is the headline metric and the quantity the mechanism's value rests on, so
+its definition is given explicitly rather than by reference — the binning
+convention is exactly what a reviewer needs to audit, and different conventions
+give materially different numbers [13].
 
-### 5.6 Slashing validation
+:::definition Expected Calibration Error
+Partition $[0,1]$ into $B$ equal-width bins. For predictions $\hat{p}_i$ with
+outcomes $y_i$, let $I_b$ index the predictions falling in bin $b$. Then
+$\text{ECE} = \sum_b \frac{|I_b|}{n} | \text{acc}(I_b) - \text{conf}(I_b) |$,
+where $\text{conf}(I_b)$ is the mean prediction in the bin and
+$\text{acc}(I_b)$ the empirical frequency of $y = 1$ within it.
+:::
+
+Three conventions are fixed, each of which changes the number:
+
+1. $B = 10$, equal width, bins left-open and right-closed except the first,
+   which includes 0.
+2. Bins are weighted by population, so a bin holding two points cannot move
+   the result as much as one holding two hundred.
+3. **Empty bins are skipped, not counted as perfectly calibrated.** Counting
+   them as zero-error would reward a model that concentrates its predictions
+   into a narrow range, which is the opposite of what the metric should do.
+
+Maximum Calibration Error is the same quantity under a max rather than a
+weighted mean, and is reported alongside because it exposes a single badly
+miscalibrated bin that ECE averages away. The Brier score needs no binning and
+is the quantity the mechanism actually charges, which makes it the least
+arbitrary of the three; it is decomposable into calibration and refinement
+terms, and only the first is what this proposal prices.
+
+The implementation is known-answer tested against hand-computed values
+(`tests/test_metrics.py`), because a silently wrong ECE would invalidate every
+calibration claim in §6 without failing anything.
+
+### 5.6 Systems measurements
+
+Beyond calibration: proof generation time (best of three runs, to suppress
+scheduler noise), proof size in bytes, calldata per attestation, proving-key
+size, native verification time, and on-chain verification gas. Circuit shape is
+recorded as `logrows` together with rows actually used, since the two diverge
+and only the first determines cost (§6.3).
+
+### 5.7 Slashing validation
 
 Monotonicity in miscalibration is verified deterministically at 101 confidence
 points and by fuzzing (256 runs per direction). Properness is verified
@@ -923,7 +1096,83 @@ needs changing, the claim has been inflated.
 
 ---
 
-### 6.11 Test suite
+### 6.11 What the mechanism costs an operator to participate in
+
+§7.6 records that the staking parameters are demonstration values with no
+actuarial basis. They can be given one, and the pieces are already measured:
+the expected slash per dispute is the operator's realised Brier score (§3.2),
+and the per-attestation gas is §6.4. What follows is a parameter-selection
+framework rather than a recommendation, since it turns on a dispute rate this
+prototype cannot observe.
+
+**Expected loss is the Brier score, and calibration is what lowers it.** By
+Proposition 1 a truthful operator's expected slash per disputed decision is
+$S \cdot p(1-p)$, whose empirical counterpart is the realised Brier score. For
+the calibrated head that is 0.1758 (§6.5): a well-calibrated operator loses
+about **17.6% of stake per dispute in expectation**, and no reporting strategy
+lowers it, because the term is irreducible.
+
+The uncalibrated model's Brier is 0.2060. Calibration therefore reduces the
+operator's expected per-dispute loss by roughly 15%, which is the mechanism's
+answer to why anyone would calibrate: not compliance, but a smaller bill.
+
+Table: Expected per-decision cost as a fraction of stake, at three dispute
+rates. Only the dispute rate is hypothetical; the Brier figures are measured
+over the 10 pinned seeds.
+
+| Dispute rate | Uncalibrated (B = 0.2060) | Calibrated (B = 0.1758) | Saving |
+|---|---|---|---|
+| 0.1% | 0.0206% | 0.0176% | 15% |
+| 1% | 0.2060% | 0.1758% | 15% |
+| 5% | 1.0300% | 0.8790% | 15% |
+
+**Verification cost, and why an L2 is not optional.** At 887,376 gas per
+attestation, the per-decision fee is a hard floor on the value of a decision
+worth attesting at all.
+
+Table: Cost of one attestation, at 887,376 gas and ETH at $3,000. The
+mechanism's own arithmetic is 543 gas of that total; the rest is halo2
+verification.
+
+| Setting | Gas price | Cost per attestation |
+|---|---|---|
+| Ethereum L1, busy | 30 gwei | $79.86 |
+| Ethereum L1, quiet | 10 gwei | $26.62 |
+| L2, typical | 0.05 gwei | $0.13 |
+| L2, cheap | 0.01 gwei | $0.03 |
+
+At L1 prices the design is only coherent for decisions worth hundreds of
+dollars each, which excludes most consumer credit. At L2 prices it is
+negligible against any lending decision. **The proposal's practical claim is
+therefore an L2 claim**, and §6.4's L1 gas figures are best read as an upper
+bound rather than a target. Proof aggregation across decisions would amortise
+verification further and is not implemented.
+
+**Capital efficiency is the real cost of the unbonding period.** An operator
+locks $S$ for the unbonding delay $\tau$ beyond the last disputable decision.
+At an opportunity cost $r$, the carrying cost is $r \tau S$ per cycle, and this
+is what W1a must trade against the dispute window: a longer $\tau$ closes
+residual gap A and raises the carrying cost linearly. At $\tau$ = 7 days and
+$r$ = 5% annually the carry is about 0.096% of stake per cycle — comparable to
+a single dispute at a 0.5% dispute rate, so at these parameters the timelock is
+not the dominant cost. That ceases to be true if $\tau$ must grow to months to
+cover loan-rejection claim latency, which is precisely the case §7.3 flags as
+unresolved.
+
+**Participation condition.** Writing $f$ for the fee per decision, $n$ for
+decisions per cycle, $d$ for the dispute rate and $B$ for realised Brier, an
+operator participates when
+
+$$f n > n d B S + r \tau S + n g$$
+
+with $g$ the per-attestation gas cost. Two of the four right-hand terms scale
+with stake and two do not, so the binding constraint changes with $S$: at small
+stake, gas dominates and the design is L2-or-nothing; at large stake, the
+$d B S$ term dominates and calibration quality becomes the operator's main
+lever. Estimating $d$ empirically is the missing input, and it can only come
+from a deployment.
+
+### 6.12 Test suite
 
 110 Solidity tests (Foundry) and 81 Python tests, all passing.
 
@@ -1411,6 +1660,62 @@ Monthly Weather Review, 78(1):1–3, 1950.
 and Estimation*, Journal of the American Statistical Association,
 102(477):359–378, 2007.
 <https://www.tandfonline.com/doi/abs/10.1198/016214506000001437>
+
+[11] T. Liu, X. Xie, and Y. Zhang, *zkCNN: Zero Knowledge Proofs for
+Convolutional Neural Network Predictions and Accuracy*, ACM CCS 2021.
+<https://eprint.iacr.org/2021/673>
+
+[12] T. Xie, J. Zhang, Y. Zhang, C. Papamanthou, and D. Song, *Libra:
+Succinct Zero-Knowledge Proofs with Optimal Prover Computation*, CRYPTO 2019 —
+the sumcheck-based lineage underlying much subsequent zkML proving.
+<https://eprint.iacr.org/2019/317>
+
+[13] J. Nixon, M. Dusenberry, L. Zhang, G. Jerfel, and D. Tran, *Measuring
+Calibration in Deep Learning*, CVPR Workshops 2019 — on the bias of
+equal-width binning in ECE and adaptive alternatives.
+<https://arxiv.org/abs/1904.01685>
+
+[14] D. Prelec, *A Bayesian Truth Serum for Subjective Data*, Science,
+306(5695):462–466, 2004 — eliciting truthful reports where no ground truth
+is ever observed.
+<https://www.science.org/doi/10.1126/science.1102081>
+
+[15] A. Niculescu-Mizil and R. Caruana, *Predicting Good Probabilities With
+Supervised Learning*, ICML 2005 — the boosted-tree miscalibration this
+prototype's base model deliberately reproduces.
+<https://dl.acm.org/doi/10.1145/1102351.1102430>
+
+[16] V. Vovk, A. Gammerman, and G. Shafer, *Algorithmic Learning in a Random
+World*, Springer, 2005 — the conformal prediction framework of §6.7.
+<https://link.springer.com/book/10.1007/b106715>
+
+[17] A. N. Angelopoulos and S. Bates, *A Gentle Introduction to Conformal
+Prediction and Distribution-Free Uncertainty Quantification*,
+arXiv:2107.07511, 2021.
+<https://arxiv.org/abs/2107.07511>
+
+[18] B. Lakshminarayanan, A. Pritzel, and C. Blundell, *Simple and Scalable
+Predictive Uncertainty Estimation using Deep Ensembles*, NeurIPS 2017 — the
+method ablated in §6.6.
+<https://arxiv.org/abs/1612.01474>
+
+[19] S. M. Lundberg and S.-I. Lee, *A Unified Approach to Interpreting Model
+Predictions*, NeurIPS 2017 — the SHAP attributions of §5.4.
+<https://arxiv.org/abs/1705.07874>
+
+[20] R. K. Mothilal, A. Sharma, and C. Tan, *Explaining Machine Learning
+Classifiers through Diverse Counterfactual Explanations*, ACM FAccT 2020 —
+the counterfactual family of §6.8.
+<https://arxiv.org/abs/1905.07697>
+
+[21] W. Hamilton, Z. Ying, and J. Leskovec, *Inductive Representation Learning
+on Large Graphs*, NeurIPS 2017 — the GraphSAGE architecture of §6.9.
+<https://arxiv.org/abs/1706.02216>
+
+[22] M. Kearns, S. Neel, A. Roth, and Z. S. Wu, *Preventing Fairness
+Gerrymandering: Auditing and Learning for Subgroup Fairness*, ICML 2018 — the
+subgroup-calibration gap of §7.4.
+<https://arxiv.org/abs/1711.05144>
 
 ---
 

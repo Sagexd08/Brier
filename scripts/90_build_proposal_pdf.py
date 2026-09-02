@@ -53,6 +53,18 @@ _MATH_LITERAL = {
     r"\delta": "\u03b4",
     r"\rho": "\u03c1",
     r"\tau": "\u03c4",
+    r"\kappa": "\u03ba",
+    r"\eta": "\u03b7",
+    r"\zeta": "\u03b6",
+    r"\Lambda": "\u039b",
+    r"\Omega": "\u03a9",
+    r"\hat": "",
+    r"\mathbb": "",
+    r"\log": "log",
+    r"\min": "min",
+    r"\max": "max",
+    r"\sum": "\u2211",
+    r"\frac": "",
     r"\beta": "\u03b2",
     r"\gamma": "\u03b3",
     r"\epsilon": "\u03b5",
@@ -86,6 +98,10 @@ def _render_math(expr: str) -> str:
     # \text{...} -> plain run
     s = re.sub(r"\\text\{([^}]*)\}", r"\1", s)
 
+    # \frac{a}{b} -> a/b. A real fraction needs stacked layout this renderer
+    # does not have, and an inline solidus is the conventional fallback.
+    s = re.sub(r"\\frac\{([^{}]*)\}\{([^{}]*)\}", r"(\1)/(\2)", s)
+
     # ^{...} and ^x -> real superscript where the characters allow it
     def sup(m: str) -> str:
         body = m.strip("{}")
@@ -110,8 +126,19 @@ def _render_math(expr: str) -> str:
     s = re.sub(r"(?<=[\(\[])-", "\u2212", s)
 
     # Thin space around the remaining binary operators for LaTeX-like colour.
+    # The sub/sup tags emitted above contain < and >, so they are stashed
+    # first -- without this the pass rewrites them into literal "< sub >".
+    tags: list[str] = []
+
+    def _stash_tag(m: "re.Match[str]") -> str:
+        tags.append(m.group(0))
+        return "\x01%d\x01" % (len(tags) - 1)
+
+    s = re.sub(r"</?su[bp]>", _stash_tag, s)
     s = re.sub(r"\s*([+=<>])\s*", "\u2009\\1\u2009", s)
-    s = s.replace("\u2009=\u2009", "\u2009=\u2009")
+    for idx, tag in enumerate(tags):
+        s = s.replace("\x01%d\x01" % idx, tag)
+
     return '<span class="math">%s</span>' % s
 
 

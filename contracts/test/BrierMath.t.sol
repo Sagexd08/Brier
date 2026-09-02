@@ -132,6 +132,68 @@ contract BrierMathTest is Test {
     }
 
     // ---------------------------------------------------------------
+    // The cap is a CORRECTNESS parameter, not a safety knob.
+    //
+    // maxSlashBps looks like a prudential limit -- lower it and the
+    // protocol risks less per decision. It is not. Capping a proper
+    // scoring rule below 100% destroys the property the whole mechanism
+    // rests on, and destroys it in the worst possible direction: the
+    // expected-loss minimiser jumps from the operator's true belief to
+    // the nearest boundary, so a capped protocol pays operators to report
+    // maximal confidence.
+    //
+    // Truthful reporting survives iff cap >= max(p, 1-p). The tests below
+    // pin both halves of that, so nobody can lower the cap "to be safe"
+    // without a red suite.
+    // ---------------------------------------------------------------
+
+    /// Search the report grid under a cap and return the argmin.
+    function _bestReportUnderCap(uint256 p, uint256 capBps)
+        internal
+        pure
+        returns (uint256 bestReport)
+    {
+        uint256 best = type(uint256).max;
+        for (uint256 c = 0; c <= 100; c++) {
+            uint256 report = (c * WAD) / 100;
+            uint256 expected =
+                (p * BrierMath.slashAmount(STAKE, report, true, capBps)) / WAD
+                + ((WAD - p) * BrierMath.slashAmount(STAKE, report, false, capBps)) / WAD;
+            if (expected < best) {
+                best = expected;
+                bestReport = report;
+            }
+        }
+    }
+
+    /// At the deployed cap of 100% the rule is proper, as Proposition 1 states.
+    function test_cap_atOneHundredPercent_preservesProperness() public pure {
+        assertEq(_bestReportUnderCap(0.30e18, 10_000), 0.30e18);
+        assertEq(_bestReportUnderCap(0.70e18, 10_000), 0.70e18);
+        assertEq(_bestReportUnderCap(0.05e18, 10_000), 0.05e18);
+        assertEq(_bestReportUnderCap(0.95e18, 10_000), 0.95e18);
+    }
+
+    /// A 50% cap pays the operator to report maximal confidence, in whichever
+    /// direction it privately leans. This is the failure the cap introduces,
+    /// and it is the opposite of what the mechanism is for.
+    function test_cap_belowHalf_rewardsMaximalOverconfidence() public pure {
+        assertEq(_bestReportUnderCap(0.30e18, 5_000), 0,
+            "under a 50% cap an operator leaning low reports 0, not 0.30");
+        assertEq(_bestReportUnderCap(0.70e18, 5_000), WAD,
+            "under a 50% cap an operator leaning high reports 1, not 0.70");
+    }
+
+    /// The boundary is exact: properness holds precisely on p in [1-k, k].
+    /// At cap 75% the truth wins at p = 0.30 and 0.70, and loses outside.
+    function test_cap_propernessHoldsExactlyOnTheInterval() public pure {
+        assertEq(_bestReportUnderCap(0.30e18, 7_500), 0.30e18, "inside: truth wins");
+        assertEq(_bestReportUnderCap(0.70e18, 7_500), 0.70e18, "inside: truth wins");
+        assertEq(_bestReportUnderCap(0.10e18, 7_500), 0, "outside: boundary wins");
+        assertEq(_bestReportUnderCap(0.90e18, 7_500), WAD, "outside: boundary wins");
+    }
+
+    // ---------------------------------------------------------------
     // Cap behaviour
     // ---------------------------------------------------------------
 
