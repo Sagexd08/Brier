@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trust Model — Brier</title>
+    <meta name="description" content="What Brier proves cryptographically, what it assumes economically, and what it simply trusts. Every weakness is demonstrated by a passing test." />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" type="image/webp" href="assets/logo-white.webp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://db.onlinewebfonts.com/c/8cb707a9b8a73f8a7403336b861c3074?family=BubbledotICG-FinePos" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="pages.css" />
+  </head>
+  <body class="doc">
+    <header class="doc-header">
+      <a class="logo" href="index.html" aria-label="Brier home">
+        <img src="assets/logo.webp" alt="" width="52" height="52" />
+      </a>
+      <nav class="nav" aria-label="Primary"><a class="nav-link" href="index.html">Mechanism</a><a class="nav-link" href="results.html">Results</a><a class="nav-link is-active" href="trust.html" aria-current="page">Trust Model</a><a class="nav-link" href="brier-proposal.pdf" target="_blank" rel="noopener">Paper</a></nav>
+      <a class="sign-in" href="https://github.com/Sagexd08/Brier">GitHub</a>
+      <button class="burger" type="button" aria-label="Open menu"
+              aria-expanded="false" aria-controls="mobile-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+    <div class="menu-overlay" hidden></div>
+    <div class="mobile-menu" id="mobile-menu" hidden><a class="m-link" href="index.html">Mechanism</a><a class="m-link" href="results.html">Results</a><a class="m-link is-active" href="trust.html">Trust Model</a><a class="m-link" href="brier-proposal.pdf" target="_blank" rel="noopener">Paper</a>
+      <a class="m-sign-in" href="https://github.com/Sagexd08/Brier">GitHub</a>
+    </div>
+
+    <section class="doc-hero">
+      <div class="wrap">
+        <span class="eyebrow">What is proved, and what is not</span>
+        <h1>Trust Model</h1>
+        <p class="lede">
+          This is a mechanism and a measured prototype, not a deployable protocol.
+          Every weakness below is demonstrated by a test that passes, so the threat
+          model cannot drift from the code without the suite failing.
+        </p>
+        <div class="tierbar">
+          <span class="tb t1">Tier 1 · Cryptographic</span>
+          <span class="tb t15">Content integrity</span>
+          <span class="tb t2">Tier 2 · Economic</span>
+          <span class="tb t3">Tier 3 · Bounded trust</span>
+          <span class="tb t4">Below tier 3 · Unvalidated</span>
+        </div>
+      </div>
+    </section>
+    <section class="sec"><div class="wrap"><div class="tiers"><article class="tier t1"><div class="tier-head"><span class="tier-label">Tier 1</span><h3>Cryptographically guaranteed</h3></div><div class="tier-body"><p class="tier-lede">Holds against a fully malicious operator. No trust required.</p><ul><li>Calibration-head execution: given a logit <em>L</em> committed on-chain, the proof establishes that the head identified by this verifying key maps it to the attested confidence.</li><li>Conformal set construction, proved on the same terms since it fits the same circuit.</li><li>The slash arithmetic: exactly stake&nbsp;&middot;&nbsp;(c&nbsp;&minus;&nbsp;o)², capped, with no overflow.</li><li>Tampered proofs, flipped bytes and wrong verifying keys are each rejected (4/4).</li></ul></div></article><article class="tier t15"><div class="tier-head"><span class="tier-label">Content integrity</span><h3>ModelRegistry</h3></div><div class="tier-body"><p class="tier-lede">A narrow cryptographic property, which is why it does not sit in tier 1.</p><ul><li>Guarantees the artifact behind a version id hashes to the recorded value, so substitution is detectable by anyone.</li><li>Does <strong>not</strong> establish that training was honest &mdash; a poisoned model registers and verifies perfectly cleanly.</li><li>Does <strong>not</strong> bind a version id to the circuit that actually ran.</li></ul><p class="tier-note">Content integrity is not training integrity.</p></div></article><article class="tier t2"><div class="tier-head"><span class="tier-label">Tier 2</span><h3>Economically assumed</h3></div><div class="tier-body"><p class="tier-lede">Holds if the operator is rational and the assumption is enforced in code.</p><ul><li><strong>Honest reporting</strong> is enforced by the payoff: Brier is strictly proper, so expected loss is minimised at the operator's true belief.</li><li><strong>Stake availability</strong> was broken in v0 and is now enforced &mdash; withdrawal is request/execute behind an unbonding delay, and an open dispute freezes execution.</li><li>Residual gap A: an operator never disputed inside the window still exits intact. That is a bound on the dispute window, not on the lock.</li><li>Residual gap B: the freeze is released by dispute <em>resolution</em>, which is a tier-3 action.</li></ul><p class="tier-note">Enforced against the operator, but subordinate to tier 3.</p></div></article><article class="tier t3"><div class="tier-head"><span class="tier-label">Tier 3</span><h3>Bounded trust</h3></div><div class="tier-body"><p class="tier-lede">An N-of-M committee decides who loses money. No cryptographic or economic guarantee.</p><ul><li>One resolver cannot act alone. That is the whole of the improvement over a single key.</li><li>N colluding members carry exactly the authority that key had.</li><li>The admin appoints and can replace the committee, so the bound covers resolution, not selection. Resolvers stake nothing.</li><li>Operator reputation is auditable on-chain aggregation, but its inputs are tier-3 outcomes, so it inherits that trust level and no better.</li><li>Underneath sits a harder problem: for a loan rejection the counterfactual is unobservable, so &ldquo;the decision was wrong&rdquo; has no on-chain referent.</li></ul><p class="tier-note">Bounded trust is not an absence of trust.</p></div></article><article class="tier t4"><div class="tier-head"><span class="tier-label">Below tier 3</span><h3>An unvalidated detector with authority over money</h3></div><div class="tier-body"><p class="tier-lede">One reporter key relays a model whose false-positive rate on real traffic has never been measured.</p><ul><li>An enforced flag <strong>blocks a claimant from disputing</strong> and <strong>withholds their payout</strong>.</li><li>It <strong>cannot slash</strong>: the operator's penalty is computed and taken identically whether or not the claimant is flagged.</li><li>An appeal window precedes any effect, and a zero-length window is rejected at construction.</li><li>Quarantined funds are refunded in full if the flag is cleared; permanent forfeiture is a separate, admin-only act.</li><li>A false positive silences a legitimate claimant and thereby protects the bad decision they were trying to challenge.</li></ul><p class="tier-note">Thinner than tier 3: the committee needs N signatures, this needs one.</p></div></article></div></div></section><section class="sec"><div class="wrap"><span class="eyebrow">The boundary</span><h2>What a fabricated input <em>costs you</em>.</h2><p class="lede">The proof binds a computation, not a pipeline. This is the single largest gap in the system and it has not moved since v0.</p><div class="callout danger"><h3>An operator that fabricates the input logit obtains a proof that verifies</h3><p>The circuit takes the base model&rsquo;s logit as an unverified public input. Nothing on-chain relates it to the base model, and the chain will accept <code>type(int256).max</code> as a margin and still mark the attestation proved. Describing this system as &ldquo;zero-knowledge proving the AI decision&rdquo; would be false.</p><p class="src">Demonstrated by <code>test_tier1_marginIsUnverifiedOperatorSuppliedInput</code>.</p></div><div class="tw"><p class="cap">Threat coverage. The five in bold are the ones an adversary would actually use; each has a passing test that demonstrates it.</p><table class=""><thead><tr><th>Adversary capability</th><th>Covered</th><th>Mechanism, or reason not</th></tr></thead><tbody><tr><td>Forge a proof for a head it did not run</td><td><span class="yes">yes</span></td><td>halo2 soundness; 4/4 tamper checks</td></tr><tr><td>Alter an attested confidence after the fact</td><td><span class="yes">yes</span></td><td>stored on chain, proof-bound</td></tr><tr><td>Substitute weights under a claimed version</td><td><span class="yes">yes</span></td><td>ModelRegistry content hash</td></tr><tr><td>Exit stake ahead of a pending dispute</td><td><span class="yes">yes</span></td><td>unbonding delay + dispute freeze</td></tr><tr><td>Act alone as a single resolver</td><td><span class="yes">yes</span></td><td>N-of-M threshold</td></tr><tr><td><strong>Fabricate the input logit</strong></td><td><span class="no">no</span></td><td>tier 1 binds the head, not the pipeline</td></tr><tr><td><strong>Corrupt N of M resolvers</strong></td><td><span class="no">no</span></td><td>equals v0&rsquo;s single-key power</td></tr><tr><td><strong>Exit before any dispute is raised</strong></td><td><span class="no">no</span></td><td>bound on the dispute window, not the lock</td></tr><tr><td><strong>Misreport within a protected subgroup</strong></td><td><span class="no">no</span></td><td>calibration is measured in aggregate</td></tr><tr><td><strong>Flag an honest claimant</strong></td><td><span class="no">no</span></td><td>detector unvalidated on real traffic</td></tr><tr><td>Train dishonestly and register truthfully</td><td><span class="no">no</span></td><td>content integrity &ne; training integrity</td></tr><tr><td>Decline to attest at all</td><td><span class="no">no</span></td><td>unattested decisions are outside the system</td></tr></tbody></table></div></div></section><section class="sec"><div class="wrap"><span class="eyebrow">The diagram</span><h2>Every tier, <em>with its evidence</em>.</h2><figure class="fig wide"><img src="figures/figure-c-threat-model.png" alt="Trust boundary diagram showing tier 1 cryptographic guarantees, a content integrity band, tier 2 economic assumptions, tier 3 bounded trust, and the unvalidated detector below tier 3." loading="lazy" /><figcaption>Each weakness names the test that demonstrates it. The cheapest attack today still requires breaking no cryptography.</figcaption></figure></div></section>
+    <section class="cta-band"><div class="wrap">
+      <h2>The mechanism holds. <em>The system doesn't yet.</em></h2>
+      <p>The paper states both claims separately and sets out what closing the distance would take.</p>
+      <div class="row">
+        <a class="btn-solid" href="brier-proposal.pdf" target="_blank" rel="noopener">Read the paper</a>
+        <a class="btn-ghost" href="results.html">See the results</a>
+      </div>
+    </div></section>
+    
+    <footer class="doc-foot">
+      <div class="foot-row">
+        <span class="foot-mark">
+          <img src="assets/logo-white.webp" alt="" width="18" height="18" /> Brier
+        </span>
+        <nav class="foot-links" aria-label="Footer">
+          <a href="index.html">Mechanism</a>
+          <a href="results.html">Results</a>
+          <a href="trust.html">Trust Model</a>
+          <a href="brier-proposal.pdf" target="_blank" rel="noopener">Paper</a>
+          <a href="https://github.com/Sagexd08/Brier">GitHub</a>
+        </nav>
+      </div>
+      <p class="foot-note">
+        Research prototype. Every figure on this page is generated from the
+        artifacts in the repository by <code>scripts/95_build_site_pages.py</code>
+        and is reproducible from a clean checkout. Measurements come from a local
+        chain against UCI German Credit data and are not a claim about production
+        behaviour.
+      </p>
+    </footer>
+    <script src="main.js"></script>
+  </body>
+</html>

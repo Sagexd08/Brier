@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Results — Brier</title>
+    <meta name="description" content="Measured results for Brier: calibration across 10 pinned seeds, proving cost, on-chain gas, and five ablated enhancements." />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" type="image/webp" href="assets/logo-white.webp" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://db.onlinewebfonts.com/c/8cb707a9b8a73f8a7403336b861c3074?family=BubbledotICG-FinePos" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="pages.css" />
+  </head>
+  <body class="doc">
+    <header class="doc-header">
+      <a class="logo" href="index.html" aria-label="Brier home">
+        <img src="assets/logo.webp" alt="" width="52" height="52" />
+      </a>
+      <nav class="nav" aria-label="Primary"><a class="nav-link" href="index.html">Mechanism</a><a class="nav-link is-active" href="results.html" aria-current="page">Results</a><a class="nav-link" href="trust.html">Trust Model</a><a class="nav-link" href="brier-proposal.pdf" target="_blank" rel="noopener">Paper</a></nav>
+      <a class="sign-in" href="https://github.com/Sagexd08/Brier">GitHub</a>
+      <button class="burger" type="button" aria-label="Open menu"
+              aria-expanded="false" aria-controls="mobile-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+    <div class="menu-overlay" hidden></div>
+    <div class="mobile-menu" id="mobile-menu" hidden><a class="m-link" href="index.html">Mechanism</a><a class="m-link is-active" href="results.html">Results</a><a class="m-link" href="trust.html">Trust Model</a><a class="m-link" href="brier-proposal.pdf" target="_blank" rel="noopener">Paper</a>
+      <a class="m-sign-in" href="https://github.com/Sagexd08/Brier">GitHub</a>
+    </div>
+
+    <section class="doc-hero">
+      <div class="wrap">
+        <span class="eyebrow">Measured, not projected</span>
+        <h1>Results</h1>
+        <p class="lede">
+          Every number below is produced by a script in the repository and
+          regenerated into this page at build time. The protocol is
+          10 pinned seeds, always run in full, so a favourable subset cannot be
+          reported selectively.
+        </p>
+        <div class="kpis">
+          <div class="kpi"><span class="k">Calibration error</span><span class="v">0.1853&nbsp;&rarr;&nbsp;0.0870</span><span class="n">ECE, mean over 10 seeds. Reduced in every seed.</span></div><div class="kpi"><span class="k">Proving time</span><span class="v">2.09 s</span><span class="n">EZKL / halo2 over the calibration head, laptop CPU.</span></div><div class="kpi"><span class="k">Verification</span><span class="v">684,696 gas</span><span class="n">Roughly 33&times; a plain transfer.</span></div><div class="kpi"><span class="k">Slash arithmetic</span><span class="v">543 gas</span><span class="n">About 0.08%% of the per-decision cost.</span></div>
+        </div>
+      </div>
+    </section>
+    <section class="sec"><div class="wrap"><span class="eyebrow">Calibration</span><h2>The head that <em>earns its place</em>.</h2><p class="lede">Temperature scaling reduces ECE by 53.0% on held-out data, in every seed. Accuracy is unchanged, as it must be: a monotone rescaling of the logit cannot move the decision boundary.</p><div class="tw"><p class="cap">Calibration across 10 pinned seeds. Each row is a base model with temperature scaling applied on top, so the first two columns are the same model before and after. Learned T = 3.0121, with T &gt; 1 in every seed &mdash; the base model required softening everywhere. Brier and accuracy are post-calibration; accuracy is unchanged by a monotone rescaling.</p><table class=""><thead><tr><th>Base model</th><th>Uncalibrated ECE</th><th>Calibrated ECE</th><th>Brier</th><th>Accuracy</th></tr></thead><tbody><tr><td><strong>XGBoost + temperature</strong></td><td>0.1853 <span class="pm">± 0.0235</span></td><td><strong>0.0870 <span class="pm">± 0.0207</span></strong></td><td>0.1758 <span class="pm">± 0.0107</span></td><td>0.7505 <span class="pm">± 0.0198</span></td></tr><tr><td>Tabular NN + temperature</td><td>0.2419 <span class="pm">± 0.0189</span></td><td>0.0874 <span class="pm">± 0.0226</span></td><td>0.1843 <span class="pm">± 0.0071</span></td><td>0.7280 <span class="pm">± 0.0187</span></td></tr><tr><td>Ensemble + temperature</td><td>0.1617 <span class="pm">± 0.0181</span></td><td>0.0834 <span class="pm">± 0.0154</span></td><td>0.1733 <span class="pm">± 0.0091</span></td><td>0.7410 <span class="pm">± 0.0164</span></td></tr></tbody></table></div><figure class="fig"><img src="figures/figure-d-calibration.png" alt="Reliability diagrams before and after temperature scaling, with the train-fitted leakage control." loading="lazy" /><figcaption>Reliability before and after calibration. The right panel is a leakage control fitted on the training split: it is <em>worse than not calibrating at all</em>, in every seed.</figcaption></figure></div></section><section class="sec"><div class="wrap"><span class="eyebrow">Ablation</span><h2>Two of five enhancements <em>failed</em>.</h2><p class="lede">Each was measured against the shipped baseline on the identical seed protocol and kept only if it earned its place. The failures are reported here at the same size as the successes.</p><div class="tw"><p class="cap">Five ablated enhancements. Full tables and statistics in ABLATION.md.</p><table class=""><thead><tr><th>Enhancement</th><th>Verdict</th><th>Evidence</th></tr></thead><tbody><tr><td>Conformal prediction</td><td><span class="tag ok">Adopted</span></td><td>Fits the circuit budget: logrows unchanged, +56 rows of 32,768, no measurable proving cost.</td></tr><tr><td>Counterfactual evidence</td><td><span class="tag ok">Adopted</span></td><td>40 of 40 rejections resolved, 0 immutable violations, deterministic hash.</td></tr><tr><td>Deep tabular NN + ensemble</td><td><span class="tag null">Null</span></td><td>6W/4L on calibrated ECE (p = 0.6953), and it costs accuracy.</td></tr><tr><td>Deep-ensemble uncertainty</td><td><span class="tag bad">Negative</span></td><td>2W/8L (p = 0.1309). The signal <em>degrades</em> calibration.</td></tr><tr><td>GNN collusion detection</td><td><span class="tag warn">Synthetic only</span></td><td>Recovers injected rings; never seen real collusion.</td></tr></tbody></table></div><div class="callout"><h3>The capacity control is what made Phase C legible</h3><p>Feeding the calibration head ensemble disagreement made calibration worse (2W/8L, p&nbsp;=&nbsp;0.1309). But the <em>same head shape</em> fed a constant zero beat the baseline (8W/2L, p&nbsp;=&nbsp;0.0371). So the architecture helps and the epistemic signal then cancels it &mdash; it is noise the head overfits on 200 calibration points. Without the control this would have read as &ldquo;disagreement doesn&rsquo;t help&rdquo;.</p></div></div></section><section class="sec"><div class="wrap"><span class="eyebrow">Uncertainty</span><h2>A guarantee, and <em>what it cost</em>.</h2><p class="lede">Split conformal returns a set with a distribution-free coverage guarantee. Coverage tracks the target and sits 1&ndash;2 points below it at every level, which is within sampling noise at n&nbsp;=&nbsp;10.</p><div class="tw"><p class="cap">Coverage is reported with set size throughout, because coverage alone is trivially satisfiable: always return both labels and you have 100% coverage and no information.</p><table class=""><thead><tr><th>Target</th><th>Empirical coverage</th><th>Min over seeds</th><th>Seeds &ge; target</th><th>Avg set size</th></tr></thead><tbody><tr><td>0.80</td><td>0.7930 <span class="pm">± 0.0399</span></td><td>0.7300</td><td>5/10</td><td>1.102</td></tr><tr><td>0.90</td><td>0.8815 <span class="pm">± 0.0408</span></td><td>0.8200</td><td>4/10</td><td>1.357</td></tr><tr><td>0.95</td><td>0.9335 <span class="pm">± 0.0398</span></td><td>0.8550</td><td>4/10</td><td>1.570</td></tr></tbody></table></div><div class="tw"><p class="cap">The circuit-feasibility gate. It fits because both comparisons push through the monotone sigmoid into logit space and become comparisons against two constants, so the sigmoid never enters the circuit.</p><table class=""><thead><tr><th>Head</th><th>logrows</th><th>Rows used</th><th>Proving time</th><th>Proof size</th></tr></thead><tbody><tr><td>Temperature only</td><td>15</td><td>39</td><td>1.72 s</td><td>17,525 B</td></tr><tr><td>Temperature + conformal</td><td>15</td><td>95</td><td>1.66 s</td><td>17,828 B</td></tr></tbody></table></div></div></section><section class="sec"><div class="wrap"><span class="eyebrow">On-chain cost</span><h2>Verification dominates, <em>the mechanism does not</em>.</h2><p class="lede">The Brier arithmetic that is the substance of the mechanism is three orders of magnitude cheaper than proving that it ran.</p><div class="tw"><p class="cap">Measured with <code>forge test --gas-report</code> on a local chain.</p><table class=""><thead><tr><th>Operation</th><th>Gas</th></tr></thead><tbody><tr><td>Halo2Verifier deployment</td><td>2,942,192</td></tr><tr><td>verifyProof (real EZKL proof, on-chain)</td><td>684,696</td></tr><tr><td>attest with real proof (verify + store)</td><td>887,376</td></tr><tr><td>attest with mock verifier (storage only, median)</td><td>232,854</td></tr><tr><td>openDispute (median)</td><td>134,608</td></tr><tr><td>resolveDispute incl. slash + payout (median)</td><td>97,390</td></tr><tr><td>stake (median)</td><td>45,443</td></tr><tr><td>withdraw (median)</td><td>29,616</td></tr><tr><td>previewSlash (view)</td><td>24,888</td></tr><tr><td>BrierMath.slashAmount (pure, via wrapper)</td><td>543</td></tr><tr><td>BrierMath.squaredError (pure, via wrapper)</td><td>507</td></tr></tbody></table></div><div class="callout"><h3>The practical claim is an L2 claim</h3><p>At 887,376 gas an attestation costs about <strong>$79.86</strong> on L1 at 30&nbsp;gwei, against <strong>$0.13</strong> on an L2 at 0.05&nbsp;gwei (ETH at $3,000). At L1 prices the design is only coherent for decisions worth hundreds of dollars each, which excludes most consumer credit. The L1 figures are best read as an upper bound.</p></div><figure class="fig"><img src="figures/figure-e-circuit-sweep.png" alt="Proving cost against head size across four orders of magnitude." loading="lazy" /><figcaption>Proving cost is flat across a 16,897&times; parameter increase. Capacity, not parameter count, is the binding constraint &mdash; which is why the design proves a small head rather than a classifier.</figcaption></figure></div></section>
+    <section class="cta-band"><div class="wrap">
+      <h2>The full method, <em>with its limits</em>.</h2>
+      <p>Statistics, controls and the negative results in full.</p>
+      <div class="row">
+        <a class="btn-solid" href="brier-proposal.pdf" target="_blank" rel="noopener">Read the paper</a>
+        <a class="btn-ghost" href="trust.html">See the trust model</a>
+      </div>
+    </div></section>
+    
+    <footer class="doc-foot">
+      <div class="foot-row">
+        <span class="foot-mark">
+          <img src="assets/logo-white.webp" alt="" width="18" height="18" /> Brier
+        </span>
+        <nav class="foot-links" aria-label="Footer">
+          <a href="index.html">Mechanism</a>
+          <a href="results.html">Results</a>
+          <a href="trust.html">Trust Model</a>
+          <a href="brier-proposal.pdf" target="_blank" rel="noopener">Paper</a>
+          <a href="https://github.com/Sagexd08/Brier">GitHub</a>
+        </nav>
+      </div>
+      <p class="foot-note">
+        Research prototype. Every figure on this page is generated from the
+        artifacts in the repository by <code>scripts/95_build_site_pages.py</code>
+        and is reproducible from a clean checkout. Measurements come from a local
+        chain against UCI German Credit data and are not a claim about production
+        behaviour.
+      </p>
+    </footer>
+    <script src="main.js"></script>
+  </body>
+</html>
