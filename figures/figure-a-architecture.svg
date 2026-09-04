@@ -1,139 +1,167 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 700" width="1180" height="700" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 604" width="1060" height="604" font-family="CMU Serif, Latin Modern Roman, Georgia, serif">
+  <!--
+    Figure A - component architecture.
+
+    Redrawn to read as a paper figure rather than a slide. Four changes, each
+    for a reason:
+
+    1. No title inside the figure. The caption below it already names the
+       figure; printing the name twice, at two sizes, in two typefaces is the
+       single strongest "pasted in from a deck" signal.
+    2. Computer Modern, matching the paper body.
+    3. Colour is redundant. Membership of the proved subgraph is carried by a
+       HATCHED fill and a heavy rule, not by hue, so the figure survives
+       greyscale printing. The one saturated element in the drawing is the
+       unproved-input arrow, because that is the paper's central negative
+       result and is the only thing that should draw the eye.
+    4. Prose removed. The old version carried a 60-word paragraph explaining
+       the trust gap, duplicating section 8.1. A figure that has to be read as
+       text is not doing a figure's job; the gap is now one labelled arrow.
+  -->
   <defs>
-    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4a4a"/>
+    <marker id="ar" viewBox="0 0 10 10" refX="9.2" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#1c1c1c"/>
     </marker>
-    <marker id="arDash" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9a7b2f"/>
+    <marker id="arRed" viewBox="0 0 10 10" refX="9.2" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M 0 1.2 L 9 5 L 0 8.8 z" fill="#a4341f"/>
     </marker>
+    <pattern id="proved" width="6" height="6" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="6" height="6" fill="#ffffff"/>
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#a4341f" stroke-width="1.1" opacity="0.55"/>
+    </pattern>
   </defs>
 
-  <rect width="1180" height="700" fill="#ffffff"/>
-  <text x="24" y="34" font-size="17" font-weight="bold" fill="#1a1a1a">Figure A — Component architecture</text>
-  <text x="24" y="55" font-size="12" fill="#5a5a5a">Brier v0. Solid outline = implemented and measured in this repo. Dashed amber = specified but NOT built.</text>
+  <rect width="1060" height="604" fill="#ffffff"/>
 
-  <!-- legend -->
-  <rect x="800" y="22" width="16" height="12" fill="#eef4f9" stroke="#2f6f9f" stroke-width="1.6" rx="2"/>
-  <text x="822" y="32" font-size="11" fill="#333">v0 implemented</text>
-  <rect x="800" y="42" width="16" height="12" fill="#fdf7e8" stroke="#9a7b2f" stroke-width="1.6" stroke-dasharray="4 3" rx="2"/>
-  <text x="822" y="52" font-size="11" fill="#333">not built (target)</text>
-  <rect x="960" y="22" width="16" height="12" fill="#f4ecec" stroke="#c44536" stroke-width="1.6" rx="2"/>
-  <text x="982" y="32" font-size="11" fill="#333">in zk circuit</text>
-  <rect x="960" y="42" width="16" height="12" fill="#f0eef4" stroke="#6b5b95" stroke-width="1.6" rx="2"/>
-  <text x="982" y="52" font-size="11" fill="#333">on-chain</text>
+  <!-- ================= legend, top right ================= -->
+  <g font-size="11.5" fill="#1c1c1c">
+    <rect x="742" y="14" width="15" height="11" fill="url(#proved)" stroke="#a4341f" stroke-width="1.6"/>
+    <text x="764" y="23.5">inside the zk circuit</text>
+    <rect x="742" y="33" width="15" height="11" fill="#ffffff" stroke="#1c1c1c" stroke-width="1"/>
+    <text x="764" y="42.5">implemented, not proved</text>
+    <rect x="742" y="52" width="15" height="11" fill="#ffffff" stroke="#8a8a8a" stroke-width="1" stroke-dasharray="3 2.5"/>
+    <text x="764" y="61.5">specified, not built</text>
+  </g>
 
-  <!-- ============ OFF-CHAIN LANE ============ -->
-  <rect x="24" y="80" width="700" height="288" fill="#fafafa" stroke="#dcdcdc" stroke-width="1" rx="7"/>
-  <text x="38" y="100" font-size="12" font-weight="bold" fill="#777" letter-spacing="1">OFF-CHAIN (model operator)</text>
+  <!-- ================= OFF-CHAIN ================= -->
+  <line x1="24" y1="88" x2="620" y2="88" stroke="#bfbfbf" stroke-width="0.8"/>
+  <text x="24" y="80" font-size="12" fill="#6e6e6e" letter-spacing="0.6">OFF-CHAIN &#8212; model operator</text>
 
   <!-- base classifier -->
-  <rect x="44" y="116" width="196" height="86" fill="#eef4f9" stroke="#2f6f9f" stroke-width="1.8" rx="5"/>
-  <text x="56" y="137" font-size="13" font-weight="bold" fill="#1a1a1a">Base classifier</text>
-  <text x="56" y="155" font-size="11" fill="#444">XGBoost, depth 8, 400 trees</text>
-  <text x="56" y="171" font-size="11" fill="#444">19 features, UCI German Credit</text>
-  <text x="56" y="188" font-size="11" fill="#c44536" font-weight="bold">NOT zk-proved</text>
+  <rect x="24" y="104" width="182" height="72" fill="#ffffff" stroke="#1c1c1c" stroke-width="1"/>
+  <text x="34" y="124" font-size="13" font-weight="bold" fill="#1c1c1c">Base classifier</text>
+  <text x="34" y="141" font-size="11.5" fill="#3a3a3a">XGBoost, depth 8, 400 trees</text>
+  <text x="34" y="156" font-size="11.5" fill="#3a3a3a">19 features, UCI German Credit</text>
+  <text x="34" y="171" font-size="11.5" fill="#a4341f">not in the circuit</text>
 
-  <!-- calibration head -->
-  <rect x="286" y="116" width="196" height="86" fill="#f4ecec" stroke="#c44536" stroke-width="2.2" rx="5"/>
-  <text x="298" y="137" font-size="13" font-weight="bold" fill="#1a1a1a">Calibration head</text>
-  <text x="298" y="155" font-size="11" fill="#444">temp. scaling (1 param), T=3.01</text>
-  <text x="298" y="171" font-size="11" fill="#444">or MLP 1-16-16-1 (321 params)</text>
-  <text x="298" y="188" font-size="11" fill="#c44536" font-weight="bold">ONLY component in-circuit</text>
+  <!-- calibration head: the only proved component -->
+  <rect x="262" y="104" width="182" height="72" fill="url(#proved)" stroke="#a4341f" stroke-width="1.8"/>
+  <text x="272" y="124" font-size="13" font-weight="bold" fill="#1c1c1c">Calibration head</text>
+  <text x="272" y="141" font-size="11.5" fill="#3a3a3a">temperature, 1 param, T = 3.01</text>
+  <text x="272" y="156" font-size="11.5" fill="#3a3a3a">or MLP 1-16-16-1, 321 params</text>
+  <text x="272" y="171" font-size="11.5" font-weight="bold" fill="#a4341f">the only proved component</text>
 
   <!-- SHAP -->
-  <rect x="528" y="116" width="176" height="86" fill="#eef4f9" stroke="#2f6f9f" stroke-width="1.8" rx="5"/>
-  <text x="540" y="137" font-size="13" font-weight="bold" fill="#1a1a1a">SHAP explainer</text>
-  <text x="540" y="155" font-size="11" fill="#444">TreeExplainer, top-5</text>
-  <text x="540" y="171" font-size="11" fill="#444">additivity err 1.3e-05</text>
-  <text x="540" y="188" font-size="11" fill="#9a7b2f" font-weight="bold">hashed, not proved</text>
+  <rect x="500" y="104" width="120" height="72" fill="#ffffff" stroke="#1c1c1c" stroke-width="1"/>
+  <text x="510" y="124" font-size="13" font-weight="bold" fill="#1c1c1c">SHAP</text>
+  <text x="510" y="141" font-size="11.5" fill="#3a3a3a">TreeExplainer</text>
+  <text x="510" y="156" font-size="11.5" fill="#3a3a3a">top 5, hashed</text>
+  <text x="510" y="171" font-size="11.5" fill="#a4341f">evidence only</text>
+
+  <!-- THE unproved input. The one saturated element in the figure. -->
+  <line x1="206" y1="140" x2="258" y2="140" stroke="#a4341f" stroke-width="2.2" marker-end="url(#arRed)"/>
+  <text x="232" y="132" font-size="11.5" font-weight="bold" fill="#a4341f" text-anchor="middle">logit L</text>
+  <text x="232" y="194" font-size="11" fill="#a4341f" text-anchor="middle">unverified</text>
+  <text x="232" y="208" font-size="11" fill="#a4341f" text-anchor="middle">public input</text>
+
+  <line x1="444" y1="140" x2="496" y2="140" stroke="#1c1c1c" stroke-width="1" marker-end="url(#ar)"/>
+  <text x="470" y="133" font-size="11" fill="#3a3a3a" text-anchor="middle">c</text>
 
   <!-- prover -->
-  <rect x="286" y="248" width="196" height="98" fill="#f4ecec" stroke="#c44536" stroke-width="2.2" rx="5"/>
-  <text x="298" y="269" font-size="13" font-weight="bold" fill="#1a1a1a">EZKL prover (halo2)</text>
-  <text x="298" y="287" font-size="11" fill="#444">2^15 = 32,768 rows</text>
-  <text x="298" y="303" font-size="11" fill="#444">prove 2.09 s / 2.08 s</text>
-  <text x="298" y="319" font-size="11" fill="#444">proof 17.4 KB, pk 132 MiB</text>
-  <text x="298" y="336" font-size="11" fill="#444">calldata 3,300 B</text>
-
-  <!-- arrows off-chain -->
-  <line x1="240" y1="159" x2="282" y2="159" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
-  <text x="243" y="152" font-size="10" fill="#c44536" font-weight="bold">logit</text>
-  <path d="M 142 202 L 142 224 L 616 224 L 616 202" fill="none" stroke="#4a4a4a" stroke-width="1.3" marker-end="url(#ar)" stroke-dasharray="3 2"/>
-  <text x="379" y="220" font-size="10" fill="#666" text-anchor="middle">features + tree paths (uncommitted)</text>
-  <line x1="384" y1="230" x2="384" y2="244" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
-  <text x="392" y="243" font-size="10" fill="#666">head weights + logit</text>
-
-  <!-- ============ ON-CHAIN LANE ============ -->
-  <rect x="756" y="80" width="400" height="510" fill="#fafafa" stroke="#dcdcdc" stroke-width="1" rx="7"/>
-  <text x="770" y="100" font-size="12" font-weight="bold" fill="#777" letter-spacing="1">ON-CHAIN (local Anvil devnet)</text>
-
-  <!-- verifier -->
-  <rect x="776" y="116" width="360" height="72" fill="#f0eef4" stroke="#6b5b95" stroke-width="1.8" rx="5"/>
-  <text x="788" y="137" font-size="13" font-weight="bold" fill="#1a1a1a">Halo2Verifier.sol  (EZKL-generated)</text>
-  <text x="788" y="155" font-size="11" fill="#444">73,307 B source · deploy 2,942,192 gas</text>
-  <text x="788" y="172" font-size="11" fill="#444">verifyProof: 684,696 gas</text>
-
-  <!-- attestation -->
-  <rect x="776" y="204" width="360" height="94" fill="#f0eef4" stroke="#6b5b95" stroke-width="1.8" rx="5"/>
-  <text x="788" y="225" font-size="13" font-weight="bold" fill="#1a1a1a">Attestation.sol</text>
-  <text x="788" y="243" font-size="11" fill="#444">decisionHash · shapHash · confidence (WAD)</text>
-  <text x="788" y="259" font-size="11" fill="#444">margin · modelVersion · proofVerified</text>
-  <text x="788" y="276" font-size="11" fill="#444">attest + verify: 887,376 gas</text>
-  <text x="788" y="292" font-size="11" fill="#c44536">reverts if proof rejected</text>
-
-  <!-- stakepool -->
-  <rect x="776" y="314" width="360" height="106" fill="#f0eef4" stroke="#6b5b95" stroke-width="1.8" rx="5"/>
-  <text x="788" y="335" font-size="13" font-weight="bold" fill="#1a1a1a">StakePool.sol  +  BrierMath.sol</text>
-  <text x="788" y="353" font-size="11" fill="#444">slash = stake · (conf − outcome)² , capped</text>
-  <text x="788" y="369" font-size="11" fill="#444">slashAmount: 543 gas (pure)</text>
-  <text x="788" y="385" font-size="11" fill="#444">resolveDispute + payout: 97,390 gas</text>
-  <text x="788" y="402" font-size="11" fill="#2e7d4f" font-weight="bold">unbonding delay + dispute freeze → exit guarded</text>
-
-  <!-- dispute resolver: SPLIT box, v0 vs target -->
-  <rect x="776" y="436" width="360" height="66" fill="#f4ecec" stroke="#c44536" stroke-width="2.2" rx="5"/>
-  <text x="788" y="457" font-size="13" font-weight="bold" fill="#1a1a1a">Dispute resolver — N-of-M committee</text>
-  <text x="788" y="475" font-size="11" fill="#444">resolveDispute(id, upheld) · threshold ≥ 2</text>
-  <text x="788" y="491" font-size="11" fill="#c44536" font-weight="bold">BOUNDED TRUST · N colluding = v0 admin</text>
-
-  <rect x="776" y="514" width="360" height="46" fill="#f0eef4" stroke="#6b5b95" stroke-width="1.8" rx="5"/>
-  <text x="788" y="533" font-size="12.5" font-weight="bold" fill="#1a1a1a">ReputationRegister · ModelRegistry</text>
-  <text x="788" y="550" font-size="10.5" fill="#444">EMA of realised Brier · content-addressed versions</text>
-
-  <rect x="776" y="570" width="360" height="46" fill="#f7e4e2" stroke="#8f2418" stroke-width="2" rx="5"/>
-  <text x="788" y="589" font-size="12.5" font-weight="bold" fill="#8f2418">CollusionOracle — unvalidated detector</text>
-  <text x="788" y="606" font-size="10.5" fill="#c44536">blocks disputes · quarantines payouts · cannot slash</text>
-
-  <rect x="776" y="626" width="360" height="44" fill="#fdf7e8" stroke="#9a7b2f" stroke-width="1.8" stroke-dasharray="5 3" rx="5"/>
-  <text x="788" y="645" font-size="12.5" font-weight="bold" fill="#5f4c1c">Target: staked jury with appeals</text>
-  <text x="788" y="662" font-size="10.5" fill="#9a7b2f" font-weight="bold">NOT BUILT</text>
-
-  <!-- cross-lane arrows -->
-  <path d="M 482 292 L 620 292 L 620 152 L 772 152" fill="none" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
-  <text x="500" y="285" font-size="10" fill="#666">proof + public instances</text>
-
-  <path d="M 704 159 L 728 159 L 728 240 L 772 240" fill="none" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
-  <text x="616" y="256" font-size="10" fill="#666">SHAP hash</text>
-
-  <line x1="956" y1="188" x2="956" y2="200" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
-  <line x1="956" y1="298" x2="956" y2="310" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
-  <line x1="956" y1="502" x2="956" y2="510" stroke="#9a7b2f" stroke-width="1.5" marker-end="url(#arDash)" stroke-dasharray="4 3"/>
-  <path d="M 776 470 L 744 470 L 744 380 L 772 380" fill="none" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
-  <text x="612" y="400" font-size="10" fill="#666">outcome → slash</text>
+  <rect x="262" y="242" width="182" height="72" fill="url(#proved)" stroke="#a4341f" stroke-width="1.8"/>
+  <text x="272" y="262" font-size="13" font-weight="bold" fill="#1c1c1c">EZKL prover (halo2)</text>
+  <text x="272" y="279" font-size="11.5" fill="#3a3a3a">2^15 = 32,768 rows</text>
+  <text x="272" y="294" font-size="11.5" fill="#3a3a3a">2.09 s &#183; proof 17.4 KB</text>
+  <text x="272" y="309" font-size="11.5" fill="#3a3a3a">proving key 132 MiB</text>
+  <line x1="353" y1="176" x2="353" y2="238" stroke="#1c1c1c" stroke-width="1" marker-end="url(#ar)"/>
+  <text x="360" y="212" font-size="11" fill="#3a3a3a">head weights + L</text>
 
   <!-- claimant -->
-  <rect x="44" y="396" width="196" height="66" fill="#eef4f9" stroke="#2f6f9f" stroke-width="1.8" rx="5"/>
-  <text x="56" y="417" font-size="13" font-weight="bold" fill="#1a1a1a">Claimant</text>
-  <text x="56" y="435" font-size="11" fill="#444">opens dispute: 134,608 gas</text>
-  <text x="56" y="451" font-size="11" fill="#444">receives the slashed amount</text>
+  <rect x="24" y="242" width="182" height="72" fill="#ffffff" stroke="#1c1c1c" stroke-width="1"/>
+  <text x="34" y="262" font-size="13" font-weight="bold" fill="#1c1c1c">Claimant</text>
+  <text x="34" y="279" font-size="11.5" fill="#3a3a3a">opens a dispute: 134,608 gas</text>
+  <text x="34" y="294" font-size="11.5" fill="#3a3a3a">receives the slashed amount</text>
 
-  <path d="M 240 429 L 640 429 L 640 469 L 772 469" fill="none" stroke="#4a4a4a" stroke-width="1.7" marker-end="url(#ar)"/>
-  <text x="330" y="422" font-size="10" fill="#666">openDispute(attestationId)</text>
+  <!-- ================= ON-CHAIN ================= -->
+  <line x1="676" y1="88" x2="1036" y2="88" stroke="#bfbfbf" stroke-width="0.8"/>
+  <text x="676" y="80" font-size="12" fill="#6e6e6e" letter-spacing="0.6">ON-CHAIN &#8212; local Anvil devnet</text>
 
-  <!-- provenance gap callout -->
-  <rect x="44" y="486" width="680" height="98" fill="#fff6f5" stroke="#c44536" stroke-width="1.8" rx="6"/>
-  <text x="58" y="508" font-size="12.5" font-weight="bold" fill="#c44536">Unclosed gap: input-logit provenance</text>
-  <text x="58" y="528" font-size="11.5" fill="#3a3a3a">The circuit takes the base model's logit as an unverified public input. Nothing binds that number</text>
-  <text x="58" y="545" font-size="11.5" fill="#3a3a3a">to the classifier above, to the applicant's real features, or to any model at all. An operator that</text>
-  <text x="58" y="562" font-size="11.5" fill="#3a3a3a">fabricates the logit obtains a proof that verifies. See Figure C, tier 1 boundary, and §8.</text>
-  <text x="58" y="578" font-size="11" fill="#8a8a8a">Dashed grey arrow above (features → SHAP) is likewise uncommitted.</text>
+  <rect x="676" y="104" width="360" height="60" fill="#ffffff" stroke="#1c1c1c" stroke-width="1"/>
+  <text x="686" y="124" font-size="13" font-weight="bold" fill="#1c1c1c">Halo2Verifier.sol</text>
+  <text x="686" y="141" font-size="11.5" fill="#3a3a3a">EZKL-generated &#183; deploy 2,942,192 gas</text>
+  <text x="686" y="156" font-size="11.5" fill="#3a3a3a">verifyProof 684,696 gas</text>
+
+  <rect x="676" y="180" width="360" height="72" fill="#ffffff" stroke="#1c1c1c" stroke-width="1"/>
+  <text x="686" y="200" font-size="13" font-weight="bold" fill="#1c1c1c">Attestation.sol</text>
+  <text x="686" y="217" font-size="11.5" fill="#3a3a3a">decisionHash &#183; shapHash &#183; confidence &#183; margin</text>
+  <text x="686" y="232" font-size="11.5" fill="#3a3a3a">attest + verify: 887,376 gas</text>
+  <text x="686" y="247" font-size="11.5" fill="#a4341f">reverts if the proof does not verify</text>
+
+  <rect x="676" y="268" width="360" height="72" fill="#ffffff" stroke="#1c1c1c" stroke-width="1"/>
+  <text x="686" y="288" font-size="13" font-weight="bold" fill="#1c1c1c">StakePool.sol + BrierMath.sol</text>
+  <text x="686" y="305" font-size="11.5" fill="#3a3a3a">slash = stake &#183; (c &#8722; o)&#178;, capped at 100%</text>
+  <text x="686" y="320" font-size="11.5" fill="#3a3a3a">slashAmount 543 gas &#183; resolve + payout 97,390</text>
+  <text x="686" y="335" font-size="11.5" fill="#3a3a3a">unbonding delay + dispute freeze</text>
+
+  <rect x="676" y="356" width="360" height="56" fill="#ffffff" stroke="#1c1c1c" stroke-width="1"/>
+  <text x="686" y="376" font-size="13" font-weight="bold" fill="#1c1c1c">Dispute resolver &#8212; N-of-M committee</text>
+  <text x="686" y="393" font-size="11.5" fill="#3a3a3a">threshold &#8805; 2 &#183; admin-appointed</text>
+  <text x="686" y="408" font-size="11.5" fill="#a4341f">N colluding members = v0's single admin key</text>
+
+  <rect x="676" y="428" width="360" height="42" fill="#ffffff" stroke="#1c1c1c" stroke-width="1"/>
+  <text x="686" y="448" font-size="13" font-weight="bold" fill="#1c1c1c">ReputationRegister &#183; ModelRegistry</text>
+  <text x="686" y="463" font-size="11.5" fill="#3a3a3a">EMA of realised Brier &#183; content-addressed versions</text>
+
+  <rect x="676" y="486" width="360" height="42" fill="#ffffff" stroke="#1c1c1c" stroke-width="1"/>
+  <text x="686" y="506" font-size="13" font-weight="bold" fill="#1c1c1c">CollusionOracle</text>
+  <text x="686" y="521" font-size="11.5" fill="#a4341f">unvalidated: blocks disputes, quarantines payouts, cannot slash</text>
+
+  <rect x="676" y="544" width="360" height="38" fill="#ffffff" stroke="#8a8a8a" stroke-width="1" stroke-dasharray="3 2.5"/>
+  <text x="686" y="563" font-size="13" font-weight="bold" fill="#6e6e6e">Staked jury with appeals</text>
+  <text x="686" y="577" font-size="11.5" fill="#6e6e6e">specified in &#167;9.2, not built</text>
+
+  <!-- ================= crossings ================= -->
+  <path d="M 444 278 L 632 278 L 632 200 L 672 200" fill="none" stroke="#1c1c1c" stroke-width="1" marker-end="url(#ar)"/>
+  <text x="470" y="272" font-size="11" fill="#3a3a3a">proof + public instances</text>
+
+  <path d="M 560 176 L 560 206 L 652 206 L 652 232 L 672 232" fill="none" stroke="#1c1c1c" stroke-width="1" marker-end="url(#ar)"/>
+  <text x="566" y="200" font-size="11" fill="#3a3a3a">SHAP hash</text>
+
+  <path d="M 206 278 L 236 278 L 236 384 L 672 384" fill="none" stroke="#1c1c1c" stroke-width="1" marker-end="url(#ar)"/>
+  <text x="300" y="378" font-size="11" fill="#3a3a3a">openDispute(attestationId)</text>
+
+  <path d="M 856 252 L 856 264" fill="none" stroke="#1c1c1c" stroke-width="1" marker-end="url(#ar)"/>
+  <path d="M 856 340 L 856 352" fill="none" stroke="#1c1c1c" stroke-width="1" marker-end="url(#ar)"/>
+  <path d="M 856 412 L 856 424" fill="none" stroke="#1c1c1c" stroke-width="1" marker-end="url(#ar)"/>
+  <path d="M 856 176 L 856 164" fill="none" stroke="#1c1c1c" stroke-width="1" marker-end="url(#ar)"/>
+  <text x="864" y="174" font-size="10.5" fill="#3a3a3a">calls</text>
+
+  <!-- The trust gap, as one line rather than a paragraph. -->
+  <line x1="24" y1="356" x2="620" y2="356" stroke="#bfbfbf" stroke-width="0.8" stroke-dasharray="2 3"/>
+  <text x="24" y="500" font-size="11.5" fill="#6e6e6e">
+    <tspan font-weight="bold">Reading order.</tspan>
+    <tspan x="24" dy="16">A decision is scored, the head maps its logit to a confidence,</tspan>
+    <tspan x="24" dy="15">the prover attests that mapping, and the chain stores it. Money</tspan>
+    <tspan x="24" dy="15">moves only when a claimant disputes and the committee resolves.</tspan>
+  </text>
+  <text x="24" y="420" font-size="12" fill="#1c1c1c">
+    <tspan font-weight="bold" fill="#a4341f">The proof binds the hatched region only.</tspan>
+    <tspan x="24" dy="17">An operator that fabricates</tspan>
+    <tspan font-style="italic"> L</tspan>
+    <tspan> obtains a proof that verifies and a chain that accepts it,</tspan>
+    <tspan x="24" dy="17">because nothing ties</tspan>
+    <tspan font-style="italic"> L</tspan>
+    <tspan> to the classifier above it or to the applicant's real features.</tspan>
+    <tspan x="24" dy="17">See &#167;8.1 and Figure C, tier 1.</tspan>
+  </text>
 </svg>

@@ -3,8 +3,14 @@
 Every point is read from artifacts/calibration/phase1_report.json, which is
 written by scripts/10_train_calibrate.py. No curve is fitted, smoothed, or
 approximated.
+
+Styling comes from brier.figstyle so the figure is set in the same Computer
+Modern as the paper body. The in-image title was removed: the caption directly
+below it already names the figure, and printing the name twice at two sizes in
+two typefaces is what made these look pasted in from a slide deck.
 """
 import json
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -13,75 +19,99 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
+from brier import figstyle
+from brier.figstyle import ACCENT, AFTER, BEFORE, INK, MUTED, RULE
+
+figstyle.use()
+
 r = json.loads((ROOT / "artifacts" / "calibration" / "phase1_report.json").read_text())
 
-FG, GRID, ACC = "#1a1a1a", "#d8d8d8", "#c44536"
-PRE, POST = "#b0b0b0", "#2f6f9f"
+fig, axes = plt.subplots(1, 3, figsize=(13.0, 4.15),
+                         gridspec_kw={"width_ratios": [1, 1, 0.95]})
 
-fig, axes = plt.subplots(1, 3, figsize=(14.5, 4.9), gridspec_kw={"width_ratios": [1, 1, 0.92]})
 
-def panel(ax, key, colour, title, ece, mce):
+def panel(ax, key, colour, marker, title, ece, mce, label):
     rows = [b for b in r[key] if b["count"] > 0]
     xs = [b["mean_conf"] for b in rows]
     ys = [b["empirical_freq"] for b in rows]
     ns = [b["count"] for b in rows]
 
-    ax.plot([0, 1], [0, 1], "--", color=ACC, lw=1.3, zorder=2, label="perfect calibration")
-    # Gap bars: the quantity ECE actually integrates.
+    ax.plot([0, 1], [0, 1], "--", color=ACCENT, lw=0.9, zorder=2,
+            label="perfect calibration")
+    # The vertical gaps ARE the quantity ECE integrates, so they are drawn
+    # rather than described: each bar is one bin's contribution.
     for x, y in zip(xs, ys):
-        ax.plot([x, x], [x, y], color=ACC, alpha=0.35, lw=1.1, zorder=2)
-    ax.plot(xs, ys, "-", color=colour, lw=1.6, alpha=0.85, zorder=3)
-    ax.scatter(xs, ys, s=[max(22, 5.5 * n) for n in ns], color=colour,
-               edgecolor="white", linewidth=0.9, zorder=4, label=r"bin (area $\propto$ n)")
+        ax.plot([x, x], [x, y], color=ACCENT, alpha=0.30, lw=0.9, zorder=2)
+    ax.plot(xs, ys, "-", color=colour, lw=1.1, alpha=0.9, zorder=3)
+    # Marker shape carries the same distinction as colour, so the panels stay
+    # readable in greyscale.
+    ax.scatter(xs, ys, s=[max(16, 4.2 * n) for n in ns], color=colour,
+               marker=marker, edgecolor="white", linewidth=0.7, zorder=4,
+               label=r"bin (area $\propto$ n)")
 
-    ax.set_xlim(0, 1); ax.set_ylim(0, 1)
+    ax.set_xlim(-0.02, 1.02)
+    ax.set_ylim(-0.02, 1.02)
+    ax.set_xticks([0, 0.25, 0.5, 0.75, 1.0])
+    ax.set_yticks([0, 0.25, 0.5, 0.75, 1.0])
     ax.set_aspect("equal", adjustable="box")
     ax.set_xlabel("mean predicted confidence")
-    ax.set_title(title, fontsize=10.5, color=FG, pad=9)
-    ax.grid(alpha=0.28, color=GRID, lw=0.7)
-    ax.set_axisbelow(True)
-    for s in ("top", "right"):
-        ax.spines[s].set_visible(False)
-    ax.text(0.035, 0.955, f"ECE = {ece:.4f}\nMCE = {mce:.4f}",
-            transform=ax.transAxes, va="top", ha="left", fontsize=9.5,
-            bbox=dict(boxstyle="round,pad=0.42", fc="white", ec=GRID, alpha=0.95))
-    ax.legend(loc="lower right", fontsize=8, frameon=False)
+    ax.set_title(title, pad=7)
+    figstyle.panel_label(ax, label)
+    figstyle.note(ax, f"ECE  {ece:.4f}\nMCE  {mce:.4f}", loc="upper left")
 
-panel(axes[0], "reliability_uncalibrated", PRE,
+
+panel(axes[1], "reliability_temperature", AFTER, "s",
+      f"Temperature scaled, $T = {r['temperature']:.2f}$",
+      r["ece"]["temperature"], r["mce"]["temperature"], "(b)")
+axes[1].legend(loc="lower right")
+
+panel(axes[0], "reliability_uncalibrated", BEFORE, "o",
       "Uncalibrated (sigmoid of raw margin)",
-      r["ece"]["uncalibrated"], r["mce"]["uncalibrated"])
+      r["ece"]["uncalibrated"], r["mce"]["uncalibrated"], "(a)")
 axes[0].set_ylabel("empirical frequency")
-panel(axes[1], "reliability_temperature", POST,
-      f"Temperature scaled, $T$ = {r['temperature']:.2f}",
-      r["ece"]["temperature"], r["mce"]["temperature"])
 
-# Third panel: ECE across all heads plus the leakage control.
+# ---------------------------------------------------------------------------
+# Panel (c): ECE across heads, including the leakage control.
+# ---------------------------------------------------------------------------
 ax = axes[2]
-labels = ["Uncalibrated", "Temperature\n(1 param)", "MLP head\n(321 params)",
+labels = ["Uncalib.", "Temperature\n(1 param)", "MLP head\n(321 params)",
           "Control:\nfit on TRAIN"]
 vals = [r["ece"]["uncalibrated"], r["ece"]["temperature"],
         r["ece"]["mlp"], r["ece"]["control_fitted_on_train"]]
-cols = [PRE, POST, "#7aa6c2", ACC]
-bars = ax.bar(range(4), vals, color=cols, edgecolor="white", linewidth=1.1, width=0.66)
-ax.axhline(r["ece"]["uncalibrated"], color=ACC, ls=":", lw=1.2, zorder=1)
-ax.text(0.02, r["ece"]["uncalibrated"] + 0.007, "uncalibrated baseline",
-        fontsize=8, color=ACC, ha="left")
+
+# The control is hatched rather than differently coloured: it is not another
+# head, it is the same head fitted wrongly, and hatching says "excluded" in a
+# way a fourth hue does not.
+bars = ax.bar(range(4), vals, width=0.62, color=[BEFORE, AFTER, "#8fb0c9", "white"],
+              edgecolor=[INK, INK, INK, ACCENT], linewidth=0.7)
+bars[3].set_hatch("///")
+bars[3].set_edgecolor(ACCENT)
+
+base = r["ece"]["uncalibrated"]
+ax.axhline(base, color=ACCENT, ls=":", lw=0.9, zorder=1)
+# BELOW the line and left-aligned. Above it collides with the first bar's own
+# value label (they sit at the same height by construction, since the line IS
+# that bar); below it, the region is empty because every other bar is shorter.
+ax.text(-0.42, base - 0.012, "uncalibrated baseline", fontsize=8,
+        color=ACCENT, ha="left", va="top")
+
 for b, v in zip(bars, vals):
-    ax.text(b.get_x() + b.get_width() / 2, v + 0.006, f"{v:.4f}",
-            ha="center", fontsize=9, color=FG)
-ax.set_xticks(range(4)); ax.set_xticklabels(labels, fontsize=8.6)
+    ax.text(b.get_x() + b.get_width() / 2, v + 0.007, f"{v:.4f}",
+            ha="center", va="bottom", fontsize=8.5, color=INK)
+
+ax.set_xticks(range(4))
+ax.set_xticklabels(labels, fontsize=8.2)
 ax.set_ylabel("Expected Calibration Error")
 ax.set_ylim(0, 0.335)
-ax.set_title("ECE by calibration head (held-out test)", fontsize=10.5, color=FG, pad=9)
-ax.grid(axis="y", alpha=0.28, color=GRID, lw=0.7); ax.set_axisbelow(True)
-for s in ("top", "right"):
-    ax.spines[s].set_visible(False)
+ax.set_title("ECE by calibration head", pad=7)
+figstyle.panel_label(ax, "(c)")
+ax.text(0.5, -0.235, "the control is fitted on TRAIN, and is worse than not "
+        "calibrating at all", transform=ax.transAxes, ha="center", va="top",
+        fontsize=8, color=MUTED, style="italic")
 
-fig.suptitle(
-    f"Figure D — Calibration reliability, held-out test split (n = {r['n_test']}), "
-    f"{len(r['reliability_uncalibrated'])} equal-width bins",
-    fontsize=11.5, y=0.995, color=FG)
-fig.tight_layout(rect=[0, 0, 1, 0.965])
+fig.tight_layout(w_pad=1.8)
 out = ROOT / "figures" / "figure-d-calibration.png"
-fig.savefig(out, dpi=200, facecolor="white")
+fig.savefig(out)
 print("wrote", out)

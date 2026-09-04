@@ -1007,7 +1007,7 @@ Three implications, none of which requires a new experiment:
 
 ### 5.1 Components and where the circuit sits
 
-![Figure 1 — Component architecture. Solid outlines are implemented and measured; dashed amber is specified but unbuilt; red is the single component inside the zk circuit.](figures/figure-a-architecture.png)
+![Figure 1 — Component architecture, with measured cost at each step. Hatching marks the only subgraph inside the zk circuit; dashed outlines are specified but unbuilt. The heavy arrow is the base model's logit, which the circuit takes as an unverified public input — the boundary §8.1 turns on.](figures/figure-a-architecture.png)
 
 The base classifier and the SHAP explainer sit outside the circuit by design:
 the vector they produce is hash-committed as evidence, which establishes that
@@ -1024,7 +1024,7 @@ one step the mechanism still cannot enforce against: resolution is a committee
 action, so a penalty the contract computes correctly can be waived by the people
 who resolve it (§8.2).
 
-![Figure 2 — Protocol sequence, annotated with measured gas per step and the two points at which v0 is unenforced.](figures/figure-b-sequence.png)
+![Figure 2 — Protocol sequence, annotated with the gas each step cost on a local chain. Verification dominates: the Brier arithmetic that is the substance of the mechanism is 543 gas, three orders of magnitude below the cost of proving it ran. The exit path v0 left open is now closed; resolution remains a tier-3 action.](figures/figure-b-sequence.png)
 
 ```mermaid
 sequenceDiagram
@@ -1064,20 +1064,20 @@ sequenceDiagram
 
 ### 5.3 Trust boundaries
 
-![Figure 3 — Trust boundaries. Green is cryptographically guaranteed, amber economically assumed, red fully trusted; each weakness names the test that demonstrates it.](figures/figure-c-threat-model.png)
+![Figure 3 — What each trust tier covers, what it rests on, and who defeats it. Tiers descend from cryptographic (hatched) through economic and bounded-trust (dashed) to the single-key detector below them. The right-hand columns name the adversary each tier admits and the test that demonstrates it.](figures/figure-c-threat-model.png)
 
 This is the diagram against which every other claim in this document should be
 checked. Three tiers:
 
-- **Tier 1 (cryptographically guaranteed, green).** Calibration-head execution
+- **Tier 1 — cryptographically guaranteed.** Calibration-head execution
   and the slash arithmetic. Holds against a fully malicious operator.
-- **Tier 2 (economically assumed, amber).** Assumption A (honest confidence
+- **Tier 2 — economically assumed.** Assumption A (honest confidence
   reporting) is enforced by the payoff structure, conditionally. Assumption B
   (stake is available when slashed) was **broken in v0** and is now enforced:
   withdrawal is a two-step request/execute with an unbonding delay, and any open
   dispute freezes execution (§8.3). Two residual gaps remain, and neither is a
   timelock bug.
-- **Tier 3 (bounded trust, red).** Dispute outcome and ground truth. An
+- **Tier 3 — bounded trust.** Dispute outcome and ground truth. An
   admin-appointed N-of-M committee decides who loses money; N colluding members
   can decide it arbitrarily. The tier keeps its colour — it is a smaller red
   region, not a different one.

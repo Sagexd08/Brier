@@ -1,141 +1,187 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 1060" width="1180" height="1060" font-family="Helvetica, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 640" width="1060" height="640" font-family="CMU Serif, Latin Modern Roman, Georgia, serif">
+  <!--
+    Figure C - trust tiers and what each one is worth.
+
+    The previous version was section 8 typeset as coloured boxes: roughly 600
+    words of prose, traffic-light fills, bold red throughout, and every claim
+    duplicated from the body text. It read as decoration, and a reviewer would
+    have skipped it.
+
+    This version answers ONE question the prose cannot answer as compactly:
+    for each tier, what has to be true for the guarantee to hold, and who can
+    break it? That is a table, so it is drawn as one. Tier membership is shown
+    by position and by rule weight rather than by fill colour, so the figure
+    works in greyscale; the single red column is the adversary who defeats each
+    tier, because that is the figure's actual content.
+  -->
   <defs>
-    <marker id="cAr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#4a4a4a"/>
-    </marker>
-    <pattern id="hatch" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-      <line x1="0" y1="0" x2="0" y2="7" stroke="#c44536" stroke-width="2.4" opacity="0.16"/>
-    </pattern>
-    <pattern id="hatchAmber" width="7" height="7" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-      <line x1="0" y1="0" x2="0" y2="7" stroke="#9a7b2f" stroke-width="2.4" opacity="0.14"/>
+    <pattern id="hatch" width="5" height="5" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+      <rect width="5" height="5" fill="#ffffff"/>
+      <line x1="0" y1="0" x2="0" y2="5" stroke="#a4341f" stroke-width="0.9" opacity="0.45"/>
     </pattern>
   </defs>
 
-  <rect width="1180" height="1060" fill="#ffffff"/>
-  <text x="24" y="34" font-size="17" font-weight="bold" fill="#1a1a1a">Figure C — Trust boundaries and threat model</text>
-  <text x="24" y="55" font-size="12" fill="#5a5a5a">Only tier 1 is enforced by cryptography. Tier 2 is now <tspan font-weight="bold" fill="#2e7d4f">enforced</tspan> against the operator but sits downstream of tier 3. Tier 3 is <tspan font-weight="bold" fill="#c44536">bounded trust</tspan>, not an absence of trust.</text>
+  <rect width="1060" height="640" fill="#ffffff"/>
+
+  <!-- ================= column headers ================= -->
+  <text x="24"  y="30" font-size="12" font-weight="bold" fill="#1c1c1c">Tier</text>
+  <text x="150" y="30" font-size="12" font-weight="bold" fill="#1c1c1c">What it covers</text>
+  <text x="470" y="30" font-size="12" font-weight="bold" fill="#1c1c1c">Rests on</text>
+  <text x="700" y="30" font-size="12" font-weight="bold" fill="#a4341f">Who can break it</text>
+  <text x="940" y="30" font-size="12" font-weight="bold" fill="#1c1c1c">Evidence</text>
+  <line x1="24" y1="38" x2="1036" y2="38" stroke="#1c1c1c" stroke-width="1.1"/>
 
   <!-- ================= TIER 1 ================= -->
-  <rect x="24" y="76" width="1132" height="212" fill="#eaf4ec" stroke="#2e7d4f" stroke-width="2.4" rx="8"/>
-  <rect x="24" y="76" width="8" height="212" fill="#2e7d4f" rx="4"/>
-  <text x="48" y="101" font-size="14" font-weight="bold" fill="#1d5c39">TIER 1 — CRYPTOGRAPHICALLY GUARANTEED</text>
-  <text x="48" y="120" font-size="11.5" fill="#2f5c44">Holds against a fully malicious operator. No trust required. Verified on-chain; tampering rejected (4/4 soundness checks).</text>
+  <rect x="24" y="48" width="112" height="112" fill="url(#hatch)" stroke="#a4341f" stroke-width="1.6"/>
+  <text x="34" y="70" font-size="13" font-weight="bold" fill="#1c1c1c">Tier 1</text>
+  <text x="34" y="88" font-size="11.5" fill="#3a3a3a">cryptographic</text>
+  <text x="34" y="104" font-size="11.5" fill="#3a3a3a">no trust</text>
+  <text x="34" y="120" font-size="11.5" fill="#3a3a3a">required</text>
 
-  <rect x="48" y="132" width="332" height="140" fill="#ffffff" stroke="#2e7d4f" stroke-width="1.6" rx="5"/>
-  <text x="62" y="153" font-size="12.5" font-weight="bold" fill="#1a1a1a">Calibration-head execution</text>
-  <text x="62" y="172" font-size="11" fill="#444">halo2/KZG proof, 2^15 rows</text>
-  <text x="62" y="188" font-size="11" fill="#444">verifyProof = 684,696 gas</text>
-  <text x="62" y="204" font-size="11" fill="#444">prove 2.09 s · proof 17.4 KB</text>
-  <text x="62" y="223" font-size="11" fill="#1d5c39" font-weight="bold">Guarantees: given logit L,</text>
-  <text x="62" y="239" font-size="11" fill="#1d5c39" font-weight="bold">head(vk) maps L → attested c</text>
-  <text x="62" y="261" font-size="10" fill="#8a8a8a">+ conformal set, in-circuit (Phase B)</text>
+  <text x="150" y="66" font-size="11.5" fill="#1c1c1c">Execution of the calibration head:</text>
+  <text x="150" y="82" font-size="11.5" fill="#3a3a3a">given a logit&#160;<tspan font-style="italic">L</tspan>, head(vk) maps it to the attested&#160;<tspan font-style="italic">c</tspan></text>
+  <text x="150" y="102" font-size="11.5" fill="#1c1c1c">Slash arithmetic:</text>
+  <text x="150" y="118" font-size="11.5" fill="#3a3a3a">slash is exactly stake&#183;(<tspan font-style="italic">c</tspan>&#8722;<tspan font-style="italic">o</tspan>)&#178;, capped, no overflow</text>
+  <text x="150" y="138" font-size="11.5" fill="#3a3a3a">Conformal set construction (in-circuit)</text>
 
-  <rect x="396" y="132" width="332" height="140" fill="#ffffff" stroke="#2e7d4f" stroke-width="1.6" rx="5"/>
-  <text x="410" y="153" font-size="12.5" font-weight="bold" fill="#1a1a1a">Slash arithmetic</text>
-  <text x="410" y="172" font-size="11" fill="#444">BrierMath, WAD fixed point</text>
-  <text x="410" y="188" font-size="11" fill="#444">no unchecked blocks; 543 gas</text>
-  <text x="410" y="204" font-size="11" fill="#444">monotonicity + properness fuzzed</text>
-  <text x="410" y="223" font-size="11" fill="#1d5c39" font-weight="bold">Guarantees: slash is exactly</text>
-  <text x="410" y="239" font-size="11" fill="#1d5c39" font-weight="bold">stake·(c−o)², capped, no overflow</text>
-  <text x="410" y="261" font-size="10" fill="#8a8a8a">same arithmetic drives the reputation EMA</text>
+  <text x="470" y="66" font-size="11.5" fill="#3a3a3a">halo2/KZG soundness</text>
+  <text x="470" y="82" font-size="11.5" fill="#3a3a3a">WAD fixed-point arithmetic</text>
+  <text x="470" y="98" font-size="11.5" fill="#3a3a3a">with no unchecked blocks</text>
 
-  <rect x="744" y="132" width="388" height="150" fill="#fff4f3" stroke="#c44536" stroke-width="2" rx="5"/>
-  <text x="758" y="153" font-size="12.5" font-weight="bold" fill="#c44536">NOT covered by tier 1</text>
-  <text x="758" y="173" font-size="11" fill="#3a3a3a">• the base classifier (not in circuit)</text>
-  <text x="758" y="190" font-size="11" fill="#3a3a3a">• provenance of the input logit L</text>
-  <text x="758" y="207" font-size="11" fill="#3a3a3a">• truthfulness of the applicant features</text>
-  <text x="758" y="224" font-size="11" fill="#3a3a3a">• SHAP + counterfactual (hash-committed only)</text>
-  <text x="758" y="241" font-size="11" fill="#3a3a3a">• the fitted constants T and conformal q</text>
-  <text x="758" y="259" font-size="11" fill="#c44536" font-weight="bold">A fabricated L yields a valid proof.</text>
-  <text x="758" y="274" font-size="9.5" fill="#8a8a8a">ThreatModel.t.sol::test_tier1_marginIsUnverified…</text>
+  <text x="700" y="66" font-size="11.5" font-weight="bold" fill="#a4341f">Nobody &#8212; for what it covers.</text>
+  <text x="700" y="84" font-size="11.5" fill="#a4341f">But it does not cover the base</text>
+  <text x="700" y="100" font-size="11.5" fill="#a4341f">model, the provenance of&#160;<tspan font-style="italic">L</tspan>, the</text>
+  <text x="700" y="116" font-size="11.5" fill="#a4341f">applicant's features, the SHAP</text>
+  <text x="700" y="132" font-size="11.5" fill="#a4341f">bundle, or the fitted constants.</text>
+  <text x="700" y="150" font-size="11.5" font-weight="bold" fill="#a4341f">A fabricated&#160;<tspan font-style="italic">L</tspan> yields a valid proof.</text>
 
-  <!-- ================= CONTENT INTEGRITY BAND (Phase G) ================= -->
-  <rect x="24" y="300" width="1132" height="86" fill="#eef2f8" stroke="#3d6ea5" stroke-width="2.2" rx="8"/>
-  <rect x="24" y="300" width="8" height="86" fill="#3d6ea5" rx="4"/>
-  <text x="48" y="323" font-size="13.5" font-weight="bold" fill="#2b5480">CONTENT INTEGRITY ONLY — ModelRegistry (Phase G)</text>
-  <text x="48" y="342" font-size="11" fill="#3a3a3a">Guarantees the artifact behind a version id hashes to the recorded value, so substitution is detectable by anyone. It is a cryptographic</text>
-  <text x="48" y="358" font-size="11" fill="#3a3a3a">property, but a narrow one, so it does not sit in tier 1: it says nothing about execution or training.</text>
-  <text x="48" y="377" font-size="11" fill="#c44536" font-weight="bold">Does NOT establish that training was honest, nor that the registered artifact is the one that actually ran.</text>
-  <text x="742" y="377" font-size="9.5" fill="#8a8a8a">ModelRegistry.t.sol::test_boundary_poisonedModelRegistersAndVerifiesCleanly</text>
+  <text x="940" y="66" font-size="10.5" fill="#6e6e6e">4/4 tamper</text>
+  <text x="940" y="80" font-size="10.5" fill="#6e6e6e">checks reject</text>
+  <text x="940" y="100" font-size="10.5" fill="#6e6e6e">properness</text>
+  <text x="940" y="114" font-size="10.5" fill="#6e6e6e">fuzzed</text>
+  <text x="940" y="134" font-size="10.5" fill="#6e6e6e">&#167;8.1</text>
+
+  <line x1="24" y1="172" x2="1036" y2="172" stroke="#bfbfbf" stroke-width="0.7"/>
+
+  <!-- ================= narrow band: content integrity ================= -->
+  <rect x="24" y="182" width="112" height="52" fill="#ffffff" stroke="#1c1c1c" stroke-width="1"/>
+  <text x="34" y="203" font-size="12" font-weight="bold" fill="#1c1c1c">Tier 1&#189;</text>
+  <text x="34" y="220" font-size="11.5" fill="#3a3a3a">content only</text>
+
+  <text x="150" y="200" font-size="11.5" fill="#1c1c1c">ModelRegistry: the artifact behind a version id</text>
+  <text x="150" y="216" font-size="11.5" fill="#3a3a3a">hashes to the recorded value, so substitution is detectable</text>
+
+  <text x="470" y="200" font-size="11.5" fill="#3a3a3a">collision resistance</text>
+
+  <text x="700" y="200" font-size="11.5" fill="#a4341f">Anyone who trains dishonestly</text>
+  <text x="700" y="216" font-size="11.5" fill="#a4341f">and registers the result truthfully.</text>
+
+  <text x="940" y="200" font-size="10.5" fill="#6e6e6e">poisoned model</text>
+  <text x="940" y="214" font-size="10.5" fill="#6e6e6e">registers cleanly</text>
+
+  <line x1="24" y1="246" x2="1036" y2="246" stroke="#bfbfbf" stroke-width="0.7"/>
 
   <!-- ================= TIER 2 ================= -->
-  <rect x="24" y="398" width="1132" height="216" fill="#fdf7e8" stroke="#9a7b2f" stroke-width="2.4" rx="8"/>
-  <rect x="24" y="398" width="8" height="216" fill="#9a7b2f" rx="4"/>
-  <text x="48" y="421" font-size="14" font-weight="bold" fill="#7d6224">TIER 2 — ECONOMICALLY ASSUMED</text>
-  <text x="48" y="440" font-size="11.5" fill="#6b5a2c">Holds if the operator is rational and the assumption is enforced in code. Both now are — but enforcement is subordinate to tier 3.</text>
+  <rect x="24" y="256" width="112" height="112" fill="#ffffff" stroke="#1c1c1c" stroke-width="1.4"/>
+  <text x="34" y="278" font-size="13" font-weight="bold" fill="#1c1c1c">Tier 2</text>
+  <text x="34" y="296" font-size="11.5" fill="#3a3a3a">economic</text>
+  <text x="34" y="312" font-size="11.5" fill="#3a3a3a">holds if the</text>
+  <text x="34" y="328" font-size="11.5" fill="#3a3a3a">operator is</text>
+  <text x="34" y="344" font-size="11.5" fill="#3a3a3a">rational</text>
 
-  <rect x="48" y="452" width="536" height="146" fill="#ffffff" stroke="#9a7b2f" stroke-width="1.6" rx="5"/>
-  <text x="62" y="473" font-size="12.5" font-weight="bold" fill="#1a1a1a">Assumption A — honest confidence reporting</text>
-  <text x="62" y="492" font-size="11" fill="#444">Brier is strictly proper, so expected loss is minimised at the</text>
-  <text x="62" y="508" font-size="11" fill="#444">operator's true belief: E[slash] = S((c−p)² + p(1−p)).</text>
-  <text x="62" y="524" font-size="11" fill="#444">Verified numerically against the deployed Solidity at p = 0.3, 0.7.</text>
-  <text x="62" y="543" font-size="11" fill="#2e7d4f" font-weight="bold">STATUS: enforced by the payoff structure —</text>
-  <text x="62" y="559" font-size="11" fill="#444">but only for decisions that are actually disputed, and only if</text>
-  <text x="62" y="575" font-size="11" fill="#444">dispute selection is independent of the reported c.</text>
-  <text x="62" y="591" font-size="9.5" fill="#8a8a8a">BrierMath.t.sol::test_properScoringRule_honestyIsOptimal</text>
+  <text x="150" y="274" font-size="11.5" fill="#1c1c1c">Honest confidence reporting:</text>
+  <text x="150" y="290" font-size="11.5" fill="#3a3a3a">Brier is strictly proper, so E[slash] is minimised at&#160;<tspan font-style="italic">c</tspan>&#160;=&#160;<tspan font-style="italic">p</tspan></text>
+  <text x="150" y="310" font-size="11.5" fill="#1c1c1c">Stake is present when the slash lands:</text>
+  <text x="150" y="326" font-size="11.5" fill="#3a3a3a">two-step withdrawal behind an unbonding delay;</text>
+  <text x="150" y="342" font-size="11.5" fill="#3a3a3a">any open dispute freezes execution</text>
 
-  <rect x="604" y="452" width="528" height="146" fill="url(#hatchAmber)" stroke="#9a7b2f" stroke-width="2.2" rx="5"/>
-  <rect x="604" y="452" width="528" height="146" fill="none" stroke="#9a7b2f" stroke-width="2.2" rx="5"/>
-  <text x="618" y="473" font-size="12.5" font-weight="bold" fill="#1a1a1a">Assumption B — stake is available when slashed</text>
-  <text x="618" y="492" font-size="12" fill="#2e7d4f" font-weight="bold">STATUS: ENFORCED (Phase 3a). Was broken in v0.</text>
-  <text x="618" y="510" font-size="11" fill="#3a3a3a">Two-step requestWithdrawal / executeWithdrawal behind an</text>
-  <text x="618" y="526" font-size="11" fill="#3a3a3a">unbonding delay; any open dispute freezes execution.</text>
-  <text x="618" y="545" font-size="11" fill="#9a5a2f" font-weight="bold">Residual gap A: an operator never disputed inside the</text>
-  <text x="618" y="559" font-size="11" fill="#3a3a3a">window exits intact — a bound on the dispute window, not the lock.</text>
-  <text x="618" y="576" font-size="11" fill="#9a5a2f" font-weight="bold">Residual gap B: the freeze is released by RESOLUTION,</text>
-  <text x="618" y="590" font-size="11" fill="#3a3a3a">which is a tier-3 action. Tier 2 is subordinate to tier 3.</text>
+  <text x="470" y="274" font-size="11.5" fill="#3a3a3a">the payoff structure, and</text>
+  <text x="470" y="290" font-size="11.5" fill="#3a3a3a">dispute selection being</text>
+  <text x="470" y="306" font-size="11.5" fill="#3a3a3a">independent of&#160;<tspan font-style="italic">c</tspan></text>
+  <text x="470" y="326" font-size="11.5" fill="#3a3a3a">enforcement in code</text>
+  <text x="470" y="342" font-size="11.5" fill="#3a3a3a">(shipped, Phase 3a)</text>
+
+  <text x="700" y="274" font-size="11.5" fill="#a4341f">An operator never disputed inside</text>
+  <text x="700" y="290" font-size="11.5" fill="#a4341f">the window: it exits intact. That is</text>
+  <text x="700" y="306" font-size="11.5" fill="#a4341f">a bound on the dispute window,</text>
+  <text x="700" y="322" font-size="11.5" fill="#a4341f">not on the lock.</text>
+  <text x="700" y="342" font-size="11.5" font-weight="bold" fill="#a4341f">Also: tier 2 is released by tier 3.</text>
+
+  <text x="940" y="274" font-size="10.5" fill="#6e6e6e">honesty is</text>
+  <text x="940" y="288" font-size="10.5" fill="#6e6e6e">optimal (test)</text>
+  <text x="940" y="308" font-size="10.5" fill="#6e6e6e">front-run now</text>
+  <text x="940" y="322" font-size="10.5" fill="#6e6e6e">blocked (test)</text>
+  <text x="940" y="342" font-size="10.5" fill="#6e6e6e">&#167;8.3</text>
+
+  <line x1="24" y1="380" x2="1036" y2="380" stroke="#bfbfbf" stroke-width="0.7"/>
 
   <!-- ================= TIER 3 ================= -->
-  <rect x="24" y="626" width="1132" height="234" fill="#fbecec" stroke="#c44536" stroke-width="2.8" rx="8"/>
-  <rect x="24" y="626" width="8" height="234" fill="#c44536" rx="4"/>
-  <text x="48" y="649" font-size="14" font-weight="bold" fill="#a5301f">TIER 3 — BOUNDED TRUST (no cryptographic or economic guarantee)</text>
-  <text x="48" y="668" font-size="11.5" fill="#7d3025">An N-of-M committee decides who loses money. N colluding members can decide it arbitrarily. Smaller red region than v0 — same colour.</text>
+  <rect x="24" y="390" width="112" height="112" fill="#ffffff" stroke="#1c1c1c" stroke-width="1.4" stroke-dasharray="5 3"/>
+  <text x="34" y="412" font-size="13" font-weight="bold" fill="#1c1c1c">Tier 3</text>
+  <text x="34" y="430" font-size="11.5" fill="#3a3a3a">bounded</text>
+  <text x="34" y="446" font-size="11.5" fill="#3a3a3a">trust</text>
+  <text x="34" y="466" font-size="11.5" fill="#a4341f">no crypto,</text>
+  <text x="34" y="482" font-size="11.5" fill="#a4341f">no economics</text>
 
-  <rect x="48" y="680" width="352" height="164" fill="#ffffff" stroke="#c44536" stroke-width="1.8" rx="5"/>
-  <text x="62" y="701" font-size="12.5" font-weight="bold" fill="#1a1a1a">Dispute outcome</text>
-  <text x="62" y="720" font-size="11" fill="#444">resolveDispute — N of M resolvers</text>
-  <text x="62" y="737" font-size="11" fill="#2e7d4f">Improvement: one key no longer suffices.</text>
-  <text x="62" y="756" font-size="11" fill="#c44536" font-weight="bold">N colluding = v0's single admin exactly.</text>
-  <text x="62" y="773" font-size="11" fill="#444">Admin appoints and can replace the</text>
-  <text x="62" y="789" font-size="11" fill="#444">committee, so the bound covers resolution,</text>
-  <text x="62" y="805" font-size="11" fill="#444">not selection. Resolvers stake nothing.</text>
-  <text x="62" y="821" font-size="11" fill="#444">No evidentiary standard. No appeal.</text>
-  <text x="62" y="837" font-size="9.5" fill="#8a8a8a">test_tier3_nOfMCollusionHasSameEffectAsV0Admin</text>
+  <text x="150" y="408" font-size="11.5" fill="#1c1c1c">Who loses money: the dispute outcome</text>
+  <text x="150" y="428" font-size="11.5" fill="#1c1c1c">Ground truth for a rejection</text>
+  <text x="150" y="444" font-size="11.5" fill="#3a3a3a">&#8212; a rejected applicant never demonstrates repayment,</text>
+  <text x="150" y="460" font-size="11.5" fill="#3a3a3a">so &#8220;the decision was wrong&#8221; has no on-chain referent</text>
+  <text x="150" y="480" font-size="11.5" fill="#1c1c1c">Operator reputation (EMA of realised Brier)</text>
 
-  <rect x="416" y="680" width="352" height="164" fill="#ffffff" stroke="#c44536" stroke-width="1.8" rx="5"/>
-  <text x="430" y="701" font-size="12.5" font-weight="bold" fill="#1a1a1a">Ground truth for a loan rejection</text>
-  <text x="430" y="720" font-size="11" fill="#444">The counterfactual is unobservable: a</text>
-  <text x="430" y="736" font-size="11" fill="#444">rejected applicant never demonstrates</text>
-  <text x="430" y="752" font-size="11" fill="#444">repayment. "The decision was wrong" has</text>
-  <text x="430" y="768" font-size="11" fill="#444">no on-chain referent.</text>
-  <text x="430" y="789" font-size="11" fill="#c44536" font-weight="bold">Unsolved — not merely unimplemented.</text>
-  <text x="430" y="810" font-size="11" fill="#444">Moving from one voter to N voters does</text>
-  <text x="430" y="826" font-size="11" fill="#444">not create a fact that did not exist.</text>
+  <text x="470" y="408" font-size="11.5" fill="#3a3a3a">an N-of-M committee,</text>
+  <text x="470" y="424" font-size="11.5" fill="#3a3a3a">appointed and replaceable</text>
+  <text x="470" y="440" font-size="11.5" fill="#3a3a3a">by the admin; resolvers</text>
+  <text x="470" y="456" font-size="11.5" fill="#3a3a3a">stake nothing, and there is</text>
+  <text x="470" y="472" font-size="11.5" fill="#3a3a3a">no evidentiary standard</text>
+  <text x="470" y="488" font-size="11.5" fill="#3a3a3a">and no appeal</text>
 
-  <rect x="784" y="680" width="348" height="164" fill="#ffffff" stroke="#c44536" stroke-width="1.8" rx="5" stroke-dasharray="6 3"/>
-  <text x="798" y="701" font-size="12.5" font-weight="bold" fill="#1a1a1a">Operator reputation (Phase F)</text>
-  <text x="798" y="720" font-size="11" fill="#444">EMA of realised Brier score, updated at</text>
-  <text x="798" y="736" font-size="11" fill="#444">each resolution. Aggregation is on-chain</text>
-  <text x="798" y="752" font-size="11" fill="#2e7d4f">and auditable — anyone can replay it.</text>
-  <text x="798" y="773" font-size="11" fill="#c44536" font-weight="bold">But its INPUTS are tier-3 outcomes, so it</text>
-  <text x="798" y="789" font-size="11" fill="#c44536" font-weight="bold">sits in tier 3 and inherits that trust.</text>
-  <text x="798" y="808" font-size="11" fill="#444">On-chain ≠ zk-proved. A colluding</text>
-  <text x="798" y="824" font-size="11" fill="#444">committee can manufacture any score.</text>
-  <text x="798" y="838" font-size="9.5" fill="#8a8a8a">test_tierBoundary_colludingCommitteeCanManufacture…</text>
+  <text x="700" y="408" font-size="11.5" font-weight="bold" fill="#a4341f">Any N colluding members.</text>
+  <text x="700" y="426" font-size="11.5" fill="#a4341f">That is exactly the authority v0's</text>
+  <text x="700" y="442" font-size="11.5" fill="#a4341f">single admin key had; N-of-M</text>
+  <text x="700" y="458" font-size="11.5" fill="#a4341f">raises the cost of collusion, it</text>
+  <text x="700" y="474" font-size="11.5" fill="#a4341f">does not remove the capability.</text>
+  <text x="700" y="492" font-size="11.5" fill="#a4341f">Reputation inherits this exactly.</text>
 
-  <!-- ================= BELOW TIER 3: the unvalidated detector ================= -->
-  <rect x="24" y="872" width="1132" height="104" fill="#f7e4e2" stroke="#8f2418" stroke-width="3" rx="8"/>
-  <rect x="24" y="872" width="8" height="104" fill="#8f2418" rx="4"/>
-  <text x="48" y="894" font-size="13.5" font-weight="bold" fill="#8f2418">BELOW TIER 3 — GNN collusion detection wired to enforcement (Phase E + CollusionOracle)</text>
-  <text x="48" y="913" font-size="11" fill="#3a3a3a">One reporter key relays an <tspan font-weight="bold" fill="#c44536">unvalidated model</tspan> whose false-positive rate on real traffic has never been measured. Thinner than tier 3: the committee needs N signatures, this needs one.</text>
-  <text x="48" y="931" font-size="11" fill="#3a3a3a">An enforced flag <tspan font-weight="bold">blocks the claimant from disputing</tspan> and <tspan font-weight="bold">quarantines their payout</tspan>. It CANNOT slash: the operator penalty is unchanged and still requires the committee.</text>
-  <text x="48" y="949" font-size="11" fill="#2e7d4f">Containment: appeal window before any effect (zero-length rejected at construction) · quarantine refunded in full on clearing · forfeiture is a separate admin-only act.</text>
-  <text x="48" y="967" font-size="11" fill="#c44536" font-weight="bold">A false positive silences a legitimate claimant, and thereby protects a bad decision.</text>
-  <text x="660" y="967" font-size="9.5" fill="#8a8a8a">test_dangerous_falsePositiveSilencesAnHonestClaimant · recommended posture: attach address(0)</text>
+  <text x="940" y="408" font-size="10.5" fill="#6e6e6e">N-of-M = v0</text>
+  <text x="940" y="422" font-size="10.5" fill="#6e6e6e">admin (test)</text>
+  <text x="940" y="442" font-size="10.5" fill="#6e6e6e">committee can</text>
+  <text x="940" y="456" font-size="10.5" fill="#6e6e6e">manufacture a</text>
+  <text x="940" y="470" font-size="10.5" fill="#6e6e6e">score (test)</text>
+  <text x="940" y="490" font-size="10.5" fill="#6e6e6e">&#167;8.2</text>
 
-  <!-- attack path -->
-  <rect x="24" y="990" width="1132" height="58" fill="#ffffff" stroke="#8a8a8a" stroke-width="1.4" stroke-dasharray="5 3" rx="7"/>
-  <text x="42" y="1011" font-size="12.5" font-weight="bold" fill="#1a1a1a">Cheapest attack today (still requires breaking no cryptography)</text>
-  <text x="42" y="1030" font-size="11.5" fill="#3a3a3a">1. Attest with a valid proof over a <tspan font-weight="bold" fill="#c44536">fabricated logit</tspan> — tier 1 does not bind L.  2. Failing that, corrupt <tspan font-weight="bold" fill="#c44536">N committee members</tspan> (tier 3) and resolve favourably,</text>
-  <text x="42" y="1044" font-size="11.5" fill="#3a3a3a">which also unfreezes the exit via residual gap B.  3. Or compromise the single <tspan font-weight="bold" fill="#c44536">reporter key</tspan> and flag the claimants. Cryptographic work: still none.</text>
+  <line x1="24" y1="514" x2="1036" y2="514" stroke="#bfbfbf" stroke-width="0.7"/>
+
+  <!-- ================= below tier 3 ================= -->
+  <rect x="24" y="524" width="112" height="66" fill="#ffffff" stroke="#a4341f" stroke-width="1" stroke-dasharray="5 3"/>
+  <text x="34" y="546" font-size="12" font-weight="bold" fill="#a4341f">Below</text>
+  <text x="34" y="562" font-size="12" font-weight="bold" fill="#a4341f">tier 3</text>
+  <text x="34" y="580" font-size="11.5" fill="#a4341f">one key</text>
+
+  <text x="150" y="542" font-size="11.5" fill="#1c1c1c">CollusionOracle: an enforced flag blocks the claimant</text>
+  <text x="150" y="558" font-size="11.5" fill="#3a3a3a">from disputing and quarantines their payout. It cannot slash,</text>
+  <text x="150" y="574" font-size="11.5" fill="#3a3a3a">and quarantined funds are refunded in full when cleared.</text>
+
+  <text x="470" y="542" font-size="11.5" fill="#3a3a3a">a single reporter key</text>
+  <text x="470" y="558" font-size="11.5" fill="#3a3a3a">relaying a GNN whose</text>
+  <text x="470" y="574" font-size="11.5" fill="#3a3a3a">FPR on real traffic</text>
+  <text x="470" y="590" font-size="11.5" fill="#3a3a3a">has never been measured</text>
+
+  <text x="700" y="542" font-size="11.5" font-weight="bold" fill="#a4341f">Whoever holds that one key.</text>
+  <text x="700" y="560" font-size="11.5" fill="#a4341f">Thinner than tier 3: the committee</text>
+  <text x="700" y="576" font-size="11.5" fill="#a4341f">needs N signatures, this needs one.</text>
+  <text x="700" y="594" font-size="11.5" fill="#a4341f">A false positive silences an honest</text>
+  <text x="700" y="610" font-size="11.5" fill="#a4341f">claimant, protecting a bad decision.</text>
+
+  <text x="940" y="542" font-size="10.5" fill="#6e6e6e">0.94% FPR at</text>
+  <text x="940" y="556" font-size="10.5" fill="#6e6e6e">the enforced</text>
+  <text x="940" y="570" font-size="10.5" fill="#6e6e6e">threshold; FDR</text>
+  <text x="940" y="584" font-size="10.5" fill="#6e6e6e">19.9% at best</text>
+  <text x="940" y="604" font-size="10.5" fill="#6e6e6e">&#167;8.5</text>
+
+  <line x1="24" y1="622" x2="1036" y2="622" stroke="#1c1c1c" stroke-width="1.1"/>
+  <text x="24" y="636" font-size="11.5" fill="#1c1c1c">
+    <tspan font-weight="bold">The cheapest attack today requires breaking no cryptography:</tspan>
+    <tspan> attest over a fabricated&#160;</tspan><tspan font-style="italic">L</tspan><tspan>, or corrupt N committee members, or compromise the single reporter key.</tspan>
+  </text>
 </svg>

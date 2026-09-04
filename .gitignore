@@ -60,3 +60,7 @@ out/
 next-env.d.ts
 npm-debug.log*
 yarn-error.log*
+
+# Derived from the .woff faces by brier.figstyle on first use; 1.6 MB of
+# regenerable bytes, so not tracked.
+artifacts/fonts/ttf/
