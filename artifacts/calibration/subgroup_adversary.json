@@ -1,0 +1,245 @@
+{
+  "question": "Does aggregate ECE hide subgroup miscalibration on UCI German Credit?",
+  "answer": "No -- not measurably. The apparent gap is the ECE estimator's small-sample bias, reproduced in full by a random partition.",
+  "subgroup_column": "personal_status_sex",
+  "ece_bins": 10,
+  "min_group_size": 30,
+  "n_permutations": 200,
+  "seeds": [
+    42,
+    1337,
+    7,
+    2024,
+    31415,
+    271828,
+    99,
+    12345,
+    555,
+    8675309
+  ],
+  "per_seed": [
+    {
+      "seed": 42,
+      "aggregate_ece": 0.11109407854732127,
+      "worst_group_ece": 0.18162250683149872,
+      "worst_gap": 0.07052842828417745,
+      "null_worst_group_ece": 0.15412367201172106,
+      "null_worst_gap": 0.04302959346439979,
+      "groups": {
+        "1": {
+          "ece": 0.18162250683149872,
+          "n": 68
+        },
+        "2": {
+          "ece": 0.09462131819037614,
+          "n": 106
+        }
+      }
+    },
+    {
+      "seed": 1337,
+      "aggregate_ece": 0.1036502879858017,
+      "worst_group_ece": 0.1423221377777719,
+      "worst_gap": 0.03867184979197019,
+      "null_worst_group_ece": 0.147995736012987,
+      "null_worst_gap": 0.04434544802718529,
+      "groups": {
+        "1": {
+          "ece": 0.1196908972818743,
+          "n": 66
+        },
+        "2": {
+          "ece": 0.1423221377777719,
+          "n": 107
+        }
+      }
+    },
+    {
+      "seed": 7,
+      "aggregate_ece": 0.0693327048327774,
+      "worst_group_ece": 0.1256343203371969,
+      "worst_gap": 0.056301615504419505,
+      "null_worst_group_ece": 0.13361941842957312,
+      "null_worst_gap": 0.06428671359679572,
+      "groups": {
+        "1": {
+          "ece": 0.1256343203371969,
+          "n": 58
+        },
+        "2": {
+          "ece": 0.09370568775976042,
+          "n": 106
+        }
+      }
+    },
+    {
+      "seed": 2024,
+      "aggregate_ece": 0.10086806233972313,
+      "worst_group_ece": 0.19695985624714502,
+      "worst_gap": 0.09609179390742188,
+      "null_worst_group_ece": 0.14777766176362384,
+      "null_worst_gap": 0.0469095994239007,
+      "groups": {
+        "1": {
+          "ece": 0.19695985624714502,
+          "n": 63
+        },
+        "2": {
+          "ece": 0.11577997826509649,
+          "n": 111
+        }
+      }
+    },
+    {
+      "seed": 31415,
+      "aggregate_ece": 0.06609663217794151,
+      "worst_group_ece": 0.11469307625750164,
+      "worst_gap": 0.048596444079560125,
+      "null_worst_group_ece": 0.13714277360957264,
+      "null_worst_gap": 0.07104614143163113,
+      "groups": {
+        "1": {
+          "ece": 0.10216985188686009,
+          "n": 57
+        },
+        "2": {
+          "ece": 0.11469307625750164,
+          "n": 111
+        }
+      }
+    },
+    {
+      "seed": 271828,
+      "aggregate_ece": 0.12612987944856285,
+      "worst_group_ece": 0.14823171343993055,
+      "worst_gap": 0.022101833991367698,
+      "null_worst_group_ece": 0.16786677055791313,
+      "null_worst_gap": 0.04173689110935028,
+      "groups": {
+        "1": {
+          "ece": 0.14823171343993055,
+          "n": 66
+        },
+        "2": {
+          "ece": 0.13317402731627226,
+          "n": 102
+        }
+      }
+    },
+    {
+      "seed": 99,
+      "aggregate_ece": 0.07112263768911363,
+      "worst_group_ece": 0.11768009340656654,
+      "worst_gap": 0.046557455717452914,
+      "null_worst_group_ece": 0.13437032967677193,
+      "null_worst_gap": 0.0632476919876583,
+      "groups": {
+        "1": {
+          "ece": 0.09318711608648299,
+          "n": 57
+        },
+        "2": {
+          "ece": 0.11768009340656654,
+          "n": 112
+        }
+      }
+    },
+    {
+      "seed": 12345,
+      "aggregate_ece": 0.06664687296375633,
+      "worst_group_ece": 0.18331743445661333,
+      "worst_gap": 0.116670561492857,
+      "null_worst_group_ece": 0.14152188142380973,
+      "null_worst_gap": 0.07487500846005339,
+      "groups": {
+        "1": {
+          "ece": 0.18331743445661333,
+          "n": 54
+        },
+        "2": {
+          "ece": 0.08491562220171607,
+          "n": 116
+        }
+      }
+    },
+    {
+      "seed": 555,
+      "aggregate_ece": 0.08505532780662178,
+      "worst_group_ece": 0.10652109664880624,
+      "worst_gap": 0.021465768842184457,
+      "null_worst_group_ece": 0.1419968521019315,
+      "null_worst_gap": 0.056941524295309714,
+      "groups": {
+        "1": {
+          "ece": 0.10652109664880624,
+          "n": 59
+        },
+        "2": {
+          "ece": 0.09668086988753394,
+          "n": 114
+        }
+      }
+    },
+    {
+      "seed": 8675309,
+      "aggregate_ece": 0.07032050155103207,
+      "worst_group_ece": 0.10088809579610826,
+      "worst_gap": 0.030567594245076185,
+      "null_worst_group_ece": 0.12255561719518802,
+      "null_worst_gap": 0.05223511564415595,
+      "groups": {
+        "1": {
+          "ece": 0.09205962917697963,
+          "n": 67
+        },
+        "2": {
+          "ece": 0.10088809579610826,
+          "n": 102
+        }
+      }
+    }
+  ],
+  "summary": {
+    "mean_aggregate_ece": 0.08703169853426516,
+    "mean_worst_group_ece": 0.1417870331199139,
+    "mean_real_gap": 0.05475533458564873,
+    "mean_null_gap": 0.05586537274404403,
+    "seeds_beating_null": 3,
+    "wilcoxon_statistic": 26.0,
+    "wilcoxon_p": 0.921875,
+    "smallest_measured_group": 54
+  },
+  "ece_noise_floor": {
+    "68": {
+      "mean": 0.11883751164225821,
+      "std": 0.028191453481816106
+    },
+    "106": {
+      "mean": 0.09891002430814154,
+      "std": 0.024571771579520868
+    },
+    "200": {
+      "mean": 0.06950548526125921,
+      "std": 0.018214253416338217
+    },
+    "500": {
+      "mean": 0.04510156753503738,
+      "std": 0.010960704638998677
+    },
+    "2000": {
+      "mean": 0.02228571345105612,
+      "std": 0.005415123437400107
+    },
+    "10000": {
+      "mean": 0.009784020119498965,
+      "std": 0.0023544179554128384
+    }
+  },
+  "verdict": {
+    "beats_permutation_null": false,
+    "groups_above_noise_floor": false,
+    "effect_demonstrated": false,
+    "task_3b_built": false,
+    "reason": "The worst-group ECE gap is statistically indistinguishable from a random partition of the same group sizes (Wilcoxon p=0.9219), and at n=68 a perfectly calibrated model already scores ECE 0.1188 -- above this pipeline's aggregate ECE. The dataset cannot resolve the question in either direction, so 7.4 stays OPEN."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@brier/x402-attestation-gate",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Express/Hono middleware gating an x402 payment flow on a verified Brier attestation.",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "example": "tsx example/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "viem": "2.22.8"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.0",
+    "@types/node": "22.10.7",
+    "express": "4.21.2",
+    "tsx": "4.19.2",
+    "typescript": "5.7.3",
+    "vitest": "2.1.8"
+  }
+}

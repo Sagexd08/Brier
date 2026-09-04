@@ -78,10 +78,30 @@ contract ReputationRegister {
     /// @dev Called by the StakePool at resolution, from the same
     ///      (confidence, outcome) pair that drives the slash -- so the score
     ///      and the penalty can never diverge.
+    /// @dev `virtual` so an adapter can extend the write path -- see
+    ///      ERC8004ReputationAdapter, which mirrors each update to an external
+    ///      registry. Overrides MUST call super.record(): the EMA maintained
+    ///      here is what StakePool's resolution path is understood to update,
+    ///      and an override that skipped it would silently stop recording
+    ///      calibration history while still appearing wired up.
     function record(address operator, uint256 confidence, bool decisionUpheld)
         external
+        virtual
         onlyRecorder
     {
+        _record(operator, confidence, decisionUpheld);
+    }
+
+    /// @dev The EMA update itself, factored out so an override can reuse it.
+    ///      Solidity cannot reach an `external` parent function through
+    ///      `super`, so without this an adapter would have to duplicate the
+    ///      arithmetic -- and two copies of a scoring rule is exactly the kind
+    ///      of divergence this repository is built to avoid.
+    ///
+    ///      Deliberately has NO access control of its own: it is `internal`,
+    ///      so the only way to reach it is through a function that has already
+    ///      applied `onlyRecorder`. Any override MUST keep that modifier.
+    function _record(address operator, uint256 confidence, bool decisionUpheld) internal {
         uint256 sample = BrierMath.squaredError(confidence, decisionUpheld);
         Reputation memory r = _reputation[operator];
 
