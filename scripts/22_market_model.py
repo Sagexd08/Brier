@@ -1,6 +1,6 @@
 """Phase 2: the welfare model for confidence-attested decision markets.
 
-Computes every number in PROPOSAL.md's economic framework section, so the
+Computes every number in PAPER.md's economic framework section, so the
 chapter's arithmetic is reproducible rather than asserted. Nothing here is a
 simulation of a real market: it is the numerical companion to the propositions,
 and its job is to make the algebra checkable and the crossovers concrete.
@@ -77,7 +77,7 @@ SEED = 0
 
 # Beta(5,2): most decisions are sound, a minority are not. Shape chosen so the
 # mean correctness (~0.714) is near the prototype's measured test accuracy
-# (0.715, PROPOSAL.md 6.1) rather than picked to flatter the result.
+# (0.715, PAPER.md 6.1) rather than picked to flatter the result.
 BETA_A, BETA_B = 5.0, 2.0
 
 # One credit decision. A wrong approval costs 4x what a right one earns --

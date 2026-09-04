@@ -5,7 +5,7 @@ has published an on-chain Brier attestation for the decision being sold.
 
 **Status: reference integration.** It runs, it is tested against a real chain,
 and it is not a product. Its purpose is to make the "structural fit with x402"
-claim in `PROPOSAL.md` a measured one rather than an assertion.
+claim in `PAPER.md` a measured one rather than an assertion.
 
 ---
 
@@ -22,7 +22,7 @@ and is therefore slashable by `S·(c−o)²` if that decision is later overturne
 
 **It does not guarantee the decision is correct.** Correctness is adjudicated
 by `StakePool`'s dispute flow, which rests on an N-of-M resolver committee —
-tier 3 in `PROPOSAL.md` §7.2. A verified attestation on a wrong decision is
+tier 3 in `PAPER.md` §7.2. A verified attestation on a wrong decision is
 still a verified attestation. What the attestation buys is that being wrong now
 costs the seller money in proportion to how confident they claimed to be.
 
@@ -198,5 +198,5 @@ is ever taken up.
 
 - `RELATED_WORK_V2.md` §1 — ACHIVX, whose provider middleware shape this follows
 - `RELATED_WORK_V2.md` §6 — the five x402 attacks, and which constrain this gate
-- `PROPOSAL.md` §7 — the full limitations, of which this file repeats the three
+- `PAPER.md` §7 — the full limitations, of which this file repeats the three
   that bear on an integrator

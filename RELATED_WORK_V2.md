@@ -1,6 +1,6 @@
 # Related Work v2: the agentic-payments literature
 
-**Scan date: 3 September 2026.** Companion to `PROPOSAL.md` §2, which covers the
+**Scan date: 3 September 2026.** Companion to `PAPER.md` §2, which covers the
 mechanism-design ancestry (proper scoring rules, staking, zkML, arbitration).
 This document covers a body of work that did not exist when v0 was written: the
 x402 agentic-payment stack and the trust layers being built around it.
@@ -100,7 +100,7 @@ differences, and both matter:
 1. **The slash is not scaled by confidence.** The whitepaper specifies "a
    fraction of B(a)" with no scaling formula and no reference to prediction
    quality anywhere in the slashing condition. This is precisely the
-   confidence-independent penalty rate that `PROPOSAL.md` §1.2 identifies as the
+   confidence-independent penalty rate that `PAPER.md` §1.2 identifies as the
    gap — under a flat fraction, an agent asserting 99% confidence and an agent
    asserting 51% pay identically for the same wrong call, so there is no reason
    to report 51%. HeLa's mechanism does not elicit calibrated confidence, and
@@ -344,7 +344,7 @@ mint. That is a deliberate scope limit, not an oversight, and the README says so
 
 ## Adoption figures, and why this document does not quote a single one
 
-`PROPOSAL.md` §2 previously carried "69,000 agents / 165M transactions / ~$50M
+`PAPER.md` §2 previously carried "69,000 agents / 165M transactions / ~$50M
 volume." Re-verification found the sources disagree materially:
 
 | Source | Date | Transactions | Volume | Agents |

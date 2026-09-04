@@ -8,6 +8,18 @@ automated loan-rejection reason codes.
 > models in places, deliberately simulated in others. Start with
 > [What this proves and doesn't prove](#what-this-proves-and-doesnt-prove).
 
+## The paper
+
+**[Confidence as Collateral: Strictly Proper Slashing for Accountable Automated
+Decisions](PAPER.md)** — the full write-up, also rendered as
+[a PDF](landing/brier-proposal.pdf). Preprint; the venue reasoning and three
+open submission gates are in [`docs/VENUE.md`](docs/VENUE.md).
+
+The central result is negative: a proved calibration head is **not** sufficient
+for a trustworthy attestation, because the proof binds the map from logit to
+confidence and nothing else. An operator that fabricates the input logit obtains
+a proof that verifies.
+
 ## The numbers
 
 Everything below was produced by the scripts in this repo on a laptop CPU. None
@@ -255,8 +267,9 @@ tests/            Python tests (metrics known-answer, phase correctness)
 docs/             Per-phase notes, design decisions, path to production
 RESULTS.md        Measured numbers (generated, never hand-edited)
 ABLATION.md       Five enhancements ablated against the baseline (generated)
+PAPER.md          The paper: mechanism, market model, results, limitations
 RELATED_WORK_V2.md  The agentic-payments literature, classified
-CHANGELOG_V0_TO_V1.md  What changed in the proposal, and why
+CHANGELOG.md      Proposal -> paper: what changed and why
 ```
 
 ## Reproducing
@@ -279,7 +292,7 @@ python scripts/90_render_results.py     # regenerate RESULTS.md
 
 # v1: the agentic-payments work
 python scripts/21_subgroup_adversary.py  # subgroup null + ECE noise floor
-python scripts/22_market_model.py        # welfare model (proposal §4)
+python scripts/22_market_model.py        # welfare model (paper §4)
 cd x402-middleware && npm install && npm test   # gates against a live chain
 ```
 

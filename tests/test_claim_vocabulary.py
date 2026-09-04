@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 DOCS = [
     ROOT / "README.md",
-    ROOT / "PROPOSAL.md",
+    ROOT / "PAPER.md",
     ROOT / "RESULTS.md",
     ROOT / "docs" / "PHASE3B_TRUST_MODEL.md",
 ]

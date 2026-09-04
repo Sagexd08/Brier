@@ -1,6 +1,6 @@
 # The unbonding period, derived rather than guessed
 
-**Task 4. Companion to `PROPOSAL.md` §7.3 and §6.11.**
+**Task 4. Companion to `PAPER.md` §7.3 and §6.11.**
 
 `StakePool.sol` takes `unbondingPeriod` as a constructor parameter with no
 principled default. The tests use 7 days. §7.3 admits that number is "almost
@@ -191,7 +191,7 @@ this repository holds itself to.
 3. **15 U.S.C. § 1681m(a)** — adverse-action notice; the 60-day free-file
    indication; no stated deadline for the notice itself.
    <https://www.law.cornell.edu/uscode/text/15/1681m>
-4. **`PROPOSAL.md` §6.5** — realised Brier score 0.1758 (calibrated), 0.2060
+4. **`PAPER.md` §6.5** — realised Brier score 0.1758 (calibrated), 0.2060
    (uncalibrated), over 10 pinned seeds.
-5. **`PROPOSAL.md` §6.11** — `carry = r · τ · S`, and the r = 5% assumption
+5. **`PAPER.md` §6.11** — `carry = r · τ · S`, and the r = 5% assumption
    carried forward here unchanged.

@@ -16,7 +16,7 @@
  *      for it in proportion to how confident it claimed to be.
  *
  *   2. It does not verify the base model. Only the calibration head is proved
- *      (PROPOSAL.md 7.1). The input logit is supplied by the operator and is
+ *      (PAPER.md 7.1). The input logit is supplied by the operator and is
  *      unproved, so an operator that fabricates the logit produces a
  *      cryptographically valid proof of a calibration step applied to a lie.
  *      `proofVerified` means the halo2 verifier accepted the head's execution.

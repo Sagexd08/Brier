@@ -4,7 +4,7 @@
 have been. This is a negative result, reported at the same visibility as a
 positive one, and it BLOCKS the on-chain half of this task (Task 3b).**
 
-PROPOSAL.md 7.4 names aggregate ECE's blindness to subgroup miscalibration as
+PAPER.md 7.4 names aggregate ECE's blindness to subgroup miscalibration as
 the sharpest scientific gap in the v0 mechanism. The plan was to construct a
 model that is aggregate-calibrated but subgroup-miscalibrated, show the current
 rule misses it, then implement a within-group variant that catches it, and key
@@ -57,7 +57,7 @@ WHAT WOULD SETTLE IT. Roughly 2,000 rows per subgroup puts the noise floor near
 0.02, below the effect sizes at stake. That means a dataset ~20x this one, or a
 debiased estimator whose own noise floor is characterised (adaptive/equal-mass
 binning, or a kernel calibration estimator with a bootstrap CI). Both are named
-in PROPOSAL.md 8.
+in PAPER.md 8.
 
 Writes artifacts/calibration/subgroup_adversary.json.
 """

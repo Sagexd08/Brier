@@ -1,12 +1,36 @@
-# v0 → v1: what changed in the proposal, and why
+# v0 → v1: from proposal to paper
 
-v0 was a mechanism-design result with a measured prototype, scoped to credit
-decisions. v1 situates it in the agentic-payments setting that emerged after v0
-was written, and closes four of the open items from v0's §8 sequencing table.
+v0 (`PROPOSAL.md`) was a research proposal: a mechanism-design result with a
+measured prototype, scoped to credit decisions, organised around questions it
+intended to answer. v1 (`PAPER.md`) is a paper — the same evidence, restructured
+around what the measurements found, plus an economic framework and four items
+closed from v0's own sequencing table.
 
 **Two of those four closed against the mechanism.** Both are reported at the
 same visibility as the results that favour it, because a document that only
 reports confirmations is not evidence of anything.
+
+## What "proposal to paper" changed structurally
+
+| Aspect | v0 proposal | v1 paper |
+|---|---|---|
+| Title | *What Does the Proof Actually Buy?* | *Confidence as Collateral: Strictly Proper Slashing for Accountable Automated Decisions* |
+| §1.3 | Five questions and the evidence that *would* answer them | Six questions, each with its answer and the evidence that settled it |
+| §1.4 | Six contributions | Ten, grouped mechanism / market / systems / **negative results** |
+| §9 | "Proposed work" — deliverables and intentions | "Open problems" — what would close each gap, and which two this work closed |
+| §7.5–§7.9 | Five per-phase ablation sections in the body | Condensed to a verdict table in §7.5; detail moved to **Appendix A** |
+| Voice | "this proposal argues…" | paper voice throughout |
+| Status | Version v0 (prototype) | Preprint, arXiv `cs.CR` (cross-list `cs.GT`) |
+
+Section numbers moved twice. v0's §4–§9 became §5–§10 when the economic
+framework was inserted as §4; then §7.10–§7.12 became §7.6–§7.8 when the
+ablations moved to the appendix. All cross-references were remapped and checked
+programmatically — the check surfaced three citations of §7.5 for the realised
+Brier score that were **already wrong in v0**, since that figure is reported in
+§7.1.
+
+`docs/VENUE.md` records the venue reasoning and lists three submission gates
+that are **not** met.
 
 ---
 
@@ -17,11 +41,11 @@ reports confirmations is not evidence of anything.
 | 1 | New §2.5 on the agentic-payments literature | §2.5 | `RELATED_WORK_V2.md`, 9 works classified |
 | 2 | Positioning table gains 4 rows and an x402-native axis | §2.6 | Cited sources |
 | 3 | **New §4: economic framework**, 4 propositions | §4 | `scripts/22_market_model.py` |
-| 4 | ERC-8004 reputation mirror | §5.1, §7.12 | `ERC8004ReputationAdapter.sol`, 13 tests |
-| 5 | x402 reference middleware | §2.5, §7.12 | `x402-middleware/`, 11 live-chain tests |
+| 4 | ERC-8004 reputation mirror | §5.1, §7.8 | `ERC8004ReputationAdapter.sol`, 13 tests |
+| 5 | x402 reference middleware | §2.5, §7.8 | `x402-middleware/`, 11 live-chain tests |
 | 6 | **Unbonding period derived — result is unfavourable** | §8.3, §9.1 | `docs/UNBONDING_PERIOD_JUSTIFICATION.md` |
 | 7 | **Subgroup calibration: null result, on-chain half not built** | §8.4, §9.4 | `scripts/21_subgroup_adversary.py`, 11 tests |
-| 8 | Test counts corrected, 3 suites added to the table | §7.12 | Live runs |
+| 8 | Test counts corrected, 3 suites added to the table | §7.8 | Live runs |
 | 9 | Claim-vocabulary guard extended | `tests/test_claim_vocabulary.py` | 6 new abuse-bounding tests |
 | 10 | Abstract and conclusion state the x402 contribution | Abstract, §10 | — |
 
@@ -68,7 +92,7 @@ figures, and both named competitors modelled inside the same framework.
 - **Proposition 4 (participation condition).** Attaching a Brier attestation at
   cost $g$ raises welfare iff $g < G$, the screening value. **At the measured L1
   gas price of \$79.86 it does not** — the mechanism is welfare-negative there.
-  This turns §7.11's L2 cost observation into a formal condition and sharpens
+  This turns §7.7's L2 cost observation into a formal condition and sharpens
   it: the comparison is gas against *G*, not gas against the decision's price.
 - **Proposition 5 (equivalence).** Against a *single* buyer, an optimally tuned
   flat-fraction bond — HeLa's mechanism — achieves **exactly** the same welfare
@@ -122,12 +146,12 @@ the number or the admission. v1 derives τ from primary statutory sources:
 = 105 days
 ```
 
-Re-running §7.11's `carry = r · τ · S` at r = 5% **reverses that section's
-conclusion**. At 7 days the carry is 0.0959% per cycle and §7.11 correctly calls
+Re-running §7.7's `carry = r · τ · S` at r = 5% **reverses that section's
+conclusion**. At 7 days the carry is 0.0959% per cycle and §7.7 correctly calls
 it minor. At 105 days it is 1.4384%, and it exceeds the expected slash for any
 dispute rate below **8.18%** — roughly 8× at a 1% rate.
 
-The consequence is not a tuning problem. It weakens §7.11's own incentive
+The consequence is not a tuning problem. It weakens §7.7's own incentive
 argument: if the slash is an eighth of the total cost, the 15% saving from
 calibration is about 1.7% of what participation costs. τ is pinned by statute
 above and capital cost below, and the bounds do not meet. §9.4 therefore opens a
@@ -164,7 +188,7 @@ quietly and this one blocks a deliverable.
 
 ## 8–9. Housekeeping that was not housekeeping
 
-**Test counts were stale by a full phase.** §7.12 claimed 110 Solidity and 81
+**Test counts were stale by a full phase.** §7.8 claimed 110 Solidity and 81
 Python tests against a table listing 8 suites; the live suites are 144 Solidity
 (10 suites, 3 missing from the table) and 98 Python, plus 11 middleware
 integration tests. Corrected against actual runs, not incremented.

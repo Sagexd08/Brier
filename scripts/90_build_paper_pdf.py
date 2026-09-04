@@ -1,15 +1,15 @@
 """
-Render PROPOSAL.md to a print-quality PDF.
+Render PAPER.md to a print-quality PDF.
 
 The PDF is a build artifact of the Markdown source, not a separately
 maintained document -- so the numbers in it cannot drift away from the
-numbers in the repo. Re-run this after any edit to PROPOSAL.md.
+numbers in the repo. Re-run this after any edit to PAPER.md.
 
 Chromium (via Playwright) does the typesetting because it is the only
 engine available here that renders the figures, tables and page breaks
 faithfully. No pandoc/LaTeX dependency.
 
-    python scripts/90_build_proposal_pdf.py
+    python scripts/90_build_paper_pdf.py
 
 Writes landing/brier-proposal.pdf so the landing page can serve it as a
 static asset.
@@ -25,7 +25,11 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / "PROPOSAL.md"
+SRC = ROOT / "PAPER.md"
+# Deliberately still "brier-proposal.pdf" though the document is now a paper:
+# this is a live URL the landing page links from three places and that may have
+# been shared. Renaming it would break those links to gain nothing a reader can
+# see -- the PDF's own title page carries the real title.
 OUT = ROOT / "landing" / "brier-proposal.pdf"
 
 # ----------------------------------------------------------------------
@@ -252,7 +256,7 @@ def md_to_html(md: str) -> tuple[str, list[tuple[int, str, str]]]:
                 buf.append(lines[i])
                 i += 1
             i += 1
-            # Mermaid sources exist so PROPOSAL.md renders diagrams natively on
+            # Mermaid sources exist so PAPER.md renders diagrams natively on
             # GitHub. In print the rendered PNG sits immediately above them, so
             # emitting the source too duplicates a page of content.
             if lang != "mermaid":
@@ -741,24 +745,24 @@ def build() -> None:
     toc_html.append("</ol></div>")
 
     page = """<!doctype html><html lang="en"><head><meta charset="utf-8" />
-<title>What Does the Proof Actually Buy? Confidence-Calibrated Slashing</title>
+<title>Confidence as Collateral: Strictly Proper Slashing for Accountable Automated Decisions</title>
 <style>%s</style><style>%s</style></head><body>
 <div class="titleblock">
-  <div class="t1">What Does the Proof Actually Buy?</div>
-  <div class="t2">Confidence-Calibrated Slashing for<br />On-Chain AI Decision Accountability</div>
+  <div class="t1">Confidence as Collateral</div>
+  <div class="t2">Strictly Proper Slashing for<br />Accountable Automated Decisions</div>
   <div class="author">Sohom Chatterjee</div>
   <div class="affil">Sister Nivedita University</div>
   <div class="meta">
-    <span>Version v0 (prototype)</span>&middot;<span>August 2026</span>&middot;<span>Artifact: circuits, contracts, benchmark, analysis</span>
+    <span>Preprint</span>&middot;<span>September 2026</span>&middot;<span>Artifact: circuits, contracts, benchmark, analysis</span>
   </div>
   <div class="caveat">
     <b>This is a mechanism and a measured prototype, not a deployable protocol.</b>
     Only the calibration head is zero-knowledge proved &mdash; its input logit is
     unverified, dispute resolution rests on an admin-appointed N-of-M committee
     whose collusion carries the authority a single key would, and an unvalidated
-    collusion detector can withhold a claimant's payout. Section&nbsp;7 states
-    each limitation in full; Section&nbsp;8 separates what has shipped from what
-    remains.
+    collusion detector can withhold a claimant's payout. Section&nbsp;8 states
+    each limitation in full; Section&nbsp;9 states what would close each one, and
+    records that one closure made the problem harder rather than easier.
   </div>
 </div>
 %s
@@ -766,7 +770,7 @@ def build() -> None:
 %s
 </body></html>""" % (font_face_css(), CSS, abstract_html, "".join(toc_html), body)
 
-    tmp = OUT.parent / "_proposal_render.html"
+    tmp = OUT.parent / "_paper_render.html"
     OUT.parent.mkdir(parents=True, exist_ok=True)
     tmp.write_text(page, encoding="utf-8")
 
@@ -775,7 +779,7 @@ def build() -> None:
     except ImportError:
         raise SystemExit("playwright not installed:  pip install playwright && playwright install chromium")
 
-    running_title = "What Does the Proof Actually Buy? Confidence-Calibrated Slashing for On-Chain AI Decision Accountability"
+    running_title = "Confidence as Collateral: Strictly Proper Slashing for Accountable Automated Decisions"
 
     with sync_playwright() as p:
         browser = p.chromium.launch()

@@ -1,8 +1,9 @@
-# Brier: Confidence-Calibrated Slashing for On-Chain AI Decision Accountability
+# Confidence as Collateral: Strictly Proper Slashing for Accountable Automated Decisions
 
-**A research proposal with a measured v0 prototype**
+**Sohom Chatterjee**
 
-Repository: <https://github.com/Sagexd08/Brier> · Version: v0 (prototype) · Date: August 2026
+Preprint. Code, data, and every artifact behind the numbers below:
+<https://github.com/Sagexd08/Brier> · September 2026
 
 ---
 
@@ -10,36 +11,52 @@ Repository: <https://github.com/Sagexd08/Brier> · Version: v0 (prototype) · Da
 
 Accountability mechanisms for automated decisions penalise error at a
 confidence-independent rate, so an operator is never punished for asserting 99%
-confidence in a decision it believes at 60%. We propose slashing staked
+confidence in a decision it privately believes at 60%. We study slashing staked
 collateral by the **Brier score** over (reported confidence, adjudicated
-outcome). Because that score is strictly proper, expected loss is minimised
-exactly when the operator reports its true subjective probability, making honest
-confidence reporting loss-minimising rather than good faith. We report a measured
-prototype: across 10 pinned seeds, temperature scaling cuts Expected Calibration
-Error from 0.1853 ± 0.0248 to 0.0870 ± 0.0218 on held-out UCI German Credit data,
-in every seed; an EZKL/halo2 circuit proves the calibration head in 2.09 s,
-verified on-chain for 684,696 gas. This is a mechanism and a prototype, **not a
-deployable protocol**: only the calibration head is proved and its input logit
-is unverified, and dispute resolution rests on an admin-appointed N-of-M
-committee whose collusion has exactly the power a single key had. An unbonding
-period now closes the front-running exit that broke v0's economic tier, leaving
-two residual gaps that a longer timelock cannot fix. The proposal states what
-each remaining gap would take to close, and what evidence would settle whether
-the mechanism survives contact with them. A subsequent pass ablated five
-candidate enhancements against this baseline: conformal prediction earns a place
-and fits the circuit budget at no measurable cost, while a deeper base model and
-deep-ensemble epistemic uncertainty do not, the latter measurably degrading
-calibration. Situating the mechanism in the agentic-payments setting yields one
-further result and two corrections: attaching a confidence attestation to an
-x402-priced decision raises welfare only where its verification cost falls below
-the value of the errors it screens out — a condition our measured L1 gas prices
-fail — and against a single buyer an optimally tuned flat bond matches it
-exactly, the separation appearing only when buyers differ in their decision
-thresholds. Two measurements returned against the mechanism: a statutory
-derivation puts the unbonding period at 105 days, at which capital lockup rather
-than the slash becomes an operator's dominant cost, and the subgroup-calibration
-gap this proposal set out to close proved unmeasurable at this dataset's scale,
-so the on-chain component that would have tracked it was not built.
+outcome). Because that score is strictly proper, expected loss is uniquely
+minimised when the operator reports its true subjective probability: honest
+confidence becomes the loss-minimising strategy rather than an assumption. We
+show the property survives fixed-point on-chain arithmetic, and prove that the
+protocol's slash cap must be 100% of stake — any lower cap destroys strict
+properness and makes maximal overconfidence optimal, so a prudential-looking
+parameter silently inverts the mechanism.
+
+We report a measured prototype. Across 10 pinned seeds, temperature scaling cuts
+Expected Calibration Error from 0.1853 ± 0.0248 to 0.0870 ± 0.0218 on held-out
+UCI German Credit data, in every seed; an EZKL/halo2 circuit proves the
+calibration head in 2.09 s and verifies on-chain for 684,696 gas, flat across a
+16,897× parameter increase. Five candidate enhancements were ablated against
+this baseline under an identical seed protocol: conformal prediction earns its
+place at no measurable proving cost, while a deeper base model is null and
+deep-ensemble epistemic uncertainty measurably *degrades* calibration.
+
+Embedding the mechanism in an agentic decision market yields a participation
+condition and a sharp negative. Attaching a confidence attestation raises
+welfare only where verification costs less than the errors it screens out — a
+condition our measured L1 gas prices fail — and against a *single* buyer an
+optimally tuned flat-fraction bond achieves exactly the same welfare, so
+confidence elicitation buys nothing a correctly set parameter does not. The
+separation is real but specific: a bond implements one pooled threshold, while
+an attested confidence is a sufficient statistic each buyer applies its own
+threshold to, and across heterogeneous buyers an optimally tuned bond still
+forfeits 70.5% of the available gain.
+
+The central result is negative and is the paper's main claim. A proved
+calibration head is **not** sufficient for a trustworthy attestation: the proof
+binds the map from logit to confidence and nothing else, so an operator that
+fabricates the logit obtains a proof that verifies. Two further measurements ran
+against the design. Deriving the unbonding period from statute rather than
+convenience gives 105 days, at which capital lockup — not the slash — becomes an
+operator's dominant cost. And the subgroup-calibration gap we set out to close
+proved *unmeasurable* at this dataset's scale: the apparent effect is reproduced
+in full by a random partition, because binned ECE's small-sample bias at n = 68
+exceeds the quantity being estimated. We report the null and did not build the
+on-chain component that would have implied the gap was closed. Every claimed
+weakness is executed as a passing test, so a failure means the threat model has
+drifted from the code.
+
+**Keywords:** proper scoring rules, mechanism design, zero-knowledge machine
+learning, calibration, staking and slashing, agentic payments.
 
 ---
 
@@ -80,7 +97,7 @@ obligations, and we do not assert one exists.
 
 Regulation currently creates demand for *auditable records of automated
 decisions*, and does not yet create demand for *calibrated confidence*. This
-proposal argues that the latter is the more useful object; it does not claim
+paper argues that the latter is the more useful object; it does not claim
 the latter is presently required.
 
 ### 1.2 The gap in existing mechanisms
@@ -112,58 +129,129 @@ Foresight Arena is reward-based, involves no staked collateral at risk, no
 slashing, and no zero-knowledge proofs [5]. We claim novelty in the combination,
 not in any component.
 
-### 1.3 Research questions
+### 1.3 Research questions and findings
 
-The proposal is organised around five questions. Each names the evidence that
-would answer it; §7 reports how far the v0 prototype gets, and §9 proposes the
-work that would close the remainder.
+The paper is organised around five questions. Each is stated with the evidence
+that settles it and the answer that evidence produced; two of the five answers
+are negative, and those are the paper's more useful results.
 
-**RQ1 — Incentive.** Does penalising a disputed decision by its Brier score make
-truthful confidence reporting the operator's loss-minimising strategy, and does
-that property survive implementation in fixed-point on-chain arithmetic?
-*Evidence:* an analytic derivation (§3.2), plus numerical verification of the
-deployed Solidity against it (§6.7, §7.12).
+**RQ1 — Incentive.** *Does penalising a disputed decision by its Brier score
+make truthful confidence reporting the operator's loss-minimising strategy, and
+does that property survive fixed-point on-chain arithmetic?*
 
-**RQ2 — Feasibility.** Can the confidence-producing step be proved in zero
-knowledge and verified on-chain at a cost a per-decision workflow could absorb?
-*Evidence:* measured proving time, proof size, and verification gas (§7.3, §7.4).
+**Answered affirmatively.** Proposition 1 gives a unique expected-loss minimum
+at the operator's true subjective probability, and the deployed Solidity
+reproduces that minimum numerically at two distinct true probabilities with
+monotonicity fuzzed in both directions (§3.2, §7.8). Proposition 2 adds a
+condition the derivation does not survive without: the slash cap must be 100% of
+stake, because any lower cap makes a *boundary* report optimal and rewards
+maximal overconfidence (§3.3).
 
-**RQ3 — Cost structure.** How does proving cost scale with the size of the
+**RQ2 — Feasibility.** *Can the confidence-producing step be proved in zero
+knowledge and verified on-chain at a cost a per-decision workflow could absorb?*
+
+**Answered affirmatively, with the cost stated.** 2.09 s to prove on a laptop
+CPU, 684,696 gas to verify on-chain — roughly 33× a plain transfer. The
+mechanism's own arithmetic is 543 gas of that, about 0.08%; essentially all cost
+is halo2 verification rather than confidence-weighted slashing (§7.3, §7.4).
+
+**RQ3 — Cost structure.** *How does proving cost scale with the size of the
 proved head, and does that scaling favour proving a small calibration head over
-a full classifier? *Evidence:* a parameter sweep across four orders of magnitude
-(§7.3).
+a full classifier?*
 
-**RQ4 — Sufficiency.** Is a proved calibration head enough to make the resulting
-attestation trustworthy? *Evidence:* an adversarial reading of the trust
-boundary, with each claimed weakness executed as a test (§5.3, §8). The answer
-established here is **no**, and that answer is what §9 is addressed to.
+**Answered, within a stated boundary.** Proving cost is flat across a 16,897×
+parameter increase, so circuit *capacity* rather than parameter count is the
+binding constraint (§7.3). The boundary itself — where cost steps past logrows
+15 — is unmeasured, and we say so rather than extrapolating.
 
-**RQ5 — Sophistication.** Does a more capable model, or a stronger uncertainty
-quantifier, improve the quantity this mechanism actually prices? *Evidence:*
-five enhancements ablated against the shipped baseline on the identical seed
-protocol, each kept only if it earns its place (§7.5–§7.9, and `ABLATION.md`).
+**RQ4 — Sufficiency.** *Is a proved calibration head enough to make the
+resulting attestation trustworthy?*
+
+**Answered negatively, and this is the paper's central claim.** The proof binds
+the map from logit to confidence and nothing else: an operator that fabricates
+the input logit obtains a proof that verifies and a chain that accepts it. Each
+component of the trust boundary is executed as a passing test rather than
+conceded in prose (§5.3, §8).
+
+**RQ5 — Sophistication.** *Does a more capable model, or a stronger uncertainty
+quantifier, improve the quantity this mechanism actually prices?*
+
+**Answered largely negatively.** Of five enhancements ablated against the
+shipped baseline on an identical seed protocol, conformal prediction earns its
+place, a deeper base model is null, and deep-ensemble epistemic uncertainty is
+actively harmful (§7.5, Appendix A). The one-parameter head survives every
+attempt made here to beat it.
+
+**RQ6 — Market value.** *When is attaching a confidence attestation to a priced
+decision worth its verification cost, and does it dominate a simpler
+accountability bond?*
+
+**Answered conditionally, and partly against the mechanism.** Attachment pays
+only where verification costs less than the screening value it buys — a
+condition our measured L1 gas prices fail (Proposition 4). Against a single
+buyer an optimally tuned flat bond matches it exactly (Proposition 5); the
+separation requires heterogeneous buyers, where a bond forfeits 70.5% of the
+gain (Proposition 6, §4).
 
 ### 1.4 Contributions
 
+**Mechanism.**
+
 1. A slashing rule built on a strictly proper scoring rule, with the properness
-   argument derived in closed form (§3.2) and its scope conditions stated as
-   part of the claim rather than as trailing caveats (§3.3).
-2. A working implementation: fixed-point Brier arithmetic in Solidity at 543
+   argument derived in closed form (Proposition 1) and its scope conditions
+   stated as part of the claim rather than as trailing caveats (§3.5).
+2. **Proposition 2: the slash cap must be 100% of stake.** Capping the slash at
+   κ preserves truthful reporting only if κ ≥ max(p, 1−p); below that the
+   minimiser jumps to a boundary report, so a capped protocol *pays for* maximal
+   overconfidence. This is limited liability's risk-shifting effect arriving
+   through a parameter that looks prudential, and it also settles why the Brier
+   score rather than the log score: the log score is unbounded, cannot be paid
+   from finite stake, and truncating it triggers exactly this failure (§3.3).
+
+**Market.**
+
+3. A welfare model of a buyer–seller decision market (§4) yielding a
+   **participation condition** — attaching an attestation pays iff its
+   verification cost falls below the screening value it buys — and an
+   **equivalence result**: against a single buyer an optimally tuned
+   flat-fraction bond achieves identical welfare, so the mechanism's advantage
+   is not over bonds in general but over *pooled* thresholds, and appears only
+   under buyer heterogeneity (Propositions 3–6).
+
+**Systems.**
+
+4. A working implementation: fixed-point Brier arithmetic in Solidity at 543
    gas, an EZKL/halo2 circuit over the calibration head, and an attestation
    contract that rejects any decision whose proof does not verify.
-3. A measured evaluation over 10 pinned seeds, including a leakage control that
-   comes out *worse than not calibrating at all*, and a negative result on head
-   capacity reported at the strength the data supports — a majority effect at
-   $p = 0.037$, not the uniform one a single run would have suggested.
-4. An adversarial trust model (§5.3) in which every asserted weakness is
-   demonstrated by an executing test, so the threat model cannot drift from the
-   code without the suite failing.
-5. A conformal-prediction layer carrying a distribution-free coverage
-   guarantee, shown by measurement to fit the existing circuit budget, and an
-   ablation of four further enhancements of which two fail (§7.5–§7.9).
-6. Two on-chain surfaces — an operator reputation register and a content-addressed
-   model-version registry — each placed explicitly in the trust tier it actually
-   occupies rather than the one its being on-chain might suggest (§5.3, §7.10).
+5. A measured evaluation over 10 pinned seeds, including a leakage control that
+   comes out *worse than not calibrating at all*, and a head-capacity result
+   reported at the strength the data supports — a majority effect at $p = 0.037$,
+   not the uniform one a single run would have suggested.
+6. A conformal-prediction layer carrying a distribution-free coverage guarantee,
+   measured to fit the existing circuit budget, plus four further ablated
+   enhancements of which two fail (§7.5, Appendix A).
+7. Two on-chain surfaces — an operator reputation register and a
+   content-addressed model-version registry — each placed explicitly in the
+   trust tier it occupies rather than the one being on-chain might suggest, and
+   a reference integration exporting the register to an external agent-identity
+   standard (§5.3, §7.6).
+
+**Negative results, reported at the same weight as the positive ones.**
+
+8. An adversarial trust model (§5.3) in which every asserted weakness is
+   demonstrated by an executing test, establishing that a proved calibration
+   head is **not** sufficient for a trustworthy attestation (RQ4).
+9. **The unbonding period, derived rather than assumed, is unaffordable.** A
+   statutory derivation gives 105 days, at which capital lockup exceeds the
+   expected slash by roughly 8× and becomes the dominant cost of participating
+   — weakening this paper's own incentive argument (§8.3).
+10. **A methodological caution on subgroup calibration.** The subgroup gap we
+    set out to close is reproduced in full by a random partition of the same
+    group sizes (Wilcoxon *p* = 0.92), because binned ECE is biased upward at
+    small *n*: a model calibrated by construction scores 0.1188 at n = 68,
+    above the aggregate ECE being compared against. Within-group ECE gates on
+    datasets of this scale would fire on noise, so we report the null and did
+    not build the on-chain component (§8.4).
 
 ---
 
@@ -187,7 +275,7 @@ asymptotically cheaper proving for layered arithmetic circuits. The common
 finding across all of them is that cost tracks the proved subgraph, not the
 model's accuracy or its business importance.
 
-That finding is the design constraint this proposal is built around, and it
+That finding is the design constraint this work is built around, and it
 cuts in an unobvious direction. If proving cost scales with what is proved,
 then the right question is not "how do we prove the model?" but "what is the
 smallest computation whose correctness the mechanism actually needs?" For
@@ -195,7 +283,7 @@ confidence-calibrated slashing the answer is the calibration head — one
 parameter — and §7.3 measures what that buys: cost flat across a 16,897×
 parameter increase, because fixed lookup and column overhead dominate at these
 sizes. The corollary, which §8.1 states as a limitation, is that everything
-outside the proved subgraph is unbound, and the proposal is largely an argument
+outside the proved subgraph is unbound, and this paper is largely an argument
 about how much that omission costs.
 
 ### 2.2 Decentralised oracle staking and slashing
@@ -208,7 +296,7 @@ alerting, and fixed-size slashing penalties [3]. The size is the salient
 detail: 700 LINK per valid alerting event on the ETH/USD feed, independent of
 how wrong the feed was. This is a deliberate simplification — a constant
 penalty needs no adjudication of degree — and it is exactly the property this
-proposal replaces.
+mechanism replaces.
 
 Nexus Mutual's claim assessment uses stake-weighted voting with a quorum,
 escalation to a full member vote, and reward for majority-aligned voting [4].
@@ -224,7 +312,7 @@ The distinction worth drawing is between *slashing for misbehaviour* and
 far a stated belief was from what happened. The literature is rich in the first
 and, on-chain, nearly silent on the second. Kleros remains the most plausible
 substitute for this prototype's committee (§9.2), and adopting it would inherit
-a body of work on juror incentives that this proposal does not attempt to
+a body of work on juror incentives that this paper does not attempt to
 reproduce.
 
 ### 2.3 Calibration in machine learning
@@ -254,8 +342,9 @@ choice is not evaluated, and §8.6 records that as a limitation.
 
 Temperature scaling is the primary method here for two reasons that happen to
 agree: it is empirically strong on small calibration sets, and a
-single-parameter affine map is the cheapest possible thing to arithmetise. §7.5
-and §7.6 test whether more capable alternatives beat it, and find they do not.
+single-parameter affine map is the cheapest possible thing to arithmetise.
+§A.1 and §A.2 test whether more capable alternatives beat it, and find they do
+not.
 
 ### 2.4 Proper scoring rules
 
@@ -578,7 +667,7 @@ argument transfers unchanged. Candidate settings, in decreasing order of fit:
   natural notion of being wrong. What they do not currently do is report
   confidence at all (§1.2), which is a reporting-format change rather than a
   mechanism change. The outcome is observable, which removes the hardest
-  problem this proposal has (§8.2).
+  problem this work has (§8.2).
 - **Model marketplaces and inference markets.** A served prediction with an
   attached confidence, an escrowed bond, and a later ground-truth reveal is
   structurally identical to the credit case, with the advantage that the
@@ -619,7 +708,7 @@ guaranteed by this prototype. Specifically:
 
 The mechanism is proper; the *system* is proper only insofar as these
 conditions hold, and in v0 they do not. Closing conditions 1 and 3 is the
-substance of the proposed work in §8.
+substance of the open work in §9.
 ---
 
 ## 4. An economic framework for agentic decision markets
@@ -746,7 +835,7 @@ costs more than the mistakes it prevents is not worth running — and this is
 where the measured gas figures bite.
 
 Table: The participation condition at the measured per-attestation costs of
-§7.11. Welfare is per decision, in the buyer's units. *G* = 56.19.
+§7.7. Welfare is per decision, in the buyer's units. *G* = 56.19.
 
 | Setting | Gas price | $g$ | Welfare | Gain over x402 | Verdict |
 |---|---|---|---|---|---|
@@ -757,7 +846,7 @@ Table: The participation condition at the measured per-attestation costs of
 
 **On a busy L1 the mechanism is welfare-negative.** The attestation costs more
 than the screening it buys, and a buyer is better off with an unattested
-decision and the gas in its pocket. This is §7.11's L2 conclusion arriving as a
+decision and the gas in its pocket. This is §7.7's L2 conclusion arriving as a
 formal condition rather than a cost observation, and it sharpens it: the
 relevant comparison is not gas against the *price* of the decision but gas
 against *G*, the value of the errors the attestation lets the buyer avoid.
@@ -767,7 +856,7 @@ with cost. *G* → 0 when *V* and *K* are near-symmetric and *F* is concentrated
 above *t*: if almost every decision is worth acting on, screening buys nothing.
 **Confidence attestation is worth paying for exactly where decisions are
 consequential, asymmetric, and genuinely uncertain** — which is a much narrower
-market than "all agentic commerce," and the proposal should not claim otherwise.
+market than "all agentic commerce," and we do not claim otherwise.
 
 ### 4.4 Against the alternatives, in the same model
 
@@ -890,7 +979,7 @@ directly on the result:
 
 Three implications, none of which requires a new experiment:
 
-1. **L2 or nothing.** §7.11 argued this on cost; Proposition 4 makes it a
+1. **L2 or nothing.** §7.7 argued this on cost; Proposition 4 makes it a
    participation condition. Anything above roughly *G* per attestation makes the
    mechanism value-destroying rather than merely expensive.
 2. **Target markets with heterogeneous, asymmetric buyers.** Credit, insurance
@@ -1051,12 +1140,12 @@ the true label lies in the set at least $1-\alpha$ of the time, with no
 assumption that the model is correct or even well specified. The calibration
 split is halved so the temperature and the conformal quantile never see the same
 points — reusing one split for both would break the exchangeability the
-guarantee rests on. Results in §7.5.
+guarantee rests on. Results in §A.1.
 
 **Deep-ensemble epistemic uncertainty** [18] trains $N$ independently seeded copies of
 the neural base model and feeds the spread of their predictions to the
 calibration head alongside the margin, on the intuition that a confident score
-the members disagree about should be discounted. Results in §7.6, where that
+the members disagree about should be discounted. Results in §A.2, where that
 intuition does not survive measurement.
 
 ### 6.4 Explainability
@@ -1077,7 +1166,7 @@ contains. Immutable attributes — age, foreign-worker status, dependants — ar
 excluded by construction and the exclusion is asserted rather than assumed.
 The counterfactual is hash-committed alongside the SHAP vector, in the same
 evidence slot and at the same trust tier: it is proof the operator recorded
-this explanation, not proof the explanation is faithful. Results in §7.7.
+this explanation, not proof the explanation is faithful. Results in §A.3.
 
 ### 6.5 Evaluation metrics
 
@@ -1109,7 +1198,7 @@ weighted mean, and is reported alongside because it exposes a single badly
 miscalibrated bin that ECE averages away. The Brier score needs no binning and
 is the quantity the mechanism actually charges, which makes it the least
 arbitrary of the three; it is decomposable into calibration and refinement
-terms, and only the first is what this proposal prices.
+terms, and only the first is what this mechanism prices.
 
 The implementation is known-answer tested against hand-computed values
 (`tests/test_metrics.py`), because a silently wrong ECE would invalidate every
@@ -1288,168 +1377,35 @@ table still does not survive is a dishonest committee: resolution is a tier-3
 action, so the figures describe what the mechanism computes and enforces against
 the *operator*, not what it enforces against its own resolvers (§8.2, §8.3).
 
-### 7.5 A deeper base model does not help (Phase A)
+### 7.5 Five enhancements, ablated against the baseline
 
-An entity-embedding neural network over the same 19 features, and its ensemble
-with XGBoost, were evaluated on the identical 10-seed protocol. The XGBoost arm
-reproduces §7.1 exactly, which is the check that the protocol is the same one
-rather than merely a similar one.
+Each candidate was run under the identical seed protocol as the baseline — same
+10 pinned seeds, same splits, same calibration discipline — and kept only if it
+earned its place. Two did not, and one of those actively hurt. Full per-phase
+detail, including the capacity control that makes the ensemble result
+interpretable, is in **Appendix A**; `ABLATION.md` carries the generated tables.
 
-Table: Phase A. The ensemble improves uncalibrated ECE and temperature scaling then absorbs the difference entirely.
+Table: Ablation verdicts. "Kept" means the enhancement is in the shipped
+pipeline. Effects are over 10 pinned seeds against the same baseline.
 
-| Model | Uncalibrated ECE | Calibrated ECE | Calibrated Brier | Accuracy |
-|---|---|---|---|---|
-| XGBoost (baseline) | 0.1853 ± 0.0235 | 0.0870 ± 0.0207 | 0.1758 ± 0.0107 | 0.7505 ± 0.0198 |
-| Tabular NN | 0.2419 ± 0.0189 | 0.0874 ± 0.0226 | 0.1843 ± 0.0071 | 0.7280 ± 0.0187 |
-| Ensemble | 0.1617 ± 0.0181 | 0.0834 ± 0.0154 | 0.1733 ± 0.0091 | 0.7410 ± 0.0164 |
-
-**Null result.** On calibrated ECE the ensemble wins 6 of 10 seeds
-($p = 0.6953$) and the NN alone 5 of 10
-($p = 0.9219$) — neither distinguishable from chance. On accuracy the
-ensemble *loses*, 2 of 10 ($p = 0.1953$). It is not adopted.
-
-The informative part is where the gain goes. The ensemble clearly improves
-*uncalibrated* ECE (0.1617 against
-0.1853), and temperature scaling then absorbs the
-whole difference. **Ensembling and calibration are substitutes here, not
-complements.** Since the ensemble costs an entire second model family and
-calibration costs one parameter, this is an argument for the one-parameter head
-rather than against sophistication in general.
-
-### 7.6 Epistemic uncertainty makes calibration worse (Phase C)
-
-5 independently seeded network copies; disagreement is the standard
-deviation of member probabilities, supplied to the head alongside the margin.
-
-Table: Phase C. The capacity control is the informative row: the same head fed a constant beats the baseline, so the epistemic signal is what destroys the gain.
-
-| Arm | ECE | Brier | Accuracy |
+| Enhancement | Effect on the priced quantity | Circuit cost | Verdict |
 |---|---|---|---|
-| Temperature (baseline, 1 param) | 0.0870 ± 0.0207 | 0.1758 ± 0.0107 | 0.7505 ± 0.0198 |
-| Margin + disagreement | 0.1072 ± 0.0324 | 0.1916 ± 0.0174 | 0.7295 ± 0.0294 |
-| Margin + constant (capacity control) | 0.0743 ± 0.0170 | 0.1757 ± 0.0109 | 0.7530 ± 0.0165 |
+| Conformal prediction (§A.3) | Distribution-free coverage, marginal | No measurable proving cost | **kept** |
+| Deeper base model (§A.1) | Null — no calibration gain | — | rejected |
+| Deep-ensemble epistemic uncertainty (§A.2) | **Degrades** calibration | — | rejected |
+| Counterfactual evidence (§A.4) | Evidence only, not proved | Off-circuit | kept, tier 1 |
+| Collusion detection (§A.5) | Synthetic rings only; FPR unknown | Off-circuit | kept, **unvalidated** |
 
-**Negative result, and the control is what makes it legible.** The epistemic
-signal *degrades* calibration: 2W/8L against the baseline,
-median +0.01611, $p = 0.1309$. But the same two-input head
-shape fed a *constant zero* in place of the signal beats the baseline —
-8W/2L, median -0.01238, $p = 0.0371$.
+Two of these results are worth stating in the body rather than leaving to an
+appendix. The deep-ensemble arm is the clearest: epistemic uncertainty is
+standard practice and it made the calibration *worse*, which is only
+interpretable because a capacity control was run alongside it — the architecture
+helps, the epistemic signal destroys the gain (§A.2). And the collusion detector
+is validated against synthetic rings only, so its false-positive rate on real
+traffic is unknown; §8.5 states what follows from attaching an unvalidated model
+to money.
 
-So the architectural change helps slightly and the epistemic signal then destroys
-that gain. Without the control this would have read as "ensemble disagreement
-doesn't help"; with it, the finding is sharper and less comfortable — the signal
-is **noise that the head overfits** on 200 calibration points. The cost is not
-close either: 5 model copies at 54 s
-per seed, roughly ten times the baseline, to make calibration worse.
-
-The wider lesson is about experimental design more than about ensembles. Had
-the control been omitted, the arms would have read as "epistemic uncertainty
-does not help", and the true effect — that the architecture helps while the
-signal cancels it — would have been invisible. Any ablation that adds capacity
-and a feature simultaneously needs the capacity-only arm to be interpretable.
-
-### 7.7 Conformal prediction, and its circuit cost (Phase B)
-
-Empirical coverage across the pinned seeds, at three levels:
-
-Table: Phase B. Coverage tracks the target and sits 1-2 points below it at every level, within sampling noise at n = 10.
-
-| Target | Empirical coverage | Min over seeds | Seeds ≥ target | Avg set size |
-|---|---|---|---|---|
-| 0.80 | 0.7930 ± 0.0399 | 0.7300 | 5/10 | 1.102 |
-| 0.90 | 0.8815 ± 0.0408 | 0.8200 | 4/10 | 1.357 |
-| 0.95 | 0.9335 ± 0.0398 | 0.8550 | 4/10 | 1.570 |
-
-Coverage tracks the target and sits 1–2 points below it at every level. At
-$n = 10$ the shortfall is within sampling noise, so this is **not** reported as a
-violated guarantee — nor as confirmation. The likely cause is that the
-three-way split is stratified, which mildly breaks the exchangeability conformal
-assumes; on genuinely iid synthetic draws the implementation does meet its
-target (`tests/test_conformal.py`). Set size is reported alongside coverage
-because coverage alone is trivially satisfiable: always return both labels and
-you have 100% coverage and no information.
-
-**The circuit gate, measured, not argued.**
-
-Table: Phase B circuit gate. Conformal set construction fits the established budget at no measurable proving cost.
-
-| Head | logrows | Rows used | Proving time | Proof size |
-|---|---|---|---|---|
-| Temperature only | 15 | 39 | 1.72 s | 17,525 B |
-| Temperature + conformal | 15 | 95 | 1.66 s | 17,828 B |
-
-It fits inside the established logrows = 15 budget, adding
-56 rows of 32,768 and no measurable proving time.
-The reason is that both comparisons push through the monotone sigmoid into logit
-space and become comparisons against two constants — so the sigmoid never enters
-the circuit and the head stays affine. Conformal set construction is therefore
-**promoted to tier 1**, proved on the same terms as the confidence itself.
-
-Two things this does not buy, stated because they are easy to overstate. The
-quantile $q$ is not computed in-circuit: that needs a sort over calibration
-scores and it is a per-deployment constant, so it is fitted off-chain and
-committed exactly as $T$ is — its provenance is exactly as unproven as $T$'s.
-And the coverage guarantee is *marginal*: a conformal predictor can hit 90%
-overall while covering a protected subgroup at 60%, which is the same limitation
-aggregate ECE has (§8.4).
-
-### 7.8 Counterfactual evidence (Phase D)
-
-Table: Phase D. Counterfactuals over 40 rejections, checked for actionability and plausibility.
-
-| Metric | Value |
-|---|---|
-| Rejections examined | 40 |
-| Counterfactual found | 40 (100%) |
-| Mean changes when found | 1.075 |
-| Immutable-attribute violations | 0 |
-| Implausible (unobserved) values | 0 |
-| Mean overlap with SHAP top-5 | 0.762 |
-| Hash reproduces on rerun | True |
-
-The plausibility check earned its place on the first run, which flagged 10 of 40
-cases: quantile-derived candidate values are interpolated, so the search was
-proposing loan amounts occurring nowhere in the data. "Reduce the loan to
-3,271 DM" is not an actionable instruction when no such loan exists, and
-candidates are now snapped to observed values. The 0.762
-overlap with the SHAP top-5 is a consistency check on the bundle, since the two
-explanations are committed together and routine disagreement would make the
-evidence internally inconsistent. The search is greedy, so what is reported is
-sparsity, not minimality.
-
-### 7.9 Collusion detection, on synthetic rings only (Phase E)
-
-A two-hop GraphSAGE classifier over the claimant projection of the dispute
-graph, against a degree-concentration baseline. Intensity is the fraction of a
-ring member's disputes aimed at the ring's operator.
-
-Table: Phase E. Detection against injected rings only; intensity is the fraction of a ring member's disputes aimed at its own operator.
-
-| Ring intensity | GNN AUC | Degree-baseline AUC |
-|---|---|---|
-| 1.00 | 1.000 ± 0.001 | 0.984 ± 0.009 |
-| 0.85 | 0.980 ± 0.013 | 0.958 ± 0.014 |
-| 0.70 | 0.884 ± 0.097 | 0.865 ± 0.102 |
-| 0.60 | 0.856 ± 0.104 | 0.841 ± 0.104 |
-| 0.50 | 0.807 ± 0.040 | 0.774 ± 0.066 |
-
-At intensity 1.00 a ring is trivially separable and the AUC of 1.000 measures
-nothing but that separability, so the sweep continues to 0.50, where a ring
-member sends half its disputes elsewhere and the signal must come from graph
-structure.
-
-**This is the weakest evidence in the document, and it now carries the
-strongest consequences.** Labels exist only because the rings were injected.
-There is no labelled real collusion — the protocol has never run — so no
-real-world detection performance is claimed or claimable, and the false-positive
-rate on genuine dispute traffic is unknown.
-
-The detector nonetheless has an on-chain enforcement path (`CollusionOracle`).
-An enforced flag blocks a claimant from filing disputes and withholds their
-payout. This is a deliberate decision to give an unvalidated model authority
-over money, and §8.5 states what it costs.
-
-### 7.10 Two on-chain surfaces, and where they actually sit
+### 7.6 Two on-chain surfaces, and where they actually sit
 
 Both additions are on-chain and neither is a cryptographic guarantee. Being
 on-chain establishes that a computation is public and replayable; it says
@@ -1492,7 +1448,7 @@ needs changing, the claim has been inflated.
 
 ---
 
-### 7.11 What the mechanism costs an operator to participate in
+### 7.7 What the mechanism costs an operator to participate in
 
 §8.6 records that the staking parameters are demonstration values with no
 actuarial basis. They can be given one, and the pieces are already measured:
@@ -1504,7 +1460,7 @@ prototype cannot observe.
 **Expected loss is the Brier score, and calibration is what lowers it.** By
 Proposition 1 a truthful operator's expected slash per disputed decision is
 $S \cdot p(1-p)$, whose empirical counterpart is the realised Brier score. For
-the calibrated head that is 0.1758 (§7.5): a well-calibrated operator loses
+the calibrated head that is 0.1758 (§7.1): a well-calibrated operator loses
 about **17.6% of stake per dispute in expectation**, and no reporting strategy
 lowers it, because the term is irreducible.
 
@@ -1539,7 +1495,7 @@ verification.
 
 At L1 prices the design is only coherent for decisions worth hundreds of
 dollars each, which excludes most consumer credit. At L2 prices it is
-negligible against any lending decision. **The proposal's practical claim is
+negligible against any lending decision. **The practical claim here is
 therefore an L2 claim**, and §7.4's L1 gas figures are best read as an upper
 bound rather than a target. Proof aggregation across decisions would amortise
 verification further and is not implemented.
@@ -1568,7 +1524,7 @@ $d B S$ term dominates and calibration quality becomes the operator's main
 lever. Estimating $d$ empirically is the missing input, and it can only come
 from a deployment.
 
-### 7.12 Test suite
+### 7.8 Test suite
 
 144 Solidity tests (Foundry), 98 Python tests, and 11 middleware integration
 tests against a live chain — 253 in total, all passing.
@@ -1597,7 +1553,7 @@ should fail and be rewritten.
 Two of these carry unusual weight. `ThreatModel.t.sol` does **not** assert the
 system is secure — it asserts that each documented weakness is real and
 reachable, so a failure there means the threat model has drifted from the code
-and the proposal is wrong. And `tests/test_claim_vocabulary.py` greps this
+and this paper is wrong. And `tests/test_claim_vocabulary.py` greps this
 document for language that would attribute properties the system lacks
 (§8.2); the forbidden list lives in the test rather than in prose, so a later
 edit cannot quietly upgrade a claim.
@@ -1618,7 +1574,7 @@ adversary retains today.
 |---|---|---|
 | Forge a proof for a head it did not run | yes | halo2 soundness; 4/4 tamper checks |
 | Alter an attested confidence after the fact | yes | stored on chain, proof-bound |
-| Substitute model weights under a claimed version | yes | ModelRegistry content hash (§7.10) |
+| Substitute model weights under a claimed version | yes | ModelRegistry content hash (§7.6) |
 | Exit stake ahead of a pending dispute | yes | unbonding delay + dispute freeze (§8.3) |
 | Act alone as a single resolver | yes | N-of-M threshold (§8.2) |
 | **Fabricate the input logit $L$** | **no** | tier 1 binds the head, not the pipeline (§8.1) |
@@ -1626,7 +1582,7 @@ adversary retains today.
 | **Exit before any dispute is raised** | **no** | bound on the dispute window, not the lock (§8.3) |
 | **Misreport within a protected subgroup** | **no** | calibration is measured in aggregate (§8.4) |
 | **Flag an honest claimant** | **no** | detector unvalidated on real traffic (§8.5) |
-| Train dishonestly and register truthfully | no | content integrity ≠ training integrity (§7.10) |
+| Train dishonestly and register truthfully | no | content integrity ≠ training integrity (§7.6) |
 | Decline to attest at all | no | unattested decisions are outside the system |
 
 Five capabilities in bold are the ones an adversary would actually use. Each has
@@ -1736,11 +1692,11 @@ permitted extension (§ 1681i(a)(1)(B)) — **τ = 105 days**, fifteen times the
 value used in the tests. Each term is a statutory maximum, which is the right
 posture for a security parameter, since the operator chooses the timing.
 
-Re-running §7.11's carrying cost `carry = r · τ · S` at r = 5% inverts that
+Re-running §7.7's carrying cost `carry = r · τ · S` at r = 5% inverts that
 section's conclusion.
 
 Table: Carrying cost against the expected slash per cycle (realised Brier
-0.1758, §7.5). The 7-day row is the one §7.11 characterised as "comparable to a
+0.1758, §7.1). The 7-day row is the one §7.7 characterised as "comparable to a
 single dispute"; the 105-day row is what the statute implies.
 
 | τ | Carry per cycle | Expected slash at 1% dispute rate | Carry dominates below |
@@ -1752,7 +1708,7 @@ At a defensible τ, capital lockup is the **dominant** cost across the entire
 plausible range of dispute rates — roughly 8× the expected slash at 1%. Three
 consequences follow, and the first is the most damaging:
 
-- **It weakens the incentive argument of §7.11.** That section argues
+- **It weakens the incentive argument of §7.7.** That section argues
   calibration pays because it cuts expected loss by 15%. If the slash is an
   eighth of the total cost, that saving is about 1.7% of what participation
   actually costs.
@@ -1789,7 +1745,7 @@ within protected subgroups**. A model can be well calibrated overall while badly
 miscalibrated for a subgroup, which is precisely the harm this mechanism should
 detect and currently does not.
 
-The conformal layer of §7.7 does **not** fix this, and it would be easy to
+The conformal layer of §A.3 does **not** fix this, and it would be easy to
 imply otherwise. Its coverage guarantee is *marginal*: a conformal predictor can
 hit 90% coverage overall while covering a protected subgroup at 60%. A stronger
 uncertainty claim about the population average is still a claim about the
@@ -1853,7 +1809,7 @@ shrinking a threshold fails loudly rather than quietly.
 This is the sharpest limitation in the system, and unlike the others it was
 chosen rather than inherited.
 
-§7.9 reports detection performance on rings that were injected, so the labels
+§A.5 reports detection performance on rings that were injected, so the labels
 exist by construction. There is no labelled real collusion, the protocol having
 never run, and the false-positive rate on genuine dispute traffic is therefore
 unknown. An earlier draft of this document said the detector was not wired to
@@ -1899,12 +1855,14 @@ thousands of simultaneous claims — is not modelled.
 
 ---
 
-## 9. Proposed work
+## 9. Open problems
 
-§8 is a list of reasons the present system should not be trusted. This section is
-the work that would remove them, ordered by what blocks what. Each item states
-the deliverable and the evidence that would count as having done it — the point
-being that these are falsifiable targets, not intentions.
+§8 is a list of reasons the present system should not be trusted. This section
+states what would remove each of them, ordered by what blocks what. Every item
+names the evidence that would count as having closed it, so these are
+falsifiable targets rather than intentions — and two items below are recorded as
+closed by measurements reported in this paper, one of which closed unfavourably
+and opened a harder problem in its place.
 
 ### 9.1 Enforcement: shipped, with the parameter question still open
 
@@ -1931,7 +1889,7 @@ What remains open is not the number but the instrument: τ is bounded below by
 statute and above by capital cost, and those bounds do not meet, so no choice of
 τ is good. *Deliverable, revised:* a mechanism that decouples the dispute window
 from the locked-capital window — bonded insurance, rolling tranche release, or
-an at-risk fraction below the full stake — with the same treatment §7.11 gives
+an at-risk fraction below the full stake — with the same treatment §7.7 gives
 the current design. This is a new work item, not a closed one.
 
 ### 9.2 Making the attested confidence mean something
@@ -1976,7 +1934,7 @@ a delayed, independently sourced outcome oracle. None is obviously right.
 
 ### 9.3 Strengthening the empirical claims
 
-**W3b — Bind the committed constants.** §7.7 promoted conformal set
+**W3b — Bind the committed constants.** §A.3 promoted conformal set
 construction into the circuit, but the quantile $q$ joins $T$ as a fitted
 constant committed off-chain. Every strengthening of the *proved* computation so
 far has left the *inputs* to that computation unproven, which is the same shape
@@ -1998,7 +1956,7 @@ dataset and a second model family, plus a calibration-drift study over time,
 which is currently not evaluated at all.
 
 **W6 — Validate the detector that is already enforcing.** The graph analysis
-recovers injected rings (§7.9) and now has an enforcement path (§8.5), which
+recovers injected rings (§A.5) and now has an enforcement path (§8.5), which
 inverts the usual ordering: the capability shipped before the evidence that
 would justify it. The appeal path exists; the measurement does not. Required, in
 order of urgency: a labelled corpus of real disputes; a measured false-positive
@@ -2007,13 +1965,13 @@ should be attached at all; and an appeal reviewer that is not the same admin who
 can forfeit. Until the second of those exists, the honest deployment posture is
 to pass `address(0)` and leave the detector reporting into a dashboard.
 
-**W7 — Why did the ensemble not help?** §7.5 found that ensembling improves
-uncalibrated ECE and that calibration then absorbs the gain entirely, and §7.6
+**W7 — Why did the ensemble not help?** §A.1 found that ensembling improves
+uncalibrated ECE and that calibration then absorbs the gain entirely, and §A.2
 found that an epistemic-uncertainty signal actively harms calibration on 200
 calibration points. Both suggest the binding constraint is the *size of the
 calibration split*, not model capacity. That is a testable claim: sweep the
 calibration split size and see whether the two-input head's advantage appears
-once it has enough data. If it does, the negative results of §7.5–§7.6 are
+once it has enough data. If it does, the negative results of §A.1–§A.2 are
 statements about this dataset rather than about the approach, and they should be
 restated as such.
 
@@ -2070,7 +2028,7 @@ out of scope than imply the mechanism generalises for free.
 
 ## 10. Conclusion
 
-Returning to the four questions of §1.3.
+Returning to the six questions of §1.3.
 
 **RQ1 is answered affirmatively.** The Brier slash has a unique expected-loss
 minimum at the operator's true subjective probability (§3.2), and the deployed
@@ -2092,10 +2050,23 @@ unmeasured, and measuring it is the next experiment.
 against the baseline, conformal prediction earns its place — a genuinely
 stronger uncertainty claim, in-circuit at no measurable cost — while a deeper
 base model is null and deep-ensemble epistemic uncertainty is actively harmful.
-The capacity control in §7.6 is what makes the second result interpretable: the
+The capacity control in §A.2 is what makes the second result interpretable: the
 architecture helps, the signal destroys the gain. The one-parameter head of §7.1
 survives every attempt made here to beat it, which is a stronger endorsement of
 it than the original single-run result was.
+
+**RQ6 is answered conditionally, and the condition is restrictive.** Attaching
+a confidence attestation to a priced decision raises welfare only where its
+verification cost falls below the screening value it buys (Proposition 4); at
+the L1 gas prices measured in §7.4 it does not, so the practical claim is an L2
+claim by necessity rather than preference. Against a single buyer an optimally
+tuned flat-fraction bond achieves *exactly* the same welfare (Proposition 5), so
+confidence elicitation buys nothing there that a correctly set parameter does
+not. The separation requires buyer heterogeneity, where a bond compresses
+quality into one pooled threshold while an attested confidence is a sufficient
+statistic each buyer applies its own threshold to — worth 70.5% of the available
+gain across the buyer mix we model (Proposition 6). That heterogeneity is
+modelled, not measured, and the claim is conditional on it.
 
 **RQ4 is answered negatively, and that is the substantive finding.** A proved
 calibration head is *not* sufficient to make an attestation trustworthy. The
@@ -2132,7 +2103,7 @@ Two further measurements came back against the design, and are reported here at
 the same weight as the results that favour it. Deriving the unbonding period
 from statute rather than convenience gives 105 days, at which capital lockup
 becomes an operator's dominant cost — roughly 8× the expected slash — which
-substantially weakens §7.11's argument that calibration pays for itself. And the
+substantially weakens §7.7's argument that calibration pays for itself. And the
 subgroup-calibration gap that §8.4 names as the sharpest scientific gap turned
 out to be unmeasurable at this dataset's scale: the apparent effect is entirely
 reproduced by a random partition, because ECE's small-sample bias at n = 68
@@ -2160,12 +2131,12 @@ claim** — that confidence-weighted slashing on a strictly proper scoring rule
 makes honest confidence reporting loss-minimising, and that it is cheap to
 implement and verify — is supported by the evidence presented here. The
 **systems claim** — that this constitutes a trust-minimised accountability
-protocol — is not supported. §9 is a plan for closing that distance rather than
-an assertion that it is nearly closed, and it now distinguishes what has shipped
-from what remains. The most useful result of the
-prototype may be the negative one: it establishes precisely which parts of
-"verifiable AI accountability" the cryptography actually buys, and which parts
-remain a matter of whom you trust.
+protocol — is not supported by it. §9 states what would close that distance,
+distinguishing the items this work closed from those it did not, and records
+that one of the closures made the problem harder rather than easier. The most
+useful result here may be the negative one: it establishes precisely which parts
+of "verifiable AI accountability" the cryptography actually buys, and which
+parts remain a matter of whom you trust.
 
 ---
 
@@ -2242,7 +2213,7 @@ prototype's base model deliberately reproduces.
 <https://dl.acm.org/doi/10.1145/1102351.1102430>
 
 [16] V. Vovk, A. Gammerman, and G. Shafer, *Algorithmic Learning in a Random
-World*, Springer, 2005 — the conformal prediction framework of §7.7.
+World*, Springer, 2005 — the conformal prediction framework of §A.3.
 <https://link.springer.com/book/10.1007/b106715>
 
 [17] A. N. Angelopoulos and S. Bates, *A Gentle Introduction to Conformal
@@ -2252,7 +2223,7 @@ arXiv:2107.07511, 2021.
 
 [18] B. Lakshminarayanan, A. Pritzel, and C. Blundell, *Simple and Scalable
 Predictive Uncertainty Estimation using Deep Ensembles*, NeurIPS 2017 — the
-method ablated in §7.6.
+method ablated in §A.2.
 <https://arxiv.org/abs/1612.01474>
 
 [19] S. M. Lundberg and S.-I. Lee, *A Unified Approach to Interpreting Model
@@ -2261,11 +2232,11 @@ Predictions*, NeurIPS 2017 — the SHAP attributions of §6.4.
 
 [20] R. K. Mothilal, A. Sharma, and C. Tan, *Explaining Machine Learning
 Classifiers through Diverse Counterfactual Explanations*, ACM FAccT 2020 —
-the counterfactual family of §7.8.
+the counterfactual family of §A.4.
 <https://arxiv.org/abs/1905.07697>
 
 [21] W. Hamilton, Z. Ying, and J. Leskovec, *Inductive Representation Learning
-on Large Graphs*, NeurIPS 2017 — the GraphSAGE architecture of §7.9.
+on Large Graphs*, NeurIPS 2017 — the GraphSAGE architecture of §A.5.
 <https://arxiv.org/abs/1706.02216>
 
 [22] M. Kearns, S. Neel, A. Roth, and Z. S. Wu, *Preventing Fairness
@@ -2306,7 +2277,177 @@ AI-Native Economy*, §5.5 — the accountability-bond mechanism modelled in §4.
 
 ---
 
-## Appendix A — Reproducing the results
+## Appendix A — Per-phase ablation detail
+
+Five candidate enhancements, each measured against the shipped baseline on the
+identical seed protocol. §7.5 gives the verdicts; this appendix gives the
+evidence behind each, including the two that failed.
+
+### A.1 A deeper base model does not help
+
+An entity-embedding neural network over the same 19 features, and its ensemble
+with XGBoost, were evaluated on the identical 10-seed protocol. The XGBoost arm
+reproduces §7.1 exactly, which is the check that the protocol is the same one
+rather than merely a similar one.
+
+Table: Phase A. The ensemble improves uncalibrated ECE and temperature scaling then absorbs the difference entirely.
+
+| Model | Uncalibrated ECE | Calibrated ECE | Calibrated Brier | Accuracy |
+|---|---|---|---|---|
+| XGBoost (baseline) | 0.1853 ± 0.0235 | 0.0870 ± 0.0207 | 0.1758 ± 0.0107 | 0.7505 ± 0.0198 |
+| Tabular NN | 0.2419 ± 0.0189 | 0.0874 ± 0.0226 | 0.1843 ± 0.0071 | 0.7280 ± 0.0187 |
+| Ensemble | 0.1617 ± 0.0181 | 0.0834 ± 0.0154 | 0.1733 ± 0.0091 | 0.7410 ± 0.0164 |
+
+**Null result.** On calibrated ECE the ensemble wins 6 of 10 seeds
+($p = 0.6953$) and the NN alone 5 of 10
+($p = 0.9219$) — neither distinguishable from chance. On accuracy the
+ensemble *loses*, 2 of 10 ($p = 0.1953$). It is not adopted.
+
+The informative part is where the gain goes. The ensemble clearly improves
+*uncalibrated* ECE (0.1617 against
+0.1853), and temperature scaling then absorbs the
+whole difference. **Ensembling and calibration are substitutes here, not
+complements.** Since the ensemble costs an entire second model family and
+calibration costs one parameter, this is an argument for the one-parameter head
+rather than against sophistication in general.
+
+### A.2 Epistemic uncertainty makes calibration worse
+
+5 independently seeded network copies; disagreement is the standard
+deviation of member probabilities, supplied to the head alongside the margin.
+
+Table: Phase C. The capacity control is the informative row: the same head fed a constant beats the baseline, so the epistemic signal is what destroys the gain.
+
+| Arm | ECE | Brier | Accuracy |
+|---|---|---|---|
+| Temperature (baseline, 1 param) | 0.0870 ± 0.0207 | 0.1758 ± 0.0107 | 0.7505 ± 0.0198 |
+| Margin + disagreement | 0.1072 ± 0.0324 | 0.1916 ± 0.0174 | 0.7295 ± 0.0294 |
+| Margin + constant (capacity control) | 0.0743 ± 0.0170 | 0.1757 ± 0.0109 | 0.7530 ± 0.0165 |
+
+**Negative result, and the control is what makes it legible.** The epistemic
+signal *degrades* calibration: 2W/8L against the baseline,
+median +0.01611, $p = 0.1309$. But the same two-input head
+shape fed a *constant zero* in place of the signal beats the baseline —
+8W/2L, median -0.01238, $p = 0.0371$.
+
+So the architectural change helps slightly and the epistemic signal then destroys
+that gain. Without the control this would have read as "ensemble disagreement
+doesn't help"; with it, the finding is sharper and less comfortable — the signal
+is **noise that the head overfits** on 200 calibration points. The cost is not
+close either: 5 model copies at 54 s
+per seed, roughly ten times the baseline, to make calibration worse.
+
+The wider lesson is about experimental design more than about ensembles. Had
+the control been omitted, the arms would have read as "epistemic uncertainty
+does not help", and the true effect — that the architecture helps while the
+signal cancels it — would have been invisible. Any ablation that adds capacity
+and a feature simultaneously needs the capacity-only arm to be interpretable.
+
+### A.3 Conformal prediction, and its circuit cost
+
+Empirical coverage across the pinned seeds, at three levels:
+
+Table: Phase B. Coverage tracks the target and sits 1-2 points below it at every level, within sampling noise at n = 10.
+
+| Target | Empirical coverage | Min over seeds | Seeds ≥ target | Avg set size |
+|---|---|---|---|---|
+| 0.80 | 0.7930 ± 0.0399 | 0.7300 | 5/10 | 1.102 |
+| 0.90 | 0.8815 ± 0.0408 | 0.8200 | 4/10 | 1.357 |
+| 0.95 | 0.9335 ± 0.0398 | 0.8550 | 4/10 | 1.570 |
+
+Coverage tracks the target and sits 1–2 points below it at every level. At
+$n = 10$ the shortfall is within sampling noise, so this is **not** reported as a
+violated guarantee — nor as confirmation. The likely cause is that the
+three-way split is stratified, which mildly breaks the exchangeability conformal
+assumes; on genuinely iid synthetic draws the implementation does meet its
+target (`tests/test_conformal.py`). Set size is reported alongside coverage
+because coverage alone is trivially satisfiable: always return both labels and
+you have 100% coverage and no information.
+
+**The circuit gate, measured, not argued.**
+
+Table: Phase B circuit gate. Conformal set construction fits the established budget at no measurable proving cost.
+
+| Head | logrows | Rows used | Proving time | Proof size |
+|---|---|---|---|---|
+| Temperature only | 15 | 39 | 1.72 s | 17,525 B |
+| Temperature + conformal | 15 | 95 | 1.66 s | 17,828 B |
+
+It fits inside the established logrows = 15 budget, adding
+56 rows of 32,768 and no measurable proving time.
+The reason is that both comparisons push through the monotone sigmoid into logit
+space and become comparisons against two constants — so the sigmoid never enters
+the circuit and the head stays affine. Conformal set construction is therefore
+**promoted to tier 1**, proved on the same terms as the confidence itself.
+
+Two things this does not buy, stated because they are easy to overstate. The
+quantile $q$ is not computed in-circuit: that needs a sort over calibration
+scores and it is a per-deployment constant, so it is fitted off-chain and
+committed exactly as $T$ is — its provenance is exactly as unproven as $T$'s.
+And the coverage guarantee is *marginal*: a conformal predictor can hit 90%
+overall while covering a protected subgroup at 60%, which is the same limitation
+aggregate ECE has (§8.4).
+
+### A.4 Counterfactual evidence
+
+Table: Phase D. Counterfactuals over 40 rejections, checked for actionability and plausibility.
+
+| Metric | Value |
+|---|---|
+| Rejections examined | 40 |
+| Counterfactual found | 40 (100%) |
+| Mean changes when found | 1.075 |
+| Immutable-attribute violations | 0 |
+| Implausible (unobserved) values | 0 |
+| Mean overlap with SHAP top-5 | 0.762 |
+| Hash reproduces on rerun | True |
+
+The plausibility check earned its place on the first run, which flagged 10 of 40
+cases: quantile-derived candidate values are interpolated, so the search was
+proposing loan amounts occurring nowhere in the data. "Reduce the loan to
+3,271 DM" is not an actionable instruction when no such loan exists, and
+candidates are now snapped to observed values. The 0.762
+overlap with the SHAP top-5 is a consistency check on the bundle, since the two
+explanations are committed together and routine disagreement would make the
+evidence internally inconsistent. The search is greedy, so what is reported is
+sparsity, not minimality.
+
+### A.5 Collusion detection, on synthetic rings only
+
+A two-hop GraphSAGE classifier over the claimant projection of the dispute
+graph, against a degree-concentration baseline. Intensity is the fraction of a
+ring member's disputes aimed at the ring's operator.
+
+Table: Phase E. Detection against injected rings only; intensity is the fraction of a ring member's disputes aimed at its own operator.
+
+| Ring intensity | GNN AUC | Degree-baseline AUC |
+|---|---|---|
+| 1.00 | 1.000 ± 0.001 | 0.984 ± 0.009 |
+| 0.85 | 0.980 ± 0.013 | 0.958 ± 0.014 |
+| 0.70 | 0.884 ± 0.097 | 0.865 ± 0.102 |
+| 0.60 | 0.856 ± 0.104 | 0.841 ± 0.104 |
+| 0.50 | 0.807 ± 0.040 | 0.774 ± 0.066 |
+
+At intensity 1.00 a ring is trivially separable and the AUC of 1.000 measures
+nothing but that separability, so the sweep continues to 0.50, where a ring
+member sends half its disputes elsewhere and the signal must come from graph
+structure.
+
+**This is the weakest evidence in the document, and it now carries the
+strongest consequences.** Labels exist only because the rings were injected.
+There is no labelled real collusion — the protocol has never run — so no
+real-world detection performance is claimed or claimable, and the false-positive
+rate on genuine dispute traffic is unknown.
+
+The detector nonetheless has an on-chain enforcement path (`CollusionOracle`).
+An enforced flag blocks a claimant from filing disputes and withholds their
+payout. This is a deliberate decision to give an unvalidated model authority
+over money, and §8.5 states what it costs.
+
+
+---
+
+## Appendix B — Reproducing the results
 
 Every number in this document is produced by a script in the repository; none is
 transcribed by hand. The sequence below regenerates all of them from a clean
@@ -2322,20 +2463,20 @@ python scripts/10_train_calibrate.py    # §7.1  (ECE gate; fails loudly if not 
 python scripts/20_explain.py            # §7.2
 python scripts/30_export_onnx.py        # ONNX export, fidelity-checked
 python scripts/31_zk_prove.py           # §7.3  circuits, proofs, soundness
-cd contracts && forge test              # §7.12  144 tests incl. ThreatModel.t.sol
-python -m pytest tests/ -q              # §7.12  98 tests
+cd contracts && forge test              # §7.8  144 tests incl. ThreatModel.t.sol
+python -m pytest tests/ -q              # §7.8  98 tests
 
 anvil &                                  # §7.4  end-to-end
 forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast
 python scripts/40_demo_e2e.py
 python scripts/90_render_results.py     # regenerate RESULTS.md
 python scripts/91_figure_d_reliability.py   # Figure 4
-python scripts/13_phaseA_ablation.py     # §7.5  ensemble ablation
-python scripts/14_phaseB_conformal.py    # §7.7  conformal coverage
-python scripts/15_phaseB_circuit_gate.py # §7.7  circuit feasibility gate
-python scripts/16_phaseC_deep_ensemble.py # §7.6  epistemic uncertainty
-python scripts/17_phaseD_counterfactual.py # §7.8  counterfactual evidence
-python scripts/18_phaseE_collusion.py    # §7.9 collusion detection
+python scripts/13_phaseA_ablation.py     # §A.1  ensemble ablation
+python scripts/14_phaseB_conformal.py    # §A.3  conformal coverage
+python scripts/15_phaseB_circuit_gate.py # §A.3  circuit feasibility gate
+python scripts/16_phaseC_deep_ensemble.py # §A.2  epistemic uncertainty
+python scripts/17_phaseD_counterfactual.py # §A.4  counterfactual evidence
+python scripts/18_phaseE_collusion.py    # §A.5 collusion detection
 python scripts/19_phaseH_ablation_report.py  # regenerate ABLATION.md
 
 python scripts/92_render_svg.py             # Figures 1 and 3
@@ -2357,7 +2498,7 @@ Every number in §4 comes from `22_market_model.py` and is written to
 `21_subgroup_adversary.py` and `artifacts/calibration/subgroup_adversary.json`.
 The unbonding arithmetic in §8.3 is derived in
 `docs/UNBONDING_PERIOD_JUSTIFICATION.md` from the statutory sources cited there,
-and its inputs — realised Brier 0.1758 and r = 5% — are §7.5 and §7.11
+and its inputs — realised Brier 0.1758 and r = 5% — are §7.1 and §7.7
 respectively.
 
 The two negative results have their own guard: `tests/test_subgroup_calibration.py`

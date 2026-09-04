@@ -1,6 +1,6 @@
 """Within-group calibration error: the quantity aggregate ECE cannot see.
 
-PROPOSAL.md 7.4 names this as the sharpest scientific gap in the v0 mechanism.
+PAPER.md 8.4 names this as the sharpest scientific gap in the mechanism.
 The slash is driven by realised Brier score and the calibration claim is
 defended with aggregate ECE, but ECE is an average over the whole population,
 and an average is exactly the wrong instrument for detecting a defect that is
@@ -10,7 +10,7 @@ near zero, and every individual in both groups mispriced.
 
 This module implements the within-group variant and the gap between them. It
 deliberately reuses `expected_calibration_error` from .metrics rather than
-reimplementing the binning: Definition 2 in the proposal (10 equal-width bins,
+reimplementing the binning: Definition 3 in the paper (10 equal-width bins,
 population-weighted, empty bins skipped) must mean one thing everywhere, and a
 second implementation is a second thing that can drift from the first.
 
