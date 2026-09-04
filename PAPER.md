@@ -2450,14 +2450,33 @@ over money, and §8.5 states what it costs.
 ## Appendix B — Reproducing the results
 
 Every number in this document is produced by a script in the repository; none is
-transcribed by hand. The sequence below regenerates all of them from a clean
-checkout. `10_train_calibrate.py` carries an ECE gate that fails loudly if
-calibration does not reduce error, so a silently broken run cannot produce a
-quiet result.
+transcribed by hand. `10_train_calibrate.py` carries an ECE gate that fails
+loudly if calibration does not reduce error, so a silently broken run cannot
+produce a quiet result.
+
+**This sequence was executed against a fresh `git clone` on 4 September 2026,
+not merely asserted.** Doing so found a real defect in an earlier version of
+this appendix: `contracts/lib/` is not committed, so `forge test` fails on a
+clean checkout with `Source "forge-std/Test.sol" not found`. The `forge install`
+line below was missing and is now present. With it, the clean checkout runs 144
+Solidity and 98 Python tests green, and `market_model.json` and
+`subgroup_adversary.json` regenerate **byte-identical** to the artifacts behind
+§4 and §8.4.
+
+Two limits on that verification, stated so it is not read as more than it is: it
+was run on the same machine and the same OS as development, so it establishes
+that the repository is self-contained, not that the pipeline is portable across
+platforms. And the zkML stages (`00_setup_tools.sh`, `30_export_onnx.py`,
+`31_zk_prove.py`) were not re-run in the clean checkout — they depend on an EZKL
+binary fetched at setup, so §7.3's proving figures are reproduced from the
+committed artifacts rather than from a fresh proving run.
 
 ```bash
 pip install -r requirements.txt
 bash scripts/00_setup_tools.sh          # EZKL CLI v23.0.5
+
+# forge-std is NOT committed; without this, every Foundry command fails.
+cd contracts && forge install foundry-rs/forge-std@v1.16.2 --no-git && cd ..
 
 python scripts/10_train_calibrate.py    # §7.1  (ECE gate; fails loudly if not reduced)
 python scripts/20_explain.py            # §7.2

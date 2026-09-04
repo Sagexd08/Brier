@@ -11,7 +11,7 @@ be wrong here, and the Phase 0 scan is what settles it. The papers actually
 engaging this problem — *Five Attacks on x402* (arXiv:2605.11781), *Free-Riding
 the Agentic Web* (arXiv:2605.30998), *A402* (arXiv:2603.01179), *Can Trustless
 Agents Be Trusted?* (arXiv:2606.26028) — are security and crypto-economics
-papers, and they are the works this proposal is in conversation with. A reviewer
+papers, and they are the works this paper is in conversation with. A reviewer
 who has read them is the reviewer who can falsify §4.
 
 The contribution is also not an ML contribution. Temperature scaling is
@@ -45,32 +45,42 @@ all.
 
 ## What has to be true before submitting
 
-Honest gating, in the same spirit as the rest of the document. Three of these
-are not yet met.
+Honest gating, in the same spirit as the rest of the document. Two of these are
+not yet met, and the third was closed by actually running it.
 
 | # | Requirement | Status |
 |---|---|---|
-| 1 | Every number traces to a script or a cited primary source | **met** — Appendix A |
+| 1 | Every number traces to a script or a cited primary source | **met** — Appendix B |
 | 2 | Claim-vocabulary guard passes on the full document | **met** — 11 tests |
-| 3 | All limitations stated with the same weight as results | **met** — §8, and both new negatives in §10 |
+| 3 | All limitations stated with the same weight as results | **met** — §8, and both negatives in §10 |
 | 4 | A second dataset, or an explicit external-validity limit | **not met** — one dataset, 1,000 rows |
 | 5 | Detector false-positive rate on non-synthetic traffic | **not met** — §8.5, W6 |
-| 6 | Independent reproduction from a clean checkout | **not met** — never run outside this machine |
+| 6 | Reproduction from a clean checkout | **met** — verified 4 Sep 2026 |
 
-Items 4 and 5 are the ones a reviewer will press hardest on, and neither is
-concealed: §7.6 states the single-dataset scope, and §8.5 states plainly that an
-unvalidated detector has authority over money. A submission can proceed with
-them open *if* the paper does not claim otherwise — but item 4 in particular is
+**Item 6 was closed by doing it, and doing it found a defect.** Running Appendix
+B against a fresh `git clone` revealed that `contracts/lib/` is not committed, so
+`forge test` failed immediately — the appendix was missing a `forge install`
+line and its claim to reproduce from a clean checkout was false as written. With
+that line added, the clean checkout runs 144 Solidity and 98 Python tests green
+and regenerates `market_model.json` and `subgroup_adversary.json`
+**byte-identical** to the artifacts behind §4 and §8.4.
+
+The verification has two stated limits: it ran on the same machine and OS as
+development, so it establishes self-containment rather than portability; and the
+zkML stages were not re-run, so §7.3's proving figures come from committed
+artifacts rather than a fresh proving run. Both are recorded in Appendix B
+rather than left for a reviewer to discover.
+
+Items 4 and 5 remain open and are the ones a reviewer will press hardest on.
+Neither is concealed: §7.6 states the single-dataset scope and §8.5 states
+plainly that an unvalidated detector has authority over money. A submission can
+proceed with them open *if* the paper does not claim otherwise — but item 4 is
 the difference between "this mechanism works" and "this mechanism worked once,
 on UCI German Credit, at n = 1,000," and only the second is currently supported.
 
-Item 6 is cheap and should be done first: the reproducibility appendix has never
-been executed anywhere but the development machine, so its claim to reproduce
-from a clean checkout is untested.
-
 ## Reproducibility
 
-Appendix A covers every script including the v1 additions
+Appendix B covers every script including the v1 additions
 (`21_subgroup_adversary.py`, `22_market_model.py`, the ERC-8004 suite, the
 middleware suite), and names which section each produces. Both negative results
 carry their own artifacts (`subgroup_adversary.json`, `market_model.json`) and
@@ -79,8 +89,12 @@ on trust.
 
 ## Title
 
-The working title is *What Does the Proof Actually Buy?*, which was accurate
-when the paper was a zkML result about the limits of a proof. With §3.3–§3.4
-generalising past credit and §4 making the economic argument, it now reads as
-narrower than the content. **Suggested: *Confidence as Collateral*.** Not
-changed here — it is the author's call, and the current title is defensible.
+**Settled: *Confidence as Collateral: Strictly Proper Slashing for Accountable
+Automated Decisions*.**
+
+The earlier working title, *What Does the Proof Actually Buy?*, was accurate
+when the document was a zkML result about the limits of a proof. Once §3.3–§3.4
+generalised past credit and §4 added the economic argument, it described
+roughly half the paper. The current title leads with the mechanism, which is the
+contribution that survives both broadenings, and drops the question mark for
+arXiv/AFT house style.
