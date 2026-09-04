@@ -34,10 +34,10 @@ crypto-economics with a measured systems component.
   exactly against a single buyer" (Proposition 5) is a result that community
   wants stated, not one it wants hidden.
 
-**IEEE S&B and a workshop as fallbacks.** S&B if AFT's cycle does not fit; a
-workshop co-located with either if the reviewers' verdict is that the empirical
-half needs a second dataset first (§9.4, W5) — which is a fair reading of the
-current evidence.
+**IEEE S&B as the fallback**, if AFT's cycle does not fit. The workshop route
+was previously the honest option because the empirical half rested on one
+dataset; with §8.6's replication that is no longer the binding weakness, and a
+full submission is defensible.
 
 **Not a generic ML venue, and not a blockchain-industry venue.** The first would
 review the wrong contribution; the second would not review the propositions at
@@ -45,38 +45,63 @@ all.
 
 ## What has to be true before submitting
 
-Honest gating, in the same spirit as the rest of the document. Two of these are
-not yet met, and the third was closed by actually running it.
+Honest gating, in the same spirit as the rest of the document. Each was closed
+by doing the work, and two of the three closures found something unwelcome.
 
 | # | Requirement | Status |
 |---|---|---|
 | 1 | Every number traces to a script or a cited primary source | **met** — Appendix B |
 | 2 | Claim-vocabulary guard passes on the full document | **met** — 11 tests |
-| 3 | All limitations stated with the same weight as results | **met** — §8, and both negatives in §10 |
-| 4 | A second dataset, or an explicit external-validity limit | **not met** — one dataset, 1,000 rows |
-| 5 | Detector false-positive rate on non-synthetic traffic | **not met** — §8.5, W6 |
+| 3 | All limitations stated with the same weight as results | **met** — §8, negatives in §10 |
+| 4 | A second dataset, or an explicit external-validity limit | **met** — §8.6, 30,000 rows |
+| 5 | Detector false-positive rate at the enforced threshold | **met, unfavourably** — §8.5 |
 | 6 | Reproduction from a clean checkout | **met** — verified 4 Sep 2026 |
 
-**Item 6 was closed by doing it, and doing it found a defect.** Running Appendix
-B against a fresh `git clone` revealed that `contracts/lib/` is not committed, so
-`forge test` failed immediately — the appendix was missing a `forge install`
-line and its claim to reproduce from a clean checkout was false as written. With
-that line added, the clean checkout runs 144 Solidity and 98 Python tests green
-and regenerates `market_model.json` and `subgroup_adversary.json`
-**byte-identical** to the artifacts behind §4 and §8.4.
+**Item 4 replicated, and resolved a question the first dataset could not.** UCI
+*Default of Credit Card Clients* (Taiwan, 30,000 rows) differs from German
+Credit on size, geography, vintage and — the axis that matters — label
+semantics: an observed default event rather than an analyst's credit grade. The
+protocol was held fixed rather than retuned. All five core claims replicate,
+with a 54.8% mean ECE reduction against 52.8% (*p* = 0.002).
 
-The verification has two stated limits: it ran on the same machine and OS as
-development, so it establishes self-containment rather than portability; and the
-zkML stages were not re-run, so §7.3's proving figures come from committed
-artifacts rather than a fresh proving run. Both are recorded in Appendix B
-rather than left for a reviewer to discover.
+It also supplied the ~20× data §8.4 named as the missing ingredient for the
+subgroup question. There, the effect **survives its permutation null** —
+gap 0.0067 vs null 0.0042, 8/10 seeds, *p* = 0.037 — where on German Credit the
+same control returned *p* = 0.92. Subgroup miscalibration is real, and it is
+about 12% of aggregate ECE: much smaller than the naive comparison suggested
+before the null was run, and large enough to matter.
 
-Items 4 and 5 remain open and are the ones a reviewer will press hardest on.
-Neither is concealed: §7.6 states the single-dataset scope and §8.5 states
-plainly that an unvalidated detector has authority over money. A submission can
-proceed with them open *if* the paper does not claim otherwise — but item 4 is
-the difference between "this mechanism works" and "this mechanism worked once,
-on UCI German Credit, at n = 1,000," and only the second is currently supported.
+**Item 5 was closed by measuring what is measurable, and the answer argues
+against attaching the oracle.** The false-positive rate on *real* traffic
+remains unobtainable — the protocol has never run. But on synthetic traffic
+containing no rings, every flag is false by construction, and at the threshold
+the contract enforces (`MIN_SCORE = 0.8e18`) the detector flags 0.94% of honest
+claimants (95% Wilson upper bound 1.51%). With rings present, the false
+*discovery* rate — the fraction of flagged claimants who are honest — is 19.9%
+at the easiest setting and 50% at the hardest, where recall is 16%.
+
+That sits badly beside §A.5's headline AUC of 0.998. AUC is threshold-free and
+integrates over operating points the contract cannot use; the deployed system
+has one fixed operating point, and its precision there is what governs whether
+attaching the oracle is defensible. §8.5's recommendation is now explicit: pass
+`address(0)`.
+
+**Item 6's closure found a defect.** Running Appendix B against a fresh
+`git clone` revealed that `contracts/lib/` is not committed, so `forge test`
+failed immediately — the appendix was missing a `forge install` line and its
+claim to reproduce from a clean checkout was false as written. With that line
+added, the clean checkout runs the full suites green and regenerates
+`market_model.json` and `subgroup_adversary.json` **byte-identical** to the
+artifacts behind §4 and §8.4. Two limits are recorded in Appendix B: it ran on
+the development machine and OS, so it shows self-containment rather than
+portability; and the zkML stages were not re-run.
+
+**What is still not established, and a reviewer should press on it.** Both
+datasets are credit, tabular and binary — one model family, one decision class.
+Calibration drift over time is unevaluated. The detector figures are synthetic
+throughout, and a generator's realism is an assumption, not a measurement.
+Staking parameters remain demonstration values. None of this is concealed: §8.6
+states the residual scope directly.
 
 ## Reproducibility
 

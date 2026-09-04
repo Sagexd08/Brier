@@ -1,0 +1,414 @@
+{
+  "question": "How often does the detector flag an honest claimant at the threshold CollusionOracle.sol enforces?",
+  "enforced_threshold": 0.8,
+  "threshold_source": "CollusionOracle.sol MIN_SCORE = 0.8e18",
+  "seeds": [
+    42,
+    1337,
+    7,
+    2024,
+    31415,
+    271828,
+    99,
+    12345,
+    555,
+    8675309
+  ],
+  "ring_free": {
+    "per_seed": [
+      {
+        "seed": 42,
+        "n_claimants": 180,
+        "max_score": 0.9798305034637451,
+        "mean_score": 0.006142462138086557,
+        "fpr@0.5": 0.005555555555555556,
+        "flagged@0.5": 1,
+        "fpr@0.8": 0.005555555555555556,
+        "flagged@0.8": 1,
+        "fpr@0.9": 0.005555555555555556,
+        "flagged@0.9": 1,
+        "fpr@0.95": 0.005555555555555556,
+        "flagged@0.95": 1
+      },
+      {
+        "seed": 1337,
+        "n_claimants": 180,
+        "max_score": 0.9750852584838867,
+        "mean_score": 0.005995428655296564,
+        "fpr@0.5": 0.005555555555555556,
+        "flagged@0.5": 1,
+        "fpr@0.8": 0.005555555555555556,
+        "flagged@0.8": 1,
+        "fpr@0.9": 0.005555555555555556,
+        "flagged@0.9": 1,
+        "fpr@0.95": 0.005555555555555556,
+        "flagged@0.95": 1
+      },
+      {
+        "seed": 7,
+        "n_claimants": 180,
+        "max_score": 0.9999934434890747,
+        "mean_score": 0.02607116475701332,
+        "fpr@0.5": 0.027777777777777776,
+        "flagged@0.5": 5,
+        "fpr@0.8": 0.016666666666666666,
+        "flagged@0.8": 3,
+        "fpr@0.9": 0.016666666666666666,
+        "flagged@0.9": 3,
+        "fpr@0.95": 0.016666666666666666,
+        "flagged@0.95": 3
+      },
+      {
+        "seed": 2024,
+        "n_claimants": 180,
+        "max_score": 0.9536272883415222,
+        "mean_score": 0.036146149039268494,
+        "fpr@0.5": 0.022222222222222223,
+        "flagged@0.5": 4,
+        "fpr@0.8": 0.011111111111111112,
+        "flagged@0.8": 2,
+        "fpr@0.9": 0.011111111111111112,
+        "flagged@0.9": 2,
+        "fpr@0.95": 0.005555555555555556,
+        "flagged@0.95": 1
+      },
+      {
+        "seed": 31415,
+        "n_claimants": 180,
+        "max_score": 0.7575452327728271,
+        "mean_score": 0.004557357635349035,
+        "fpr@0.5": 0.005555555555555556,
+        "flagged@0.5": 1,
+        "fpr@0.8": 0.0,
+        "flagged@0.8": 0,
+        "fpr@0.9": 0.0,
+        "flagged@0.9": 0,
+        "fpr@0.95": 0.0,
+        "flagged@0.95": 0
+      },
+      {
+        "seed": 271828,
+        "n_claimants": 180,
+        "max_score": 0.9998337030410767,
+        "mean_score": 0.04184332862496376,
+        "fpr@0.5": 0.044444444444444446,
+        "flagged@0.5": 8,
+        "fpr@0.8": 0.027777777777777776,
+        "flagged@0.8": 5,
+        "fpr@0.9": 0.027777777777777776,
+        "flagged@0.9": 5,
+        "fpr@0.95": 0.027777777777777776,
+        "flagged@0.95": 5
+      },
+      {
+        "seed": 99,
+        "n_claimants": 180,
+        "max_score": 0.0005539695848710835,
+        "mean_score": 9.94336005533114e-06,
+        "fpr@0.5": 0.0,
+        "flagged@0.5": 0,
+        "fpr@0.8": 0.0,
+        "flagged@0.8": 0,
+        "fpr@0.9": 0.0,
+        "flagged@0.9": 0,
+        "fpr@0.95": 0.0,
+        "flagged@0.95": 0
+      },
+      {
+        "seed": 12345,
+        "n_claimants": 180,
+        "max_score": 0.9917466640472412,
+        "mean_score": 0.017708076164126396,
+        "fpr@0.5": 0.016666666666666666,
+        "flagged@0.5": 3,
+        "fpr@0.8": 0.005555555555555556,
+        "flagged@0.8": 1,
+        "fpr@0.9": 0.005555555555555556,
+        "flagged@0.9": 1,
+        "fpr@0.95": 0.005555555555555556,
+        "flagged@0.95": 1
+      },
+      {
+        "seed": 555,
+        "n_claimants": 180,
+        "max_score": 0.9999890327453613,
+        "mean_score": 0.0251724012196064,
+        "fpr@0.5": 0.022222222222222223,
+        "flagged@0.5": 4,
+        "fpr@0.8": 0.022222222222222223,
+        "flagged@0.8": 4,
+        "fpr@0.9": 0.022222222222222223,
+        "flagged@0.9": 4,
+        "fpr@0.95": 0.022222222222222223,
+        "flagged@0.95": 4
+      },
+      {
+        "seed": 8675309,
+        "n_claimants": 180,
+        "max_score": 0.3357568383216858,
+        "mean_score": 0.004419312812387943,
+        "fpr@0.5": 0.0,
+        "flagged@0.5": 0,
+        "fpr@0.8": 0.0,
+        "flagged@0.8": 0,
+        "fpr@0.9": 0.0,
+        "flagged@0.9": 0,
+        "fpr@0.95": 0.0,
+        "flagged@0.95": 0
+      }
+    ],
+    "fpr_mean": 0.009444444444444445,
+    "fpr_std": 0.00981656168940635,
+    "flagged_total": 17,
+    "claimants_total": 1800,
+    "wilson_95_upper": 0.01507339276693485
+  },
+  "with_rings": [
+    {
+      "ring_intensity": 0.85,
+      "fpr_mean": 0.024074074074074074,
+      "fpr_std": 0.024768398330541824,
+      "recall_mean": 0.8722222222222223,
+      "recall_std": 0.11430592120008122,
+      "false_discovery_rate": 0.1989795918367347,
+      "per_seed": [
+        {
+          "seed": 42,
+          "fpr": 0.018518518518518517,
+          "recall": 0.9444444444444444,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 1337,
+          "fpr": 0.012345679012345678,
+          "recall": 0.8888888888888888,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 7,
+          "fpr": 0.04938271604938271,
+          "recall": 0.9444444444444444,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 2024,
+          "fpr": 0.08024691358024691,
+          "recall": 1.0,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 31415,
+          "fpr": 0.006172839506172839,
+          "recall": 0.6666666666666666,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 271828,
+          "fpr": 0.012345679012345678,
+          "recall": 0.6666666666666666,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 99,
+          "fpr": 0.0,
+          "recall": 0.9444444444444444,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 12345,
+          "fpr": 0.018518518518518517,
+          "recall": 0.8888888888888888,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 555,
+          "fpr": 0.037037037037037035,
+          "recall": 0.8888888888888888,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 8675309,
+          "fpr": 0.006172839506172839,
+          "recall": 0.8888888888888888,
+          "n_honest": 162,
+          "n_ring": 18
+        }
+      ]
+    },
+    {
+      "ring_intensity": 0.6,
+      "fpr_mean": 0.016666666666666666,
+      "fpr_std": 0.01818399267101704,
+      "recall_mean": 0.48888888888888893,
+      "recall_std": 0.1566977466763421,
+      "false_discovery_rate": 0.23478260869565218,
+      "per_seed": [
+        {
+          "seed": 42,
+          "fpr": 0.0,
+          "recall": 0.7222222222222222,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 1337,
+          "fpr": 0.006172839506172839,
+          "recall": 0.5,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 7,
+          "fpr": 0.037037037037037035,
+          "recall": 0.6111111111111112,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 2024,
+          "fpr": 0.04938271604938271,
+          "recall": 0.6111111111111112,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 31415,
+          "fpr": 0.0,
+          "recall": 0.4444444444444444,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 271828,
+          "fpr": 0.024691358024691357,
+          "recall": 0.5,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 99,
+          "fpr": 0.0,
+          "recall": 0.16666666666666666,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 12345,
+          "fpr": 0.0,
+          "recall": 0.3333333333333333,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 555,
+          "fpr": 0.030864197530864196,
+          "recall": 0.4444444444444444,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 8675309,
+          "fpr": 0.018518518518518517,
+          "recall": 0.5555555555555556,
+          "n_honest": 162,
+          "n_ring": 18
+        }
+      ]
+    },
+    {
+      "ring_intensity": 0.4,
+      "fpr_mean": 0.017901234567901235,
+      "fpr_std": 0.017079428781437967,
+      "recall_mean": 0.16111111111111112,
+      "recall_std": 0.08861841565929926,
+      "false_discovery_rate": 0.5,
+      "per_seed": [
+        {
+          "seed": 42,
+          "fpr": 0.012345679012345678,
+          "recall": 0.16666666666666666,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 1337,
+          "fpr": 0.006172839506172839,
+          "recall": 0.2222222222222222,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 7,
+          "fpr": 0.018518518518518517,
+          "recall": 0.05555555555555555,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 2024,
+          "fpr": 0.043209876543209874,
+          "recall": 0.1111111111111111,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 31415,
+          "fpr": 0.0,
+          "recall": 0.16666666666666666,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 271828,
+          "fpr": 0.030864197530864196,
+          "recall": 0.2222222222222222,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 99,
+          "fpr": 0.0,
+          "recall": 0.05555555555555555,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 12345,
+          "fpr": 0.024691358024691357,
+          "recall": 0.2777777777777778,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 555,
+          "fpr": 0.043209876543209874,
+          "recall": 0.05555555555555555,
+          "n_honest": 162,
+          "n_ring": 18
+        },
+        {
+          "seed": 8675309,
+          "fpr": 0.0,
+          "recall": 0.2777777777777778,
+          "n_honest": 162,
+          "n_ring": 18
+        }
+      ]
+    }
+  ],
+  "verdict": {
+    "fpr_upper_bound_below_1pct": false,
+    "measures_real_traffic": false,
+    "limitation_closed": false,
+    "note": "The protocol has never run, so no real dispute graph and no labelled real collusion exist. This bounds the false-positive rate on SYNTHETIC ring-free traffic, which is a true FPR against a generator whose realism is an assumption. PAPER.md 8.5 remains open; what it gains is a measured number and a reproducible procedure an operator can re-run on their own traffic once they have some."
+  }
+}

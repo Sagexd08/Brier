@@ -1,0 +1,424 @@
+{
+  "dataset": {
+    "name": "UCI Default of Credit Card Clients (Taiwan, 2005)",
+    "openml_id": 42477,
+    "n_rows": 30000,
+    "n_features": 22,
+    "base_rate": 0.2212,
+    "label": "observed default next month (not an expert credit grade)"
+  },
+  "protocol": {
+    "seeds": [
+      42,
+      1337,
+      7,
+      2024,
+      31415,
+      271828,
+      99,
+      12345,
+      555,
+      8675309
+    ],
+    "ece_bins": 10,
+    "note": "identical splits, head, fitting and metrics to the German Credit pipeline; base-model hyperparameters deliberately unchanged, so the model is under-fit for this size"
+  },
+  "per_seed": [
+    {
+      "seed": 42,
+      "n_test": 6000,
+      "temperature": 2.8478903770446777,
+      "uncal_ece": 0.1262839640999564,
+      "cal_ece": 0.05483370949948828,
+      "uncal_mce": 0.30826072243076996,
+      "cal_mce": 0.16147812730387634,
+      "uncal_brier": 0.16278898780694723,
+      "cal_brier": 0.14764648335772562,
+      "accuracy": 0.8048333333333333
+    },
+    {
+      "seed": 1337,
+      "n_test": 6000,
+      "temperature": 2.8725578784942627,
+      "uncal_ece": 0.1259828972025604,
+      "cal_ece": 0.05296710433818711,
+      "uncal_mce": 0.3741802698553859,
+      "cal_mce": 0.14938026528667525,
+      "uncal_brier": 0.16425383100506846,
+      "cal_brier": 0.14847847925302624,
+      "accuracy": 0.8015
+    },
+    {
+      "seed": 7,
+      "n_test": 6000,
+      "temperature": 2.7687861919403076,
+      "uncal_ece": 0.1217855508940041,
+      "cal_ece": 0.05575073785323184,
+      "uncal_mce": 0.28712666706695056,
+      "cal_mce": 0.17210329572359717,
+      "uncal_brier": 0.16033663708934628,
+      "cal_brier": 0.14680342823415768,
+      "accuracy": 0.8045
+    },
+    {
+      "seed": 2024,
+      "n_test": 6000,
+      "temperature": 2.8076817989349365,
+      "uncal_ece": 0.1414146534229222,
+      "cal_ece": 0.06545134841037605,
+      "uncal_mce": 0.3365841870129983,
+      "cal_mce": 0.20158519495779004,
+      "uncal_brier": 0.17523976235647631,
+      "cal_brier": 0.15633074449302561,
+      "accuracy": 0.7865
+    },
+    {
+      "seed": 31415,
+      "n_test": 6000,
+      "temperature": 2.882700204849243,
+      "uncal_ece": 0.13130570802695293,
+      "cal_ece": 0.061586635756694395,
+      "uncal_mce": 0.3155169720314591,
+      "cal_mce": 0.17969562326158794,
+      "uncal_brier": 0.16531961004092718,
+      "cal_brier": 0.15018690596605117,
+      "accuracy": 0.8001666666666667
+    },
+    {
+      "seed": 271828,
+      "n_test": 6000,
+      "temperature": 2.7292661666870117,
+      "uncal_ece": 0.12374256787438294,
+      "cal_ece": 0.056296588100881007,
+      "uncal_mce": 0.3341636333736643,
+      "cal_mce": 0.1399023302254222,
+      "uncal_brier": 0.16195390161227988,
+      "cal_brier": 0.14684685272783368,
+      "accuracy": 0.8041666666666667
+    },
+    {
+      "seed": 99,
+      "n_test": 6000,
+      "temperature": 2.7905759811401367,
+      "uncal_ece": 0.13207715922605684,
+      "cal_ece": 0.060388450069197755,
+      "uncal_mce": 0.3241729108073592,
+      "cal_mce": 0.15376413580197001,
+      "uncal_brier": 0.16738248154615168,
+      "cal_brier": 0.15150112198425034,
+      "accuracy": 0.797
+    },
+    {
+      "seed": 12345,
+      "n_test": 6000,
+      "temperature": 2.7078449726104736,
+      "uncal_ece": 0.11792021458177762,
+      "cal_ece": 0.04774492105527316,
+      "uncal_mce": 0.2567048722303509,
+      "cal_mce": 0.13225287957624954,
+      "uncal_brier": 0.15910677975966048,
+      "cal_brier": 0.14557359968911013,
+      "accuracy": 0.8053333333333333
+    },
+    {
+      "seed": 555,
+      "n_test": 6000,
+      "temperature": 2.8591549396514893,
+      "uncal_ece": 0.12485407753358645,
+      "cal_ece": 0.06240038433500257,
+      "uncal_mce": 0.28120563234419516,
+      "cal_mce": 0.14226454625368662,
+      "uncal_brier": 0.15961470735222788,
+      "cal_brier": 0.14696328083310173,
+      "accuracy": 0.8081666666666667
+    },
+    {
+      "seed": 8675309,
+      "n_test": 6000,
+      "temperature": 2.731071710586548,
+      "uncal_ece": 0.1271976948892136,
+      "cal_ece": 0.05809347103311059,
+      "uncal_mce": 0.39303743021400245,
+      "cal_mce": 0.191477023803436,
+      "uncal_brier": 0.16568633037724143,
+      "cal_brier": 0.15003178787109128,
+      "accuracy": 0.7978333333333333
+    }
+  ],
+  "summary": {
+    "temperature": {
+      "mean": 2.799753022193909,
+      "std": 0.0643473318463464,
+      "min": 2.7078449726104736,
+      "max": 2.882700204849243
+    },
+    "uncal_ece": {
+      "mean": 0.12725644877514133,
+      "std": 0.006479680717143796,
+      "min": 0.11792021458177762,
+      "max": 0.1414146534229222
+    },
+    "cal_ece": {
+      "mean": 0.05755133504514428,
+      "std": 0.0051632594181445215,
+      "min": 0.04774492105527316,
+      "max": 0.06545134841037605
+    },
+    "uncal_mce": {
+      "mean": 0.3210953297367135,
+      "std": 0.041500826889097446,
+      "min": 0.2567048722303509,
+      "max": 0.39303743021400245
+    },
+    "cal_mce": {
+      "mean": 0.1623903422194291,
+      "std": 0.02318911722900474,
+      "min": 0.13225287957624954,
+      "max": 0.20158519495779004
+    },
+    "uncal_brier": {
+      "mean": 0.16416830289463266,
+      "std": 0.0047654705313132815,
+      "min": 0.15910677975966048,
+      "max": 0.17523976235647631
+    },
+    "cal_brier": {
+      "mean": 0.14903626844093734,
+      "std": 0.003160678723366445,
+      "min": 0.14557359968911013,
+      "max": 0.15633074449302561
+    },
+    "accuracy": {
+      "mean": 0.8009999999999999,
+      "std": 0.006185406959874133,
+      "min": 0.7865,
+      "max": 0.8081666666666667
+    }
+  },
+  "german_credit_reference": {
+    "uncal_ece": 0.1853,
+    "cal_ece": 0.087,
+    "uncal_brier": 0.206,
+    "cal_brier": 0.1758,
+    "accuracy": 0.7505,
+    "temperature": 3.4657
+  },
+  "significance": {
+    "seeds_improved": 10,
+    "n_seeds": 10,
+    "mean_reduction_pct": 54.82149808869964,
+    "wilcoxon_statistic": 0.0,
+    "wilcoxon_p": 0.001953125
+  },
+  "replications": {
+    "calibration_reduces_ece": {
+      "claim": "temperature scaling reduces ECE in every seed",
+      "german": "10/10 seeds",
+      "taiwan": "10/10 seeds",
+      "holds": true
+    },
+    "temperature_above_one": {
+      "claim": "the base model is overconfident, so the learned T exceeds 1",
+      "german": "10/10 seeds, T = 3.47 +/- 0.45",
+      "taiwan": "10/10 seeds, T = 2.80 +/- 0.06",
+      "holds": true
+    },
+    "calibration_lowers_brier": {
+      "claim": "calibration lowers the realised Brier score, which is what the slash prices",
+      "german": "0.2060 -> 0.1758",
+      "taiwan": "0.1642 -> 0.1490",
+      "holds": true
+    },
+    "accuracy_unchanged": {
+      "claim": "temperature scaling is monotone, so accuracy is unchanged",
+      "german": "identical pre/post",
+      "taiwan": "identical pre/post by construction (monotone map)",
+      "holds": true
+    }
+  },
+  "subgroup": {
+    "column": "sex",
+    "min_group_size": 500,
+    "observed_group_sizes": [
+      2336,
+      3664
+    ],
+    "per_seed": [
+      {
+        "seed": 42,
+        "aggregate_ece": 0.05483370949948828,
+        "per_group": {
+          "1": {
+            "ece": 0.04490246146353522,
+            "n": 2372
+          },
+          "2": {
+            "ece": 0.06294599261474738,
+            "n": 3628
+          }
+        },
+        "worst_group_ece": 0.06294599261474738,
+        "null_worst_group_ece": 0.05900481136329937
+      },
+      {
+        "seed": 1337,
+        "aggregate_ece": 0.05296710433818711,
+        "per_group": {
+          "1": {
+            "ece": 0.043790283317483115,
+            "n": 2336
+          },
+          "2": {
+            "ece": 0.06317265912233119,
+            "n": 3664
+          }
+        },
+        "worst_group_ece": 0.06317265912233119,
+        "null_worst_group_ece": 0.05737570280926251
+      },
+      {
+        "seed": 7,
+        "aggregate_ece": 0.05575073785323184,
+        "per_group": {
+          "1": {
+            "ece": 0.05045926853592651,
+            "n": 2354
+          },
+          "2": {
+            "ece": 0.06436338054303087,
+            "n": 3646
+          }
+        },
+        "worst_group_ece": 0.06436338054303087,
+        "null_worst_group_ece": 0.059701786829533525
+      },
+      {
+        "seed": 2024,
+        "aggregate_ece": 0.06545134841037605,
+        "per_group": {
+          "1": {
+            "ece": 0.06411650040381446,
+            "n": 2351
+          },
+          "2": {
+            "ece": 0.06880256776802833,
+            "n": 3649
+          }
+        },
+        "worst_group_ece": 0.06880256776802833,
+        "null_worst_group_ece": 0.06973412993179309
+      },
+      {
+        "seed": 31415,
+        "aggregate_ece": 0.061586635756694395,
+        "per_group": {
+          "1": {
+            "ece": 0.05301939752678792,
+            "n": 2412
+          },
+          "2": {
+            "ece": 0.06740878523083937,
+            "n": 3588
+          }
+        },
+        "worst_group_ece": 0.06740878523083937,
+        "null_worst_group_ece": 0.06549300671083723
+      },
+      {
+        "seed": 271828,
+        "aggregate_ece": 0.056296588100881007,
+        "per_group": {
+          "1": {
+            "ece": 0.05692846371101149,
+            "n": 2365
+          },
+          "2": {
+            "ece": 0.05588547783459253,
+            "n": 3635
+          }
+        },
+        "worst_group_ece": 0.05692846371101149,
+        "null_worst_group_ece": 0.06067111247982245
+      },
+      {
+        "seed": 99,
+        "aggregate_ece": 0.060388450069197755,
+        "per_group": {
+          "1": {
+            "ece": 0.0509999194138638,
+            "n": 2338
+          },
+          "2": {
+            "ece": 0.06638254746738749,
+            "n": 3662
+          }
+        },
+        "worst_group_ece": 0.06638254746738749,
+        "null_worst_group_ece": 0.06486972702805702
+      },
+      {
+        "seed": 12345,
+        "aggregate_ece": 0.04774492105527316,
+        "per_group": {
+          "1": {
+            "ece": 0.036327354503179275,
+            "n": 2394
+          },
+          "2": {
+            "ece": 0.05557346959252022,
+            "n": 3606
+          }
+        },
+        "worst_group_ece": 0.05557346959252022,
+        "null_worst_group_ece": 0.051916920728815014
+      },
+      {
+        "seed": 555,
+        "aggregate_ece": 0.06240038433500257,
+        "per_group": {
+          "1": {
+            "ece": 0.05012861282435652,
+            "n": 2396
+          },
+          "2": {
+            "ece": 0.0707664847434431,
+            "n": 3604
+          }
+        },
+        "worst_group_ece": 0.0707664847434431,
+        "null_worst_group_ece": 0.06653969514149642
+      },
+      {
+        "seed": 8675309,
+        "aggregate_ece": 0.05809347103311059,
+        "per_group": {
+          "1": {
+            "ece": 0.04621941351128379,
+            "n": 2349
+          },
+          "2": {
+            "ece": 0.06573306597114707,
+            "n": 3651
+          }
+        },
+        "worst_group_ece": 0.06573306597114707,
+        "null_worst_group_ece": 0.06213167673688215
+      }
+    ],
+    "n_permutations": 200,
+    "mean_aggregate_ece": 0.05755133504514428,
+    "mean_worst_group_ece": 0.06420774167644865,
+    "mean_real_gap": 0.006656406631304378,
+    "mean_null_gap": 0.0041925219308356024,
+    "seeds_beating_null": 8,
+    "wilcoxon_statistic": 7.0,
+    "wilcoxon_p": 0.037109375,
+    "resolvable": true,
+    "effect_real": true,
+    "note": "The identical control returned p = 0.92 on German Credit (PAPER.md 8.4), where the whole apparent gap was an artifact of ECE's small-sample bias at n = 68. At these group sizes the effect survives its null -- but it is small in absolute terms, and slashing on it would still require an estimator whose bias is characterised."
+  },
+  "verdict": {
+    "core_claim_replicates": true,
+    "subgroup_effect_real_at_scale": true
+  }
+}

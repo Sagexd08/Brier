@@ -48,10 +48,20 @@ fabricates the logit obtains a proof that verifies. Two further measurements ran
 against the design. Deriving the unbonding period from statute rather than
 convenience gives 105 days, at which capital lockup — not the slash — becomes an
 operator's dominant cost. And the subgroup-calibration gap we set out to close
-proved *unmeasurable* at this dataset's scale: the apparent effect is reproduced
-in full by a random partition, because binned ECE's small-sample bias at n = 68
-exceeds the quantity being estimated. We report the null and did not build the
-on-chain component that would have implied the gap was closed. Every claimed
+proved *unmeasurable* at the first dataset's scale: the apparent effect is
+reproduced in full by a random partition, because binned ECE's small-sample bias
+at n = 68 exceeds the quantity being estimated. At 30,000 rows the same analysis
+resolves it — the effect is real but small, roughly 12% of aggregate ECE — which
+vindicates the null rather than overturning it, and still does not license an
+enforcement gate built on an estimator whose bias is twenty times the effect.
+We report both and did not build the on-chain component.
+
+A last measurement concerns a component already shipped. The collusion detector
+reports an AUC of 0.998 and is wired to withhold a claimant's payout; at the one
+threshold the contract actually enforces it flags 0.94% of honest claimants on
+ring-free traffic, and one flagged claimant in five is honest at the easiest
+setting. Threshold-free metrics can make a system look validated for something
+it is not, and we recommend leaving the detector unattached. Every claimed
 weakness is executed as a passing test, so a failure means the threat model has
 drifted from the code.
 
@@ -1266,6 +1276,33 @@ so overstating it later would fail the suite. The convenient part of this result
 is that the better estimator is also the cheaper circuit; that agreement is a
 measured outcome rather than a design assumption.
 
+**The result replicates on a second dataset.** Everything above is one corpus of
+1,000 rows, which is thin ground for the paper's central empirical claim. §8.6
+runs the identical protocol — same splits, same seeds, same head, same fitting,
+same metrics, and deliberately the same base-learner hyperparameters — on UCI
+*Default of Credit Card Clients*: 30,000 rows from a Taiwanese bank, labelled
+with **observed defaults** rather than an analyst's credit grade.
+
+Table: The same five claims, on both datasets. Means over the same 10 pinned seeds.
+
+| Claim | German Credit | Taiwan default |
+|---|---|---|
+| ECE reduced in every seed | 10/10 | 10/10 |
+| Mean ECE reduction | 52.8% | 54.8% |
+| Learned $T > 1$ (base model overconfident) | 3.47 ± 0.45 | 2.80 ± 0.06 |
+| Realised Brier — the quantity slashed | 0.2060 → 0.1758 | 0.1642 → 0.1490 |
+| Accuracy unchanged (monotone map) | yes | yes |
+
+The label change is the one that carries weight. A calibration finding that held
+on adjudicated opinion but not on realised outcomes would be a much weaker
+result, and these two datasets are the pair that can distinguish those.
+
+The base model is under-fit on the larger corpus, since its hyperparameters were
+chosen to overfit 1,000 rows and were not retuned — retuning per dataset would
+have tested whether the data can be modelled well rather than whether the
+finding travels. Absolute accuracy is therefore not the comparison to read; the
+ECE reduction is, and it is what the mechanism prices.
+
 **Seed-selection audit.** Because a single seed can be chosen after the fact, we
 report where ours falls. Seed 42 ranks 6th of 10 by ECE reduction (48.7% against
 a 52.8% mean) while carrying the *highest* uncalibrated ECE of any seed — the
@@ -1787,8 +1824,8 @@ measured.
 
 Three consequences, and none of them is that the mechanism is subgroup-fair:
 
-1. **This limitation stays open.** Absence of measurable evidence is not
-   evidence of absence. Nothing here shows the mechanism is subgroup-calibrated.
+1. **Nothing here shows the mechanism is subgroup-calibrated.** Absence of
+   measurable evidence is not evidence of absence.
 2. **The obvious fix is invalid at this scale.** A within-group ECE gate on
    1,000 rows would fire on noise, and slashing an operator for it would be
    slashing them for an artifact of the auditor's estimator. The on-chain
@@ -1798,6 +1835,27 @@ Three consequences, and none of them is that the mechanism is subgroup-fair:
    floor near 0.02. That is a dataset ~20× this one, or a debiased estimator
    with a characterised noise floor — equal-mass binning, or a kernel estimator
    with a bootstrap interval. Both are in §9.4.
+
+**Resolved on a larger dataset, and the effect is real but small.** Point 3
+named the missing ingredient as roughly 20× the data, and §8.6's replication
+supplies it: the Taiwan default dataset has subgroups of 2,336–3,664 test rows
+against German Credit's 54–116. Run there, the identical analysis — same
+binning, same protected-attribute construction, same permutation control —
+gives a worst-group gap of 0.0067 against a permuted null of 0.0042, beating its
+null in 8 of 10 seeds at *p* = 0.037.
+
+So the question was answerable all along; this dataset simply could not answer
+it. Subgroup miscalibration **is** present, and it is roughly 12% of the
+aggregate ECE — real, and much smaller than the 55% understatement the naive
+German Credit comparison appeared to show before the null was run. Both halves
+of that matter: the effect exists, and the first measurement of it was noise.
+
+This does not license a subgroup slashing rule. An enforcement gate needs an
+estimator whose bias is characterised at the group sizes it will encounter, and
+binned ECE at n = 68 has a bias of 0.1188 — twenty times the effect just
+measured. A rule that fires on a real 0.0067 in a regime where the estimator
+manufactures 0.1188 is not measuring what it claims to. W4a in §9.4 is
+unchanged, and `SubgroupReputationRegister.sol` still does not exist.
 
 `tests/test_subgroup_calibration.py` pins the null against erosion: the
 permutation control, the minimum group size, and the noise floor's monotonicity
@@ -1814,7 +1872,53 @@ exist by construction. There is no labelled real collusion, the protocol having
 never run, and the false-positive rate on genuine dispute traffic is therefore
 unknown. An earlier draft of this document said the detector was not wired to
 any enforcement action and must not be until that number exists. It is now
-wired, and the number still does not exist.
+wired, and for real traffic the number still does not exist.
+
+**What can be measured has now been measured, and it is unfavourable.** The
+false-positive rate on real traffic is unobtainable, but a weaker and still
+decision-relevant quantity is not: on synthetic traffic containing *no rings at
+all*, every flag is false by construction, so the rate at which the detector
+fires there is a true false-positive rate. `scripts/24_detector_fpr.py` measures
+it at the threshold the contract actually enforces —
+`CollusionOracle.MIN_SCORE = 0.8e18`, below which `flag()` reverts — training on
+one dispute graph and scoring a disjoint second one.
+
+Table: Detector behaviour at the enforced threshold of 0.80, over the 10 pinned
+seeds. FDR is the fraction of flagged claimants who were honest.
+
+| Traffic | FPR | Recall | FDR |
+|---|---|---|---|
+| No rings present | **0.94%** (95% Wilson upper bound **1.51%**) | — | 100% by construction |
+| Rings at intensity 0.85 | 2.41% | 87.2% | **19.9%** |
+| Rings at intensity 0.60 | 1.67% | 48.9% | **23.5%** |
+| Rings at intensity 0.40 | 1.79% | 16.1% | **50.0%** |
+
+Three things follow, and none of them is reassuring.
+
+**The detector flags honest claimants in a world with no collusion in it.** 17
+of 1,800, across ten ring-free graphs. That rate is small but it is not zero,
+and each instance is a legitimate claimant silenced for the appeal window.
+
+**One flagged claimant in five is honest, at the easiest setting.** The FDR is
+the number a flagged individual actually faces, and it is far worse than the
+FPR because ring members are rare. At intensity 0.40 the detector recalls 16% of
+ring members while half of everyone it flags is innocent — a coin flip that
+silences bystanders.
+
+**§A.5's headline AUC of 0.998 does not describe this.** AUC is threshold-free
+and integrates over operating points the contract cannot use. The deployed
+system has one operating point, fixed at 0.80, and its precision there is the
+number that governs whether attaching the oracle is defensible. Reporting AUC
+and enforcing at a threshold is how a system comes to look validated while
+being unvalidated for what it does.
+
+This does not close the limitation. It is synthetic traffic from a generator
+whose realism is itself an assumption, and a detector that behaves this way on
+ring-free synthetic traffic has cleared the lowest available bar, not a
+meaningful one. What changes is that an operator deciding whether to pass a
+non-zero oracle address now has a measured number where there was none, and a
+reproducible procedure they can re-run on their own traffic once they have any.
+On this evidence the honest recommendation is to pass `address(0)`.
 
 What an enforced flag does: blocks the claimant from opening disputes, and
 diverts any payout they win into quarantine. What it does not do: slash. The
@@ -1847,11 +1951,59 @@ attach no oracle at all, which
 
 ### 8.6 Scope of the empirical claims
 
-Results are from a single dataset (n = 1,000; test split n = 200), one seed, one
-model family, and one decision class, on a local devnet. Calibration drift over
-time is not evaluated. Staking parameters are demonstration values with no
-actuarial basis, and correlated tail risk — one bad model version producing
-thousands of simultaneous claims — is not modelled.
+The calibration results now rest on **two** datasets, and the second was chosen
+to differ on the axes that could have been driving the first. UCI *Default of
+Credit Card Clients* (Taiwan, 2005) is 30,000 rows against German Credit's
+1,000, from a different country and decade, and — the difference that matters
+most — its label is an **observed default event** rather than an analyst's
+credit grade. A calibration finding that held only on adjudicated opinion and
+not on realised outcomes would be a much weaker finding, and these two datasets
+are the pair that can tell those apart.
+
+The protocol was held fixed rather than retuned: the same split fractions, the
+same 10 pinned seeds, the same head, the same fitting procedure and the same
+metric definitions, imported from the modules the first pipeline uses. The base
+learner's hyperparameters were deliberately *not* adjusted, even though they
+were chosen to overfit 1,000 rows and are wrong for 30,000. Retuning them would
+have answered a different question. The consequence is that the base model is
+under-fit here, so absolute accuracy is not the comparison to read.
+
+Table: Replication on a second dataset. Every row is a claim that could have
+failed. Figures are means over the same 10 pinned seeds.
+
+| Claim | German Credit | Taiwan default | Holds |
+|---|---|---|---|
+| Temperature scaling reduces ECE in every seed | 10/10 | 10/10 | yes |
+| Mean ECE reduction | 52.8% | **54.8%** | yes |
+| Learned temperature exceeds 1 (base model overconfident) | 3.47 ± 0.45, 10/10 | 2.80 ± 0.06, 10/10 | yes |
+| Calibration lowers realised Brier — what the slash prices | 0.2060 → 0.1758 | 0.1642 → 0.1490 | yes |
+| Accuracy unchanged (monotone rescaling) | identical | identical | yes |
+
+The ECE reduction is significant at *p* = 0.002 (Wilcoxon signed-rank over
+seeds). The core empirical claim of this paper therefore travels: the base model
+is overconfident and a one-parameter head fixes roughly half of that, on two
+datasets that share almost nothing but their domain.
+
+**A gap this dataset closes that the first could not.** §8.4 reports that the
+subgroup-calibration question was unanswerable on German Credit, because binned
+ECE's small-sample bias at n = 68 exceeded the effect being measured. Taiwan's
+subgroups hold 2,336–3,664 test rows, well past the noise floor, and the same
+permutation control that killed the first result is passed here: the worst-group
+gap is 0.0067 against a permuted null of 0.0042, beating its null in 8 of 10
+seeds at *p* = 0.037.
+
+So **subgroup miscalibration is real** — and the finding cuts both ways. It
+vindicates §8.4's refusal to call the first null a clean bill of health, and it
+bounds the effect: 0.0067 of ECE is small in absolute terms, roughly 12% of the
+aggregate. A subgroup slashing rule would still need an estimator whose bias is
+characterised at the group sizes it will actually see, which §9.4's W4a
+describes and this work does not provide.
+
+What remains outside the evidence: two datasets are still both credit, both
+tabular, and both binary — one model family and one decision class. Calibration
+drift over time is not evaluated on either. Staking parameters remain
+demonstration values with no actuarial basis, and correlated tail risk — one bad
+model version producing thousands of simultaneous claims — is not modelled.
 
 ---
 
@@ -1950,20 +2102,31 @@ rather than aggregate confidence would target it directly. *Evidence:* a
 demonstration that the current rule fails to penalise a model constructed to be
 subgroup-miscalibrated but aggregate-calibrated, and that the revised rule does.
 
-**W5 — External validity.** The empirical claims rest on one dataset, one model
-family, and one decision class (§8.6). *Evidence:* replication on a second credit
-dataset and a second model family, plus a calibration-drift study over time,
-which is currently not evaluated at all.
+**W5 — External validity. Partly done (§8.6).** The calibration claims now rest
+on two datasets rather than one: the Taiwan default corpus replicates all five
+core claims under a fixed protocol, and its size resolved the subgroup question
+§8.4 could not answer. *Still open:* a second **model family** — both datasets
+run the same XGBoost base learner, so nothing here separates "this calibration
+result holds generally" from "this holds for gradient-boosted trees" — and a
+calibration-drift study over time, which remains unevaluated on either dataset.
 
-**W6 — Validate the detector that is already enforcing.** The graph analysis
-recovers injected rings (§A.5) and now has an enforcement path (§8.5), which
-inverts the usual ordering: the capability shipped before the evidence that
-would justify it. The appeal path exists; the measurement does not. Required, in
-order of urgency: a labelled corpus of real disputes; a measured false-positive
-rate on honest traffic, which is the number that decides whether the oracle
-should be attached at all; and an appeal reviewer that is not the same admin who
-can forfeit. Until the second of those exists, the honest deployment posture is
-to pass `address(0)` and leave the detector reporting into a dashboard.
+**W6 — Validate the detector that is already enforcing. Measured, and the
+measurement argues against it (§8.5).** The graph analysis recovers injected
+rings (§A.5) and now has an enforcement path, which inverts the usual ordering:
+the capability shipped before the evidence that would justify it.
+
+The false-positive rate at the enforced threshold has now been measured on
+synthetic ring-free traffic — 0.94%, 95% Wilson upper bound 1.51% — along with
+a false *discovery* rate of 19.9% at the easiest ring intensity and 50% at the
+hardest. That is enough to settle the deployment question in the negative
+without settling the validation question at all: **the honest posture is to pass
+`address(0)`**, and it now rests on a number rather than on the absence of one.
+
+*Still required, in order of urgency:* a labelled corpus of **real** disputes,
+without which no false-positive rate on real traffic is obtainable and this
+limitation cannot close; a precision target agreed in advance, since the current
+threshold was chosen before any precision figure existed; and an appeal reviewer
+who is not the admin able to forfeit.
 
 **W7 — Why did the ensemble not help?** §A.1 found that ensembling improves
 uncalibrated ECE and that calibration then absorbs the gain entirely, and §A.2
@@ -1990,28 +2153,44 @@ Table: Proposed sequencing. "Answers" names the question each item closes;
 | 2 | W2b — commit feature vector and weights | Makes fabrication detectable | 1 | open |
 | 3 | W1a — set the unbonding period from claim latency | How long is the dispute window? | — | **done, §8.3** |
 | 3b | W1b — decouple dispute window from capital lockup | Can a defensible τ be afforded? | 3 | **new, opened by 3** |
-| 4 | W6 — measure detector false-positive rate | Should the oracle be attached? | — | open |
+| 4 | W6 — measure detector false-positive rate | Should the oracle be attached? | — | **measured, §8.5 — answer is no** |
 | 5 | W4 — subgroup calibration as the slashed quantity | Does the rule price the harm it should? | 5b | **blocked, §8.4** |
-| 5b | W4a — a debiased calibration estimator, or 20× the data | Can subgroup ECE be measured at all here? | — | **new, opened by 5** |
+| 5b | W4a — a debiased calibration estimator, or 20× the data | Can subgroup ECE be measured at all? | — | **half done: at 20× the data the effect is real (§8.6); the estimator is still uncharacterised** |
 | 6 | W3 — staked jury, evidentiary standard, appeals | Can tier 3 be made accountable? | 3 | open |
-| 7 | W5 — second dataset, second model family, drift | Do the empirical claims travel? | — | open |
+| 7 | W5 — second dataset, second model family, drift | Do the empirical claims travel? | — | **dataset done, §8.6; family and drift open** |
 
-Two rows changed shape rather than closing, and both changes came from
-attempting the work rather than from re-reading the plan.
+Four rows changed shape rather than simply closing, and every change came from
+attempting the work rather than from re-reading the plan. That is the pattern
+worth noting: each item that was actually executed came back different from how
+it was specified.
 
 **W1a is done and spawned W1b.** Deriving τ answered the question and revealed
 that no value of τ is satisfactory (§8.3). The follow-on is a different
 instrument, not a better parameter.
 
-**W4 is blocked behind a new W4a.** The subgroup measurement returned a null
-that is not about the mechanism but about the estimator: at these group sizes
-ECE cannot resolve the effect in either direction (§8.4). Building the slashing
-variant before W4a lands would key enforcement to noise, so the on-chain
-component was deliberately not built.
+**W6 is measured and the answer is negative.** The false-positive rate at the
+enforced threshold now exists (§8.5), and it settles the *deployment* question —
+pass `address(0)` — without settling the *validation* question, which still
+needs real labelled disputes. An item can be answered without being closed.
 
-Items 1, 4, 5b and 7 are independent and can proceed in parallel. Item 6 remains
-the largest and still depends on a definition of the adjudicated event that does
-not yet exist (§8.2).
+**W5 is half done, and the remaining half is the harder one.** A second dataset
+replicated every core claim (§8.6). But both datasets run the same base learner,
+so nothing yet separates "this calibration result holds generally" from "this
+holds for gradient-boosted trees" — and a second model family is a cheaper
+experiment than the one already done, so its absence is now the more glaring gap.
+
+**W4 stays blocked, but W4a is half answered.** §8.4's null was about the
+estimator rather than the mechanism, and the larger dataset shows the effect is
+real once group sizes permit measuring it (§8.6). What is still missing is the
+part that would license enforcement: an estimator whose bias is characterised at
+the group sizes a deployment would actually see. Binned ECE's bias at n = 68 is
+twenty times the effect measured at n = 2,336, so a gate built on it would fire
+on the estimator, not the model. `SubgroupReputationRegister.sol` still does not
+exist.
+
+Items 1, 5b and the open half of 7 are independent and can proceed in parallel.
+Item 6 remains the largest and still depends on a definition of the adjudicated
+event that does not yet exist (§8.2).
 
 ### 9.5 Explicitly out of scope
 
@@ -2099,18 +2278,41 @@ applies its own threshold to, and with buyers spanning thresholds of 0.50 to
 mechanism's economic case rests on buyer heterogeneity, which this work models
 and does not measure.
 
-Two further measurements came back against the design, and are reported here at
-the same weight as the results that favour it. Deriving the unbonding period
-from statute rather than convenience gives 105 days, at which capital lockup
-becomes an operator's dominant cost — roughly 8× the expected slash — which
-substantially weakens §7.7's argument that calibration pays for itself. And the
-subgroup-calibration gap that §8.4 names as the sharpest scientific gap turned
-out to be unmeasurable at this dataset's scale: the apparent effect is entirely
-reproduced by a random partition, because ECE's small-sample bias at n = 68
-exceeds the quantity being measured. The on-chain register that would have
-tracked it was not built. A negative result that blocks a planned deliverable is
-still a result, and burying it would have left a contract in the repository
-implying a gap had been closed.
+Three further measurements came back against the design, and are reported here
+at the same weight as the results that favour it.
+
+Deriving the unbonding period from statute rather than convenience gives 105
+days, at which capital lockup becomes an operator's dominant cost — roughly 8×
+the expected slash — which substantially weakens §7.7's argument that
+calibration pays for itself.
+
+The subgroup-calibration gap that §8.4 names as the sharpest scientific gap
+turned out to be unmeasurable on the first dataset: the apparent effect is
+entirely reproduced by a random partition, because ECE's small-sample bias at
+n = 68 exceeds the quantity being measured. On a 30,000-row dataset the same
+analysis resolves it, and the effect is real but small — about 12% of aggregate
+ECE. Both halves matter. The effect exists, *and* the first measurement of it
+was noise; a paper that had reported only the first would have overstated the
+problem sevenfold (an apparent 0.0479 against a measured 0.0067), and one that
+reported only the second would have
+missed that the instrument was the thing being measured. The on-chain register
+was not built either way, because binned ECE's bias at realistic group sizes is
+twenty times the effect it would be enforcing on.
+
+The third is about a component that had already shipped. The collusion detector
+reports an AUC of 0.998 in §A.5 and is wired to withhold a claimant's payout.
+At the single threshold `CollusionOracle.sol` actually enforces, it flags 0.94%
+of honest claimants on traffic containing no collusion at all, and at the
+easiest ring intensity one flagged claimant in five is honest. Nothing about the
+detector changed; what changed is that it was evaluated at the operating point
+the contract uses rather than integrated over operating points the contract
+cannot reach. **Reporting a threshold-free metric while enforcing at a fixed
+threshold is how a system comes to look validated for something it is not**, and
+the recommendation is now explicit: pass `address(0)`.
+
+A negative result that blocks a planned deliverable is still a result, and
+burying any of these would have left the repository implying gaps had closed
+that had not.
 
 The trajectory is worth stating precisely, because it is the argument for the
 approach. Two of v0's three named gaps have closed since the first draft, and
@@ -2504,6 +2706,8 @@ python scripts/93_figure_e_sweep.py          # Figure 5
 # --- v1: the agentic-payments work -------------------------------------
 python scripts/21_subgroup_adversary.py  # §8.4  subgroup null + ECE noise floor
 python scripts/22_market_model.py        # §4    welfare model, all of §4.3-§4.5
+python scripts/23_second_dataset.py      # §8.6  replication on Taiwan default
+python scripts/24_detector_fpr.py        # §8.5  detector FPR at the enforced threshold
 
 cd contracts                             # §5.1  ERC-8004 mirror
 forge test --match-contract ERC8004ReputationAdapter
@@ -2520,7 +2724,16 @@ The unbonding arithmetic in §8.3 is derived in
 and its inputs — realised Brier 0.1758 and r = 5% — are §7.1 and §7.7
 respectively.
 
-The two negative results have their own guard: `tests/test_subgroup_calibration.py`
+§8.6's replication comes from `23_second_dataset.py` and
+`artifacts/calibration/second_dataset.json`; §8.5's detector figures from
+`24_detector_fpr.py` and `artifacts/ablation/detector_fpr.json`. The second
+dataset is fetched once from OpenML and cached as parquet, so a remote change
+cannot silently alter a published number.
+
+The results that could erode have guards. `tests/test_subgroup_calibration.py`
 asserts the permutation control, the minimum group size and the monotonicity of
-the noise floor in *n*, so the null in §8.4 cannot be eroded by a later change
-that quietly shrinks a threshold until the effect looks significant.
+the noise floor in *n*, so §8.4's null cannot be eroded by quietly shrinking a
+threshold. `tests/test_second_dataset.py` pins the replication against per-dataset
+retuning, and pins the detector's *unfavourable* numbers against a later change
+that evaluates at a friendlier threshold — a test suite that only defends good
+results is a ratchet in one direction.
