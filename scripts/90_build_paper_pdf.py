@@ -505,7 +505,10 @@ h3 {
   font-size: 11pt;
   font-weight: 700;
   margin: 13pt 0 5pt;
-  color: #1a3d6d;
+  /* Black, matching h2. Blue subsection headings under black section headings
+     were inconsistent with each other and read as a template rather than a
+     typographic decision. Links stay blue -- that convention is standard and
+     carries information. */
   break-after: avoid; page-break-after: avoid;
 }
 h4 {
@@ -607,7 +610,7 @@ td.num, th.num { text-align: right; padding-right: 0; }
   hyphens: none;
   break-after: avoid; page-break-after: avoid;
 }
-.tabcaption .lab { font-weight: 700; color: #a03020; }
+.tabcaption .lab { font-weight: 700; color: #000; }
 
 /* ---------------- figures ---------------- */
 figure {
@@ -624,7 +627,7 @@ figcaption {
   text-align: left;
   hyphens: none;
 }
-figcaption .lab { font-weight: 700; color: #a03020; }
+figcaption .lab { font-weight: 700; color: #000; }
 
 /* ---------------- theorem environments ---------------- */
 .thm {
@@ -696,16 +699,17 @@ blockquote p { margin: 0; text-indent: 0; }
 .toc a { color: #000; }
 
 .caveat {
-  border: 0.6pt solid #c0a49f;
-  background: #fdf6f4;
-  border-left: 2.2pt solid #a03020;
-  padding: 8pt 11pt;
-  font-size: 9.4pt;
-  line-height: 1.36;
-  margin: 14pt 0 0;
-  text-align: left;
+  border: none;
+  border-top: 0.5pt solid #000;
+  background: none;
+  padding: 7pt 0 11pt;
+  font-size: 9.3pt;
+  font-style: italic;
+  line-height: 1.42;
+  margin: 15pt 0 0;
+  text-align: justify;
 }
-.caveat b { color: #a03020; }
+.caveat b { color: #000; font-style: normal; }
 """ % {"serif": SERIF, "sans": SANS, "mono": MONO}
 
 
