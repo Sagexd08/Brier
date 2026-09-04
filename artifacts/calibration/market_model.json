@@ -1,0 +1,104 @@
+{
+  "setup": {
+    "n_draws": 400000,
+    "seed": 0,
+    "beta": [
+      5.0,
+      2.0
+    ],
+    "mean_p": 0.7141767401569076,
+    "V": 100.0,
+    "K": 400.0,
+    "price": 20.0,
+    "threshold": 0.8
+  },
+  "single_buyer": {
+    "welfare_x402": -42.91162992154622,
+    "welfare_brier_gross": 13.275701033223104,
+    "screening_value": 56.18733095476932,
+    "participation": {
+      "L1 busy (30 gwei)": {
+        "cost": 79.86,
+        "welfare": -66.5842989667769,
+        "gain_over_x402": -23.672669045230677,
+        "worth_it": false
+      },
+      "L1 quiet (10 gwei)": {
+        "cost": 26.62,
+        "welfare": -13.344298966776897,
+        "gain_over_x402": 29.567330954769325,
+        "worth_it": true
+      },
+      "L2 typical (0.05 gwei)": {
+        "cost": 0.13,
+        "welfare": 13.145701033223103,
+        "gain_over_x402": 56.05733095476933,
+        "worth_it": true
+      },
+      "L2 cheap (0.01 gwei)": {
+        "cost": 0.03,
+        "welfare": 13.245701033223105,
+        "gain_over_x402": 56.15733095476933,
+        "worth_it": true
+      }
+    },
+    "hela_best": {
+      "phi_B_d": 100.0,
+      "threshold": 0.8,
+      "welfare": 13.275701033223104
+    },
+    "hela_matches_brier": true,
+    "hela_sensitivity": {
+      "x0.5": {
+        "phi_B_d": 50.0,
+        "threshold": 0.6,
+        "welfare": -6.230751029040239,
+        "vs_brier": -19.506452062263342
+      },
+      "x1.0": {
+        "phi_B_d": 100.0,
+        "threshold": 0.8,
+        "welfare": 13.275701033223104,
+        "vs_brier": 0.0
+      },
+      "x2.0": {
+        "phi_B_d": 200.0,
+        "threshold": 0.9,
+        "welfare": 7.697045161656027,
+        "vs_brier": -5.578655871567077
+      }
+    }
+  },
+  "heterogeneous_buyers": {
+    "buyers": [
+      {
+        "V": 100.0,
+        "K": 100.0,
+        "threshold": 0.5
+      },
+      {
+        "V": 100.0,
+        "K": 400.0,
+        "threshold": 0.8
+      },
+      {
+        "V": 100.0,
+        "K": 900.0,
+        "threshold": 0.9
+      },
+      {
+        "V": 100.0,
+        "K": 1900.0,
+        "threshold": 0.95
+      }
+    ],
+    "welfare_brier": 15.832039579034216,
+    "hela_best": {
+      "phi_B_d": 185.0,
+      "threshold": 0.8918918918918919,
+      "welfare": 4.674977308085517
+    },
+    "pooling_loss": 11.1570622709487,
+    "pooling_loss_pct": 70.47141472361896
+  }
+}

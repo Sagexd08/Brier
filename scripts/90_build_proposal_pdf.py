@@ -36,6 +36,13 @@ OUT = ROOT / "landing" / "brier-proposal.pdf"
 # than silently mangled.
 # ----------------------------------------------------------------------
 _MATH_LITERAL = {
+    r"\varphi": "φ",
+    r"\varrho": "ϱ",
+    r"\varepsilon": "ε",
+    r"\mathbb{1}": "𝟙",
+    r"\mathbb{E}": "E",
+    r"\ge": "≥",
+    r"\le": "≤",
     r"\neq": "\u2260",
     r"\leq": "\u2264",
     r"\geq": "\u2265",
@@ -112,8 +119,11 @@ def _render_math(expr: str) -> str:
     s = re.sub(r"\^(\{[^}]*\}|\S)", lambda m: sup(m.group(1)), s)
     s = re.sub(r"_(\{[^}]*\}|\w)", lambda m: "<sub>%s</sub>" % html_mod.escape(m.group(1).strip("{}")), s)
 
-    for tex, ch in _MATH_LITERAL.items():
-        s = s.replace(tex, ch)
+    # Longest key first. Dict order is not safe here: "\ge" would otherwise
+    # consume the prefix of "\geq" and leave a stray "q" behind, and the same
+    # trap waits for any short macro that prefixes a longer one.
+    for tex in sorted(_MATH_LITERAL, key=len, reverse=True):
+        s = s.replace(tex, _MATH_LITERAL[tex])
 
     # \{ \} escapes survive to literal braces
     s = s.replace(r"\{", "{").replace(r"\}", "}")
