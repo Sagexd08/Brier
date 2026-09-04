@@ -16,13 +16,13 @@ is estimated, extrapolated, or copied from a paper. Detail in
 
 | | Measured |
 |---|---|
-| zk proving time (calibration head) | **2.13 s ± 0.09**, flat from 1 to 16,897 params, no GPU |
+| zk proving time (calibration head) | **2.09 s**, flat from 1 to 16,897 params, no GPU |
 | On-chain proof verification | **684,696 gas** (≈ $62 at 30 gwei / $3k ETH) |
 | Verifier deployment | **2,942,192 gas**, one-off |
 | Proving key size | **132 MiB** per head (operator-side, not on-chain) |
 | Calibration: ECE on held-out test | **0.1853 ± 0.0248 → 0.0870 ± 0.0218** (mean ± std over 10 pinned seeds; 52.8% ± 10.3% reduction) |
 | Learned temperature | **T = 3.47 ± 0.45** (T > 1 in every seed, confirming the base model was overconfident) |
-| Tests | **53 Solidity + 43 Python, all passing** |
+| Tests | **144 Solidity + 98 Python + 11 middleware, all passing** |
 
 End-to-end, three scenarios against a local chain, as a share of stake:
 
@@ -34,6 +34,28 @@ End-to-end, three scenarios against a local chain, as a share of stake:
 
 Confident-and-wrong costs **3,667x** confident-and-correct and **3.49x**
 uncertain-and-wrong.
+
+## Two results that went against the mechanism
+
+Recorded here rather than only in the paper, because a repository that
+advertises only its confirmations is not evidence of much.
+
+**The unbonding period is worse than v0 admitted.** Deriving it from the FCRA
+statutory chain rather than convenience gives 105 days, not the 7 used in tests
+(60-day file window + 30-day reinvestigation + 15-day extension). At that
+length, capital lockup — not the slash — becomes an operator's dominant cost,
+by roughly 8× at a 1% dispute rate. That substantially weakens the argument
+that calibration pays for itself. See
+[`docs/UNBONDING_PERIOD_JUSTIFICATION.md`](docs/UNBONDING_PERIOD_JUSTIFICATION.md).
+
+**The subgroup-calibration gap could not be measured here, so the contract for
+it was not built.** Within-group ECE exceeds aggregate ECE in 10/10 seeds — but
+a permutation null reproduces the entire effect (Wilcoxon p = 0.92), because
+ECE is biased upward at small n: a model calibrated *by construction* scores
+0.1188 at n = 68, above this pipeline's aggregate ECE of 0.0870. The dataset
+cannot answer the question either way, so the limitation stays open and
+`SubgroupReputationRegister.sol` does not exist. `tests/test_subgroup_calibration.py`
+pins the null so it cannot be eroded by quietly shrinking a threshold.
 
 ## What this proves and doesn't prove
 
@@ -182,7 +204,7 @@ proved"*.
 | SHAP vectors | **Real** | `shap` TreeExplainer, additivity-checked, deterministic. |
 | zk proof of calibration head | **Real cryptography** | EZKL 23.0.5 / halo2. Real proving, real verification, tamper-tested. |
 | zk proof of base classifier | **NOT BUILT** | Out of scope by design. Never claimed. |
-| Smart contracts | **Real Solidity** | Foundry, 48 tests, real proof verified on-chain. |
+| Smart contracts | **Real Solidity** | Foundry, 144 tests, real proof verified on-chain. |
 | Chain | **Simulated** | Local Anvil devnet. Not a testnet, not mainnet. |
 | **Dispute resolution** | **SIMULATED** | A single admin address decides every outcome. **No jury, no oracle, no evidentiary standard, no appeals.** The largest gap to anything deployable. |
 | Staking economics | **Simulated** | Demonstration parameters, not actuarial. |
@@ -225,12 +247,16 @@ Recorded because they are the useful part of a technical demo:
 ## Repository layout
 
 ```
-src/brier/        Library: data, models, calibration, metrics, SHAP
-scripts/          Numbered, runnable pipeline stages (10 → 90)
+src/brier/        Library: data, models, calibration, metrics, SHAP, subgroup
+scripts/          Numbered, runnable pipeline stages (10 → 95)
 contracts/        Foundry: BrierMath, Attestation, StakePool + EZKL verifier
+x402-middleware/  Reference x402 integration: attestation gate (Express/Hono)
 tests/            Python tests (metrics known-answer, phase correctness)
 docs/             Per-phase notes, design decisions, path to production
 RESULTS.md        Measured numbers (generated, never hand-edited)
+ABLATION.md       Five enhancements ablated against the baseline (generated)
+RELATED_WORK_V2.md  The agentic-payments literature, classified
+CHANGELOG_V0_TO_V1.md  What changed in the proposal, and why
 ```
 
 ## Reproducing
@@ -243,13 +269,18 @@ python scripts/11_reliability_plot.py   # reliability diagram
 python scripts/20_explain.py            # SHAP + sanity checks
 python scripts/30_export_onnx.py        # ONNX export (fidelity-checked)
 python scripts/31_zk_prove.py           # circuits, proofs, soundness
-cd contracts && forge test              # 48 contract tests
+cd contracts && forge test              # 144 contract tests
 
 # End-to-end demo (needs a local chain)
 anvil &
 forge script script/Deploy.s.sol:Deploy --rpc-url http://127.0.0.1:8545 --broadcast
 python scripts/40_demo_e2e.py
 python scripts/90_render_results.py     # regenerate RESULTS.md
+
+# v1: the agentic-payments work
+python scripts/21_subgroup_adversary.py  # subgroup null + ECE noise floor
+python scripts/22_market_model.py        # welfare model (proposal §4)
+cd x402-middleware && npm install && npm test   # gates against a live chain
 ```
 
 Requires the EZKL CLI v23.0.5 at `tools/ezkl.exe` (two functions in the Python
