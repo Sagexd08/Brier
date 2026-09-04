@@ -34,7 +34,7 @@ is estimated, extrapolated, or copied from a paper. Detail in
 | Proving key size | **132 MiB** per head (operator-side, not on-chain) |
 | Calibration: ECE on held-out test | **0.1853 ± 0.0248 → 0.0870 ± 0.0218** (mean ± std over 10 pinned seeds; 52.8% ± 10.3% reduction) |
 | Learned temperature | **T = 3.47 ± 0.45** (T > 1 in every seed, confirming the base model was overconfident) |
-| Tests | **144 Solidity + 98 Python + 11 middleware, all passing** |
+| Tests | **144 Solidity + 113 Python + 11 middleware, all passing** |
 
 End-to-end, three scenarios against a local chain, as a share of stake:
 
@@ -60,14 +60,22 @@ by roughly 8× at a 1% dispute rate. That substantially weakens the argument
 that calibration pays for itself. See
 [`docs/UNBONDING_PERIOD_JUSTIFICATION.md`](docs/UNBONDING_PERIOD_JUSTIFICATION.md).
 
-**The subgroup-calibration gap could not be measured here, so the contract for
-it was not built.** Within-group ECE exceeds aggregate ECE in 10/10 seeds — but
-a permutation null reproduces the entire effect (Wilcoxon p = 0.92), because
-ECE is biased upward at small n: a model calibrated *by construction* scores
-0.1188 at n = 68, above this pipeline's aggregate ECE of 0.0870. The dataset
-cannot answer the question either way, so the limitation stays open and
-`SubgroupReputationRegister.sol` does not exist. `tests/test_subgroup_calibration.py`
-pins the null so it cannot be eroded by quietly shrinking a threshold.
+**The subgroup-calibration gap was noise on the first dataset, and real but
+small on the second.** Within-group ECE exceeds aggregate ECE in 10/10 seeds on
+German Credit — but a permutation null reproduces the entire effect (Wilcoxon
+p = 0.92), because ECE is biased upward at small n: a model calibrated *by
+construction* scores 0.1188 at n = 68, above that pipeline's aggregate ECE of
+0.0870. On a 30,000-row dataset the same analysis resolves it: the effect
+survives its null (p = 0.037) and is about 12% of aggregate ECE. Reporting only
+the first measurement would have overstated the problem sevenfold.
+`SubgroupReputationRegister.sol` still does not exist, because binned ECE's bias
+at realistic group sizes is twenty times the effect it would enforce on.
+
+**The collusion detector reports AUC 0.998 and should not be attached.** At the
+one threshold the contract enforces, it flags 0.94% of honest claimants on
+traffic containing no collusion, and one flagged claimant in five is honest at
+the easiest ring intensity. AUC integrates over operating points the contract
+cannot reach. Pass `address(0)`.
 
 ## What this proves and doesn't prove
 
