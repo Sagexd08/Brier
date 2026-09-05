@@ -404,7 +404,9 @@ def md_to_html(md: str) -> tuple[str, list[tuple[int, str, str]]]:
             # Strip any hand-written "Figure N —" prefix; numbering is automatic.
             caption = re.sub(r"^Figure\s+\d+\s*[-\u2013\u2014:]\s*", "", caption)
             out.append(
-                '<figure><img alt="%s" src="%s" />'
+                # span both columns: a landscape architecture diagram squeezed to
+                # column width is unreadable, which defeats the figure.
+                '<figure class="span"><img alt="%s" src="%s" />'
                 '<figcaption><span class="lab">Figure %d:</span> %s</figcaption></figure>'
                 % (caption[:60], _embed_image(m.group(2)), num, _inline(caption))
             )
@@ -468,7 +470,7 @@ MONO = "'CMU Typewriter', 'Latin Modern Mono', Consolas, 'Courier New', monospac
 CSS = """
 @page {
   size: A4;
-  margin: 26mm 24mm 24mm;
+  margin: 18mm 17mm 16mm;
 }
 @page :first { margin-top: 0; }
 
@@ -478,8 +480,8 @@ html { -webkit-font-smoothing: antialiased; }
 
 body {
   font-family: %(serif)s;
-  font-size: 10.6pt;
-  line-height: 1.34;
+  font-size: 9.5pt;
+  line-height: 1.30;
   color: #000000;
   margin: 0;
   text-align: justify;
@@ -496,15 +498,15 @@ h1, h2, h3, h4 {
   hyphens: none;
 }
 h2 {
-  font-size: 12.4pt;
+  font-size: 10.8pt;
   font-weight: 700;
-  margin: 17pt 0 7pt;
+  margin: 10pt 0 4pt;
   break-after: avoid; page-break-after: avoid;
 }
 h3 {
-  font-size: 11pt;
+  font-size: 9.9pt;
   font-weight: 700;
-  margin: 13pt 0 5pt;
+  margin: 8pt 0 3pt;
   /* Black, matching h2. Blue subsection headings under black section headings
      were inconsistent with each other and read as a template rather than a
      typographic decision. Links stay blue -- that convention is standard and
@@ -518,7 +520,7 @@ h4 {
   break-after: avoid; page-break-after: avoid;
 }
 
-p { margin: 0 0 5.5pt; orphans: 3; widows: 3; }
+p { margin: 0 0 4pt; orphans: 2; widows: 2; }
 p + p { text-indent: 1.4em; }
 
 a { color: #1a3d6d; text-decoration: none; }
@@ -618,7 +620,11 @@ figure {
   text-align: center;
   break-inside: avoid; page-break-inside: avoid;
 }
-figure img { max-width: 100%%; height: auto; }
+/* Capped height so a wide diagram cannot claim most of a page. Figure 1 is
+   landscape and at full text width it left page 6 half empty; bounding the
+   height lets it share a page with body text, which is how a figure this size
+   should sit at nine pages. */
+figure img { max-width: 100%%; max-height: 150mm; height: auto; }
 figcaption {
   font-family: %(sans)s;
   font-size: 8.6pt;
@@ -665,6 +671,8 @@ blockquote p { margin: 0; text-indent: 0; }
 
 /* ---------------- title block ---------------- */
 .titleblock {
+  /* No forced break after: at 9 pages the title shares page 1 with the
+     abstract, the way a short paper opens. */
   padding: 34mm 0 0;
   text-align: center;
   margin-bottom: 16pt;
@@ -697,6 +705,29 @@ blockquote p { margin: 0; text-indent: 0; }
 .toc li.l2 { font-weight: 700; margin-top: 3pt; }
 .toc li.l3 { padding-left: 13pt; font-size: 8.7pt; font-weight: 400; }
 .toc a { color: #000; }
+
+/* References set a little tighter than body text, as is conventional -- it is
+   a list to be scanned, not read, and three entries were spilling to a tenth
+   page. */
+h2#references ~ p,
+.refs p { font-size: 8.8pt; line-height: 1.22; margin-bottom: 2.5pt; }
+
+.body-cols {
+  column-count: 2;
+  column-gap: 6.5mm;
+  column-fill: auto;
+}
+/* A rule between columns is the convention and stops the eye drifting across
+   the gutter on a justified page. */
+.body-cols { column-rule: 0.3pt solid #d8d8d8; }
+
+/* Wide objects break out of the column flow and span both. Figure 1 is a
+   landscape diagram and Figure 3 a five-column table; neither is legible at
+   column width. */
+figure.span, .span {
+  column-span: all;
+  break-inside: avoid;
+}
 
 .caveat {
   border: none;
@@ -770,9 +801,10 @@ def build() -> None:
   </div>
 </div>
 %s
+<div class="body-cols">
 %s
-%s
-</body></html>""" % (font_face_css(), CSS, abstract_html, "".join(toc_html), body)
+</div>
+</body></html>""" % (font_face_css(), CSS, abstract_html, body)
 
     tmp = OUT.parent / "_paper_render.html"
     OUT.parent.mkdir(parents=True, exist_ok=True)

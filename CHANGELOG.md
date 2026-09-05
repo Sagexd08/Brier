@@ -10,6 +10,25 @@ closed from v0's own sequencing table.
 same visibility as the results that favour it, because a document that only
 reports confirmations is not evidence of anything.
 
+## Condensed to nine pages
+
+The paper was subsequently cut from 50 pages to **9**, in the two-column format
+this venue uses. Nothing was removed from the argument: all six propositions,
+both proofs, Theorem 1, every results table and all four negative findings
+survive. What went was duplication — an abstract that restated itself, a
+research-questions section that restated the abstract, per-phase ablation detail
+that the verdict table already carried, and a conclusion that re-narrated §7.
+
+The page count came mostly from format rather than from cutting. Single-column
+A4 at 9 pages gives a ~95-character measure, well past the 65–75 that reads
+comfortably, and left every page about a third empty; two columns fixed the
+measure and the length together. Figures span both columns, since a landscape
+diagram at column width is unreadable.
+
+Two defects surfaced while reformatting: `\$` reached the page literally in a
+table (the renderer has no LaTeX escape handling, and currency needs none), and
+the reference list was spilling three entries onto a tenth page.
+
 ## What "proposal to paper" changed structurally
 
 | Aspect | v0 proposal | v1 paper |
@@ -18,7 +37,7 @@ reports confirmations is not evidence of anything.
 | §1.3 | Five questions and the evidence that *would* answer them | Six questions, each with its answer and the evidence that settled it |
 | §1.4 | Six contributions | Ten, grouped mechanism / market / systems / **negative results** |
 | §9 | "Proposed work" — deliverables and intentions | "Open problems" — what would close each gap, and which two this work closed |
-| §7.5–§7.9 | Five per-phase ablation sections in the body | Condensed to a verdict table in §7.5; detail moved to **Appendix A** |
+| §7.5–§7.9 | Five per-phase ablation sections in the body | Condensed to a single verdict table |
 | Voice | "this proposal argues…" | paper voice throughout |
 | Status | Version v0 (prototype) | Preprint, arXiv `cs.CR` (cross-list `cs.GT`) |
 

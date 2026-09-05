@@ -36,7 +36,7 @@ crypto-economics with a measured systems component.
 
 **IEEE S&B as the fallback**, if AFT's cycle does not fit. The workshop route
 was previously the honest option because the empirical half rested on one
-dataset; with §8.6's replication that is no longer the binding weakness, and a
+dataset; with §8's replication that is no longer the binding weakness, and a
 full submission is defensible.
 
 **Not a generic ML venue, and not a blockchain-industry venue.** The first would
@@ -50,11 +50,11 @@ by doing the work, and two of the three closures found something unwelcome.
 
 | # | Requirement | Status |
 |---|---|---|
-| 1 | Every number traces to a script or a cited primary source | **met** — Appendix B |
+| 1 | Every number traces to a script or a cited primary source | **met** — Reproducibility section |
 | 2 | Claim-vocabulary guard passes on the full document | **met** — 11 tests |
 | 3 | All limitations stated with the same weight as results | **met** — §8, negatives in §10 |
-| 4 | A second dataset, or an explicit external-validity limit | **met** — §8.6, 30,000 rows |
-| 5 | Detector false-positive rate at the enforced threshold | **met, unfavourably** — §8.5 |
+| 4 | A second dataset, or an explicit external-validity limit | **met** — §8, 30,000 rows |
+| 5 | Detector false-positive rate at the enforced threshold | **met, unfavourably** — §7.3 |
 | 6 | Reproduction from a clean checkout | **met** — verified 4 Sep 2026 |
 
 **Item 4 replicated, and resolved a question the first dataset could not.** UCI
@@ -64,7 +64,7 @@ semantics: an observed default event rather than an analyst's credit grade. The
 protocol was held fixed rather than retuned. All five core claims replicate,
 with a 54.8% mean ECE reduction against 52.8% (*p* = 0.002).
 
-It also supplied the ~20× data §8.4 named as the missing ingredient for the
+It also supplied the ~20× data §7.2 named as the missing ingredient for the
 subgroup question. There, the effect **survives its permutation null** —
 gap 0.0067 vs null 0.0042, 8/10 seeds, *p* = 0.037 — where on German Credit the
 same control returned *p* = 0.92. Subgroup miscalibration is real, and it is
@@ -80,19 +80,19 @@ claimants (95% Wilson upper bound 1.51%). With rings present, the false
 *discovery* rate — the fraction of flagged claimants who are honest — is 19.9%
 at the easiest setting and 50% at the hardest, where recall is 16%.
 
-That sits badly beside §A.5's headline AUC of 0.998. AUC is threshold-free and
+That sits badly beside the headline AUC of 0.998. AUC is threshold-free and
 integrates over operating points the contract cannot use; the deployed system
 has one fixed operating point, and its precision there is what governs whether
-attaching the oracle is defensible. §8.5's recommendation is now explicit: pass
+attaching the oracle is defensible. §7.3's recommendation is now explicit: pass
 `address(0)`.
 
-**Item 6's closure found a defect.** Running Appendix B against a fresh
+**Item 6's closure found a defect.** Running the reproducibility sequence against a fresh
 `git clone` revealed that `contracts/lib/` is not committed, so `forge test`
 failed immediately — the appendix was missing a `forge install` line and its
 claim to reproduce from a clean checkout was false as written. With that line
 added, the clean checkout runs the full suites green and regenerates
 `market_model.json` and `subgroup_adversary.json` **byte-identical** to the
-artifacts behind §4 and §8.4. Two limits are recorded in Appendix B: it ran on
+artifacts behind §4 and §7.2. Two limits are recorded there: it ran on
 the development machine and OS, so it shows self-containment rather than
 portability; and the zkML stages were not re-run.
 
@@ -100,12 +100,12 @@ portability; and the zkML stages were not re-run.
 datasets are credit, tabular and binary — one model family, one decision class.
 Calibration drift over time is unevaluated. The detector figures are synthetic
 throughout, and a generator's realism is an assumption, not a measurement.
-Staking parameters remain demonstration values. None of this is concealed: §8.6
+Staking parameters remain demonstration values. None of this is concealed: §8
 states the residual scope directly.
 
 ## Reproducibility
 
-Appendix B covers every script including the v1 additions
+The reproducibility section covers every script including the v1 additions
 (`21_subgroup_adversary.py`, `22_market_model.py`, the ERC-8004 suite, the
 middleware suite), and names which section each produces. Both negative results
 carry their own artifacts (`subgroup_adversary.json`, `market_model.json`) and
